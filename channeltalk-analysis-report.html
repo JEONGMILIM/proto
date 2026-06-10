@@ -71,7 +71,7 @@
   .sys-arrow { display: flex; align-items: center; justify-content: center; font-size: 20px; color: #b2bec3; flex-shrink: 0; }
   @media (max-width: 700px) { .scope-grid { grid-template-columns: 1fr; } .sys-flow { flex-direction: column; } .sys-arrow { transform: rotate(90deg); } }
   /* ─── AI 에이전트 시뮬레이션 탭 ─── */
-  .sim-tabs { display: flex; flex-direction: column; width: 140px; flex-shrink: 0; gap: 8px; }
+  .sim-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 300px; flex-shrink: 0; gap: 8px; align-content: start; }
   .tab { padding: 10px 14px; background: #fff; border: 2px solid #e8e8e8; border-radius: 10px; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; text-align: left; line-height: 1.4; transition: all .15s; width: 100%; }
   .tab .tab-num { display: block; font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: .65; }
   .tab:hover { border-color: #ccc; color: #555; }
@@ -1734,12 +1734,15 @@
 
   <div class="sim-tabs" id="simTabs">
     <button class="tab active" onclick="simLoadScenario(0)"><span class="tab-num">예시 1</span>대차 신청</button>
-    <button class="tab" onclick="simLoadScenario(1)"><span class="tab-num">예시 2</span>접수번호 없음</button>
-    <button class="tab" onclick="simLoadScenario(2)"><span class="tab-num">예시 3</span>FAQ</button>
-    <button class="tab" onclick="simLoadScenario(3)"><span class="tab-num">예시 4</span>진행 현황 조회</button>
-    <button class="tab" onclick="simLoadScenario(4)"><span class="tab-num">예시 5</span>업체 불만·변경</button>
-    <button class="tab" onclick="simLoadScenario(5)"><span class="tab-num">예시 6</span>입고일·장소 변경</button>
+    <button class="tab" onclick="simLoadScenario(1)"><span class="tab-num">예시 2</span>보험 미접수</button>
+    <button class="tab" onclick="simLoadScenario(2)"><span class="tab-num">예시 3</span>복합 문의</button>
+    <button class="tab" onclick="simLoadScenario(3)"><span class="tab-num">예시 4</span>배차·진행 확인</button>
+    <button class="tab" onclick="simLoadScenario(4)"><span class="tab-num">예시 5</span>반납·연장·교체</button>
+    <button class="tab" onclick="simLoadScenario(5)"><span class="tab-num">예시 6</span>공업사·입고</button>
     <button class="tab" onclick="simLoadScenario(6)"><span class="tab-num">예시 7</span>범위 외 문의</button>
+    <button class="tab" onclick="simLoadScenario(7)"><span class="tab-num">예시 8</span>사고 직후</button>
+    <button class="tab" onclick="simLoadScenario(8)"><span class="tab-num">예시 9</span>비용·보험</button>
+    <button class="tab" onclick="simLoadScenario(9)"><span class="tab-num">예시 10</span>업체 문의</button>
   </div>
 
   <div style="display:flex;gap:20px;align-items:flex-start">
@@ -2083,7 +2086,7 @@ const SIM_SCENARIOS = [
     ]
   },
   {
-    num:'예시 2', label:'접수번호 없음',
+    num:'예시 2', label:'보험 미접수',
     steps:[
       { type:'user_auto', text:'대차 신청하고 싶어요', delay:500 },
       { type:'bot', text:'사고로 많이 불편하셨겠어요. 보험사에서 사고 접수번호를 받으셨나요?', delay:900 },
@@ -2094,7 +2097,7 @@ const SIM_SCENARIOS = [
     ]
   },
   {
-    num:'예시 3', label:'FAQ',
+    num:'예시 3', label:'복합 문의',
     steps:[
       { type:'user_auto', text:'어제 사고났는데 대차 신청하고 싶고요 교통비도 받을 수 있는지 궁금하고 차종은 동급으로 나오는건가요', delay:500 },
       { type:'bot', text:'사고로 많이 힘드셨겠어요. 한 가지씩 도와드리겠습니다.', delay:1000 },
@@ -2112,7 +2115,7 @@ const SIM_SCENARIOS = [
     ]
   },
   {
-    num:'예시 4', label:'진행 현황 조회',
+    num:'예시 4', label:'배차·진행 확인',
     steps:[
       { type:'user_auto', text:'대차 신청했는데 업체 연락이 아직 없어요. 어떻게 된 건가요?', delay:500 },
       { type:'bot', text:'불편하셨겠습니다. 진행 현황을 바로 확인해 드리겠습니다. 차량번호를 알려주세요.', delay:1000 },
@@ -2126,22 +2129,44 @@ const SIM_SCENARIOS = [
     ]
   },
   {
-    num:'예시 5', label:'업체 불만·변경',
+    num:'예시 5', label:'반납·연장·교체',
     steps:[
-      { type:'user_auto', text:'렌트 중인 차가 냄새도 너무 나고 벌레도 나와서 못 타겠어요 다른 차로 바꿔주세요', delay:500 },
-      { type:'bot', text:'많이 불편하셨겠어요. 바로 확인해 드리겠습니다. 차량번호를 알려주세요.', delay:1000 },
-      { type:'user_auto', text:'12가3456', delay:600 },
-      { type:'bot', text:'본인 확인을 위해 연락처를 알려주세요.', delay:700 },
-      { type:'user_auto', text:'010-1234-5678', delay:600 },
-      { type:'bot', text:'입력하신 번호로 인증번호를 발송했습니다. 인증번호 4자리를 입력해 주세요.', delay:900 },
-      { type:'user_auto', text:'3821', delay:1200 },
-      { type:'bot', text:SIM_COMPANY_INFO, delay:1600 },
-      { type:'bot', text:'담당 업체 또는 운영팀에서 확인 후 유선으로 연락드릴 예정입니다. 불편하신 점 빠르게 해결될 수 있도록 하겠습니다.', delay:1000 },
-      { type:'user_faq_input' }
+      { type:'user_auto', text:'차량 수리가 끝났는데 렌트카 반납은 어떻게 하나요?', delay:500 },
+      { type:'bot', text:'반납은 배정된 렌터카 업체에 직접 연락하시면 됩니다.<br><br>업체 담당자 연락처는 카카오톡 IMS form에서 받으신 임대차계약서에서 확인하실 수 있습니다.', delay:1200 },
+      { type:'bot', text:'어떤 도움이 필요하신가요?', delay:700 },
+      { type:'user_choice', choices:[
+        { label:'업체 연락처 알려주세요', next:[
+          { type:'bot', text:'확인을 위해 차량번호를 알려주세요.', delay:800 },
+          { type:'user_auto', text:'12가3456', delay:600 },
+          { type:'bot', text:'본인 확인을 위해 연락처를 알려주세요.', delay:700 },
+          { type:'user_auto', text:'010-1234-5678', delay:600 },
+          { type:'bot', text:'입력하신 번호로 인증번호를 발송했습니다. 인증번호 4자리를 입력해 주세요.', delay:900 },
+          { type:'user_auto', text:'3821', delay:1200 },
+          { type:'bot', text:SIM_COMPANY_INFO, delay:1600 },
+          { type:'bot', text:'담당 업체에 직접 연락하시면 반납 일정을 조율하실 수 있습니다.', delay:900 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'연장도 가능한가요?', next:[
+          { type:'bot', text:'연장은 배정된 렌터카 업체에 직접 연락하시면 안내받으실 수 있습니다.<br><br>업체 연락처가 필요하시면 차량번호를 알려주세요.', delay:1100 },
+          { type:'bot', text:'다른 궁금하신 점이 있으신가요?', delay:700 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'차량 상태 불량해서 교체 원해요', next:[
+          { type:'bot', text:'많이 불편하셨겠어요. 바로 확인해 드리겠습니다. 차량번호를 알려주세요.', delay:1000 },
+          { type:'user_auto', text:'12가3456', delay:600 },
+          { type:'bot', text:'본인 확인을 위해 연락처를 알려주세요.', delay:700 },
+          { type:'user_auto', text:'010-1234-5678', delay:600 },
+          { type:'bot', text:'입력하신 번호로 인증번호를 발송했습니다. 인증번호 4자리를 입력해 주세요.', delay:900 },
+          { type:'user_auto', text:'3821', delay:1200 },
+          { type:'bot', text:SIM_COMPANY_INFO, delay:1600 },
+          { type:'bot', text:'담당 업체 또는 운영팀에서 확인 후 유선으로 연락드릴 예정입니다. 불편하신 점 빠르게 해결될 수 있도록 하겠습니다.', delay:1000 },
+          { type:'user_faq_input' }
+        ]}
+      ]}
     ]
   },
   {
-    num:'예시 6', label:'입고일·장소 변경',
+    num:'예시 6', label:'공업사·입고',
     steps:[
       { type:'user_auto', text:'공업사 입고일이 바뀌었는데 렌트 일정도 변경할 수 있나요?', delay:500 },
       { type:'bot', text:'입고일·장소 변경은 담당 업체에 직접 연락하셔서 조율하시면 됩니다. 업체 연락처가 필요하시면 차량번호와 신청 시 등록하신 연락처를 알려주세요.', delay:1100 },
@@ -2172,6 +2197,67 @@ const SIM_SCENARIOS = [
           { type:'bot', text:'죄송합니다. 저는 사고대차 중개 지원만 도와드릴 수 있어서, 해당 문의는 답변이 어렵습니다. 사고대차 관련해 궁금한 점이 있으시면 언제든 말씀해 주세요.', delay:1000 },
           { type:'user_auto', text:'담당자 바꿔주세요', delay:600 },
           { type:'bot', text:'고객센터(08:00~24:00)로 연결해 드리겠습니다. 잠시만 기다려 주세요.', delay:900 }
+        ]}
+      ]}
+    ]
+  }
+  ,
+  {
+    num:'예시 8', label:'사고 직후',
+    steps:[
+      { type:'user_auto', text:'교통사고가 났는데 어떻게 해야 하나요?', delay:500 },
+      { type:'bot', text:'차분하게 도와드리겠습니다.<br><br><strong>① 안전 확보</strong>: 비상등 켜시고 2차 사고 위험 시 안전한 곳으로 이동해 주세요. 부상자가 있으면 즉시 119에 신고하세요.<br><strong>② 증거 확보</strong>: 차량 위치·충돌 부위·상대 번호판·도로 상황을 사진으로 찍어두세요. 블랙박스 영상도 보관해 주세요.<br><strong>③ 상대방 정보</strong>: 이름·연락처·차량번호·보험사를 확인해 두세요.<br><strong>④ 보험사 접수</strong>: 가해자 보험사에 사고 접수하고 사진을 전송해 주세요.', delay:1800 },
+      { type:'bot', text:'상대방이 있는 사고인가요, 단독 사고인가요?', delay:900 },
+      { type:'user_choice', choices:[
+        { label:'상대방 차량이 있는 사고예요', next: simMakeOpponentAccidentSteps() },
+        { label:'단독 사고예요', next: simMakeSingleAccidentSteps() }
+      ]}
+    ]
+  },
+  {
+    num:'예시 9', label:'비용·보험',
+    steps:[
+      { type:'user_auto', text:'렌트 비용은 누가 내나요? 보험은 어떻게 되나요?', delay:500 },
+      { type:'bot', text:'렌카 플랫폼 이용 수수료는 없습니다.<br><br>렌트 비용은 과실 여부에 따라 달라집니다.<br>• <strong>상대방 과실 100%</strong>: 상대방 보험사에서 전액 부담<br>• <strong>과실이 있는 경우</strong>: 과실 비율만큼 고객님 부담 발생<br><br>렌카 파트너 업체 전 차량은 자차·대물·대인 보험에 가입되어 있습니다.', delay:1500 },
+      { type:'bot', text:'더 궁금하신 점이 있으신가요?', delay:700 },
+      { type:'user_choice', choices:[
+        { label:'렌트 중 사고나면 면책금 내나요?', next:[
+          { type:'bot', text:'렌트 이용 중 사고가 발생하지 않으면 면책금은 청구되지 않습니다.<br><br>사고 발생 시에는 면책금이 발생할 수 있으며, 정확한 금액은 배정 렌터카 업체 및 보험사 담당자를 통해 확인하시는 것을 권장드립니다.', delay:1200 },
+          { type:'bot', text:'다른 궁금하신 점이 있으신가요?', delay:700 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'렌트 기간은 최대 며칠인가요?', next:[
+          { type:'bot', text:'보험사에서 인정하는 렌트 기간은 차량 수리 기간을 기준으로 하며, 보험사별로 기준이 다릅니다.<br><br>정확한 기간은 담당 보험사 보상 담당자에게 문의하시면 확인하실 수 있습니다.', delay:1100 },
+          { type:'bot', text:'다른 궁금하신 점이 있으신가요?', delay:700 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'과실 비율에 따른 비용은요?', next:[
+          { type:'bot', text:'예를 들어 과실 6:4라면 상대방 보험사에서 40%를 부담하고, 고객님이 60%를 부담하게 됩니다.<br><br>정확한 비용 기준은 담당 보험사 보상 담당자에게 문의하시면 됩니다.', delay:1200 },
+          { type:'bot', text:'다른 궁금하신 점이 있으신가요?', delay:700 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'지금 대차 신청할게요', next: simMakeApplySteps() }
+      ]}
+    ]
+  },
+  {
+    num:'예시 10', label:'업체 문의',
+    steps:[
+      { type:'user_auto', text:'렌트카 업체인데요, 렌카에 파트너 등록하고 싶습니다.', delay:500 },
+      { type:'bot', text:'업체 파트너 입점 관련 문의는 고객센터(1600-8348)로 연락주시면 안내받으실 수 있습니다.', delay:1000 },
+      { type:'bot', text:'다른 업체 관련 문의사항이 있으신가요?', delay:700 },
+      { type:'user_choice', choices:[
+        { label:'수수료·정산 문의', next:[
+          { type:'bot', text:'수수료·정산 관련 문의는 고객센터(1600-8348)로 연락주시면 안내받으실 수 있습니다.', delay:900 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'계정·로그인 오류', next:[
+          { type:'bot', text:'업체 계정·로그인 관련 문의는 고객센터(1600-8348)로 연락주시면 안내받으실 수 있습니다.', delay:900 },
+          { type:'user_faq_input' }
+        ]},
+        { label:'IMS form 사용 방법 문의', next:[
+          { type:'bot', text:'IMS form 사용 방법 관련 문의는 고객센터(1600-8348)로 연락주시면 안내받으실 수 있습니다.', delay:900 },
+          { type:'user_faq_input' }
         ]}
       ]}
     ]
@@ -2305,12 +2391,18 @@ const FAQ_KB = [
   { keywords:['사고가 났','사고났','사고 났','방금 사고','어떻게 해야','뭐부터 해야'], flow:'accident' },
   { keywords:['진행','상황','어디까지','어떻게 됐','됐나요'], flow:'status' },
   { keywords:['대차 신청','신청하고 싶','신청 하고 싶','신청할 수'], flow:'apply' },
+  { keywords:['취소','취소하','취소해'], flow:'cancel' },
+  { keywords:['반납','반납하','반납해','돌려줘'], answer:'반납은 배정된 렌터카 업체에 직접 연락하시면 됩니다.<br><br>업체 담당자 연락처는 카카오톡 IMS form에서 받으신 임대차계약서에서 확인하실 수 있습니다.' },
+  { keywords:['연장','더 쓰고 싶','더 타고 싶'], answer:'연장은 배정된 렌터카 업체에 직접 연락하시면 안내받으실 수 있습니다.<br><br>업체 연락처가 필요하시면 차량번호를 알려주세요.' },
   { keywords:['교통비'], answer:'교통비는 렌카에서 처리하기 어렵습니다.<br><br>가해자 보험사 보상 담당자에게 문의하시면 됩니다. 보험사 고객센터를 통해 보상 담당자 연결을 요청해 주세요.' },
   { keywords:['차종','어떤 차','같은 차','동일','등급'], answer:'차종은 사고 차량과 동급으로 배정됩니다.<br><br>전기차나 특정 차종이 필요하시면 신청 시 추가 요청사항에 적어주세요. 지역 내 업체 보유 상황에 따라 달라질 수 있는 점 양해 부탁드립니다.' },
-  { keywords:['비용','요금','돈','얼마','부담','내는'], answer:'렌터카 비용은 과실 여부에 따라 달라집니다.<br><br>상대방 과실 100%이면 상대방 보험사에서 전액 부담합니다. 과실이 있으신 경우에는 과실 비율만큼 부담이 생길 수 있으니, 정확한 금액은 담당 보험사에 확인해 주세요.' },
-  { keywords:['보험','접수','과실'], answer:'네, 렌카는 보험 사고 대차를 전문으로 하는 플랫폼입니다.<br><br>신청 시 가해자 보험사명과 보험접수번호를 미리 준비해 주시면 더 빠르게 도움드릴 수 있습니다.' },
-  { keywords:['취소','취소하','취소해'], flow:'cancel' },
+  { keywords:['비용','요금','돈','얼마','부담','내는','무료','수수료'], answer:'렌카 플랫폼 이용 수수료는 없습니다.<br><br>렌트 비용은 과실 여부에 따라 달라집니다. 상대방 과실 100%이면 상대방 보험사에서 전액 부담합니다. 과실이 있으신 경우에는 과실 비율만큼 부담이 생길 수 있으니, 정확한 금액은 담당 보험사에 확인해 주세요.' },
+  { keywords:['면책금','자비','자기부담'], answer:'렌트 이용 중 사고가 발생하지 않으면 면책금은 청구되지 않습니다.<br><br>사고 발생 시에는 면책금이 발생할 수 있으며, 정확한 금액은 배정 렌터카 업체 및 보험사 담당자를 통해 확인하시는 것을 권장드립니다.' },
+  { keywords:['딜리버리','배달','가져다'], answer:'딜리버리 서비스는 별도 추가 요금 없이 무료로 제공됩니다.<br><br>다만 거리가 매우 먼 경우 서비스 제공이 어려울 수 있으며, 구체적인 가능 여부는 담당 업체에서 안내드립니다.' },
+  { keywords:['보험','접수','과실','자차'], answer:'렌카 파트너 렌터카 업체는 전 차량 자차·대물·대인 보험에 가입되어 운행됩니다.<br><br>신청 시 가해자 보험사명과 보험접수번호를 미리 준비해 주시면 더 빠르게 도움드릴 수 있습니다.' },
+  { keywords:['렌트 기간','며칠','기간','얼마나'], answer:'보험사에서 인정하는 렌트 기간은 차량 수리 기간을 기준으로 하며, 보험사별로 기준이 다릅니다.<br><br>정확한 기간은 담당 보험사 보상 담당자에게 문의하시면 확인하실 수 있습니다.' },
   { keywords:['배차','언제','도착','연락'], answer:'연락이 아직 안 오셨군요.<br><br>현재 렌터카 업체 매칭 중입니다. 업체가 확정되는 대로 담당 업체에서 직접 연락드립니다.' },
+  { keywords:['파트너','입점','업체 등록'], answer:'업체 파트너 입점 관련 문의는 고객센터(1600-8348)로 연락주시면 안내받으실 수 있습니다.' },
 ];
 
 const FAQ_HINTS = [
@@ -2321,6 +2413,10 @@ const FAQ_HINTS = [
   '교통비는 어떻게 되나요?',
   '차종은 동일한 차로 나오나요?',
   '비용은 제가 내야 하나요?',
+  '렌트 기간은 최대 며칠인가요?',
+  '렌트 차량에 자차보험이 있나요?',
+  '차량 반납은 어떻게 하나요?',
+  '딜리버리 추가 요금이 있나요?',
 ];
 
 function simShowFaqPanel() {
