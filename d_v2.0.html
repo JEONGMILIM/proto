@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DB손해보험 셀프클레임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Pretendard 웹폰트 -->
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<!-- Noto Color Emoji: 로컬 환경 이모지 깨짐 방지 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<style>
+/* Material Icons 기본 설정 */
+.material-symbols-rounded {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 20px;
+  line-height: 1;
+  vertical-align: middle;
+  user-select: none;
+}
+.icon-fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.icon-sm   { font-size: 16px; }
+.icon-md   { font-size: 20px; }
+.icon-lg   { font-size: 24px; }
+
+/* 이모지 컬러 렌더링 보장 */
+.btn-emoji { font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; font-size: 15px; line-height: 1; }
+
+/* 전역 텍스트 렌더링 */
+* { -webkit-text-rendering: optimizeLegibility; text-rendering: optimizeLegibility; }
+
+:root {
+  --primary:     #007f41;
+  --primary-80:  rgba(0,127,65,0.80);
+  --primary-08:  rgba(0,127,65,0.08);
+  --primary-02:  rgba(0,127,65,0.02);
+  --text:        #1a1a1a;
+  --gray-1:      #525252;
+  --gray-2:      #777777;
+  --gray-3:      #999999;
+  --gray-4:      #B7B7B7;
+  --gray-5:      #DDDDDD;
+  --gray-6:      #f5f6f8;
+  --gray-7:      #f7f7f7;
+  --white:       #FFFFFF;
+  --error:       #FF5555;
+  --tracking:    -0.45px;
+  --tracking-sm: -0.36px;
+  --r-bubble: 24px;
+  --r-pill:   99px;
+  --r-sheet:  20px;
+  --r-card:   14px;
+  --r-input:  12px;
+  --r-chip:   10px;
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.20);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  background: #d0d0d0; display: flex; justify-content: center; min-height: 100vh;
+}
+
+/* ── 전체 래퍼: app + 사이드 nav ── */
+#wrapper {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+#app {
+  width: 375px; height: 100vh; background: var(--white);
+  display: flex; flex-direction: column; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+/* ── 세로 Step Nav: 화면 우측 바깥 ── */
+#step-nav {
+  position: fixed;
+  /* app 우측 바깥에 위치 — JS로 left 계산 */
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  z-index: 50;
+  pointer-events: auto;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.step-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 8px 5px 7px;
+  border-radius: 0 6px 6px 0;
+  font-size: 10px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  border: 1px solid var(--gray-5); border-left: none;
+  color: var(--gray-3); background: rgba(255,255,255,0.92);
+  font-family: inherit; transition: all 150ms;
+  backdrop-filter: blur(4px);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.08);
+}
+.step-pill .material-symbols-rounded { font-size: 12px; }
+.step-pill.active {
+  background: var(--primary); color: var(--white);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+.step-pill.done {
+  background: var(--primary-08); color: var(--primary);
+  border-color: rgba(0,127,65,0.3);
+}
+
+/* ── Header ── */
+#header {
+  position: sticky; top: 0; z-index: 100; background: var(--white);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; padding: 8px 20px; flex-shrink: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.logo { display: flex; align-items: center; }
+.logo img { height: 40px; object-fit: contain; display: block; }
+.logo-fallback { display: flex; align-items: center; gap: 6px; }
+.logo-fallback span { font-size: 15px; font-weight: 700; }
+
+.vehicle-badge {
+  display: none; align-items: center; gap: 4px;
+  /* 우측 정렬 — flex spacer 없이 exit 버튼 왼쪽에 붙음 */
+}
+.vehicle-badge.visible { display: flex; }
+.badge-plate {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  letter-spacing: var(--tracking);
+}
+.badge-edit {
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-3); padding: 2px; display: flex; align-items: center;
+  transition: color 150ms;
+}
+.badge-edit:hover { color: var(--primary); }
+
+/* 종료 버튼 */
+.exit-btn {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--gray-6); border: none; border-radius: var(--r-pill);
+  padding: 6px 12px; font-size: 12px; font-weight: 500;
+  color: var(--gray-3); cursor: pointer; font-family: inherit;
+}
+.exit-btn .material-symbols-rounded { font-size: 14px; }
+
+/* ── Chat ── */
+#chat { flex: 1; overflow-y: auto; padding: 16px 0 24px; display: flex; flex-direction: column; }
+
+/* msg-wrap 기본 여백 제거 — 아래 규칙이 모두 제어 */
+.msg-wrap { padding: 0 20px; margin-top: 0; }
+
+/* 같은 방향(bot→bot, user→user): 8px */
+.msg-wrap[data-side="bot"]   + .msg-wrap[data-side="bot"],
+.msg-wrap[data-side="user"]  + .msg-wrap[data-side="user"],
+.typing-wrap[data-side="bot"] + .msg-wrap[data-side="bot"],
+.msg-wrap[data-side="bot"]   + .typing-wrap[data-side="bot"] { margin-top: 8px; }
+
+/* 방향 전환(bot→user, user→bot): 24px */
+.msg-wrap[data-side="bot"]   + .msg-wrap[data-side="user"],
+.msg-wrap[data-side="user"]  + .msg-wrap[data-side="bot"],
+.typing-wrap[data-side="bot"] + .msg-wrap[data-side="user"],
+.msg-wrap[data-side="user"]  + .typing-wrap[data-side="bot"] { margin-top: 24px; }
+
+/* 첫 메시지 */
+#chat > .msg-wrap:first-child { margin-top: 0; }
+
+/* qc-group / pill-wrap / inline-card 등 비-bubble 요소 앞뒤 여백 */
+.msg-wrap[data-side="bot"]  + .qc-group,
+.msg-wrap[data-side="user"] + .qc-group  { margin-top: 8px; }
+.qc-group  + .msg-wrap[data-side="bot"],
+.qc-group  + .msg-wrap[data-side="user"] { margin-top: 24px; }
+.msg-wrap  + .pill-wrap  { margin-top: 8px; }
+.pill-wrap + .msg-wrap   { margin-top: 24px; }
+.msg-wrap  + .inline-card { margin-top: 8px; }
+.inline-card + .msg-wrap  { margin-top: 12px; }
+
+/* ── Bot Bubble ── */
+.msg-bot { display: flex; align-items: flex-start; }
+.bot-bubble {
+  background: var(--gray-6);
+  border-radius: 4px var(--r-bubble) var(--r-bubble) var(--r-bubble);
+  padding: 12px 16px;
+  font-size: 15px; line-height: 1.5;
+  letter-spacing: var(--tracking); color: var(--text);
+  max-width: 280px;
+  word-break: break-word;    /* keep-all 제거 — 숫자/특수문자 줄바꿈 방지 */
+  overflow-wrap: break-word;
+  animation: bubbleIn 180ms ease both;
+}
+@keyframes bubbleIn {
+  from { opacity:0; transform: translateY(6px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.bot-bubble .em { color: var(--primary); font-weight: 600; }
+
+/* ── Typing Indicator ── */
+.typing-wrap { padding: 4px 20px; }
+.typing-bubble {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--gray-6);
+  border-radius: 4px var(--r-bubble) var(--r-bubble) var(--r-bubble);
+  padding: 12px 16px; animation: bubbleIn 180ms ease both;
+}
+
+/* 버튼 내 이모지 */
+.btn-emoji { font-size: 15px; line-height: 1; }
+.typing-bubble span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gray-4); display: inline-block;
+  animation: typingDot 1.3s ease-in-out infinite;
+}
+.typing-bubble span:nth-child(2) { animation-delay: .18s; }
+.typing-bubble span:nth-child(3) { animation-delay: .36s; }
+@keyframes typingDot {
+  0%,60%,100% { transform:translateY(0); background:var(--gray-4); }
+  30%          { transform:translateY(-6px); background:var(--gray-3); }
+}
+
+/* ── Typewriter cursor ── */
+.tw-cursor {
+  display: inline-block; width: 2px; height: 1em;
+  background: var(--gray-3); margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: blink .65s steps(1) infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── User Bubble ── */
+.msg-user { display: flex; justify-content: flex-end; }
+.user-bubble {
+  background: var(--primary); color: var(--white);
+  border-radius: var(--r-bubble) 4px var(--r-bubble) var(--r-bubble);
+  /* 좌우 16px, 위아래 12px, 최대 너비 280px — bot-bubble과 동일 규격 */
+  padding: 12px 16px;
+  font-size: 15px; line-height: 1.5;
+  letter-spacing: var(--tracking);
+  max-width: 280px; word-break: break-word; overflow-wrap: break-word;
+  animation: userIn 180ms ease both;
+}
+@keyframes userIn {
+  from { opacity:0; transform:translateX(8px) scale(.97); }
+  to   { opacity:1; transform:translateX(0) scale(1); }
+}
+
+/* ── Quick Choice — 우측 정렬 ── */
+.qc-group {
+  display: flex; flex-wrap: wrap; gap: 4px; /* 버튼 사이 여백 4px */
+  padding: 10px 20px 6px;
+  justify-content: flex-end;
+  animation: fadeUp 220ms ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* 공통 선택형 버튼: 13px, 좌우 16px, 위아래 12px */
+.qc-btn {
+  min-width: 0;
+  background: var(--white);
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: var(--r-pill);
+  padding: 12px 16px;
+  font-size: 13px; font-weight: 600;
+  font-family: inherit; letter-spacing: var(--tracking);
+  cursor: pointer; white-space: nowrap;
+  transition: background 150ms, color 150ms, box-shadow 150ms;
+  display: inline-flex; align-items: center; gap: 6px;
+  box-shadow: 0 1px 4px rgba(0,127,65,0.08);
+}
+.qc-btn .material-symbols-rounded { font-size: 15px; }
+.qc-btn:hover:not(:disabled) { background: var(--primary-08); }
+.qc-btn.chosen {
+  background: var(--primary); color: var(--white);
+  box-shadow: 0 2px 8px rgba(0,127,65,0.22);
+}
+.qc-btn:disabled { cursor: default; opacity: 0.85; }
+
+/* Action pill — 동일 스타일 통일 (우측 정렬) */
+.pill-wrap { padding: 6px 20px; display: flex; justify-content: flex-end; }
+.action-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--white);
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  border-radius: var(--r-pill);
+  padding: 12px 16px;
+  font-size: 13px; font-weight: 600;
+  font-family: inherit; letter-spacing: var(--tracking);
+  cursor: pointer; white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,127,65,0.08);
+  transition: background 150ms, color 150ms, box-shadow 150ms;
+  animation: fadeUp 220ms ease both;
+}
+.action-pill .material-symbols-rounded { font-size: 15px; }
+.action-pill:hover:not(:disabled) { background: var(--primary-08); }
+.action-pill:disabled { opacity: 0.5; cursor: default; }
+.action-pill:hover { background: var(--primary-08); }
+
+/* 좌측 action pill (더보기/지역변경 등) */
+.pill-wrap-left { padding: 6px 20px; display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+
+/* Inline card */
+.inline-card {
+  background: var(--gray-6); border-radius: var(--r-card); padding: 16px;
+  margin: 4px 20px; display: flex; flex-direction: column; gap: 12px;
+  animation: fadeUp 220ms ease both;
+}
+
+/* Form */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--gray-1); letter-spacing: var(--tracking); }
+.form-input {
+  border: 1.5px solid var(--gray-5); border-radius: var(--r-input);
+  padding: 12px 14px; font-size: 15px; font-family: inherit;
+  color: var(--text); letter-spacing: var(--tracking);
+  outline: none; background: var(--white); width: 100%; transition: border-color 150ms;
+}
+.form-input:focus { border-color: var(--primary); }
+.form-input::placeholder { color: var(--gray-4); }
+.form-select {
+  border: 1.5px solid var(--gray-5); border-radius: var(--r-input);
+  padding: 12px 14px; font-size: 15px; font-family: inherit;
+  color: var(--text); outline: none; background: var(--white); width: 100%;
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+
+/* Buttons */
+.btn { border: none; border-radius: var(--r-input); font-family: inherit; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; letter-spacing: var(--tracking); transition: all 150ms ease; }
+.btn .material-symbols-rounded { font-size: 18px; }
+.btn-primary { background: var(--primary); color: var(--white); }
+.btn-primary:hover { background: var(--primary-80); }
+.btn-primary:disabled { opacity: .35; cursor: default; }
+.btn-secondary { background: var(--white); color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-danger { background: var(--error); color: var(--white); }
+.btn-md { height: 48px; padding: 0 20px; font-size: 15px; }
+.btn-lg { height: 54px; padding: 0 24px; font-size: 16px; }
+.btn-full { width: 100%; }
+
+/* Composer */
+#input-bar {
+  position: sticky; bottom: 0; z-index: 90; background: var(--white);
+  padding: 12px 20px 16px; flex-shrink: 0; display: none;
+}
+.chat-input-wrap {
+  background: var(--gray-7); border-radius: var(--r-pill); padding: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+#chat-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 15px; font-family: inherit; color: var(--text);
+  letter-spacing: var(--tracking); padding-left: 8px;
+}
+#chat-input::placeholder { color: var(--gray-2); }
+#send-btn {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--primary); border: none; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 150ms;
+}
+#send-btn:hover { background: var(--primary-80); }
+#send-btn:disabled { background: var(--gray-4); cursor: default; }
+#send-btn .material-symbols-rounded { font-size: 20px; color: white; font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24; }
+
+/* Chip */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--gray-5); background: var(--white); color: var(--gray-1); border-radius: var(--r-chip); padding: 7px 14px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 150ms; white-space: nowrap; letter-spacing: var(--tracking); }
+.chip:hover { border-color: var(--primary); color: var(--primary); }
+.chip.selected { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+/* Bottom Sheet */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+.overlay.open { display: flex; }
+.sheet { background: var(--white); border-radius: var(--r-sheet) var(--r-sheet) 0 0; width: 375px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 -4px 24px rgba(0,0,0,0.15); animation: slideUp 300ms cubic-bezier(0,0,0.2,1); }
+@keyframes slideUp { from{transform:translateY(100%);opacity:.6}to{transform:translateY(0);opacity:1} }
+.sheet-handle { width: 36px; height: 4px; background: var(--gray-5); border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
+.sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; flex-shrink: 0; border-bottom: 1px solid #f0f0f0; }
+.sheet-title { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: var(--tracking); }
+.sheet-close { background: none; border: none; cursor: pointer; color: var(--gray-3); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+.sheet-close:hover { background: var(--gray-6); }
+.sheet-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.sheet-footer { padding: 12px 20px 20px; flex-shrink: 0; border-top: 1px solid #f0f0f0; }
+
+/* Shop Card */
+.shop-card { border: 1.5px solid var(--gray-5); border-radius: var(--r-card); padding: 14px; cursor: pointer; transition: all 150ms; background: var(--white); margin-bottom: 10px; }
+.shop-card:hover { border-color: var(--primary); }
+.shop-card.selected { border-color: var(--primary); background: var(--primary-02); box-shadow: 0 0 0 1px var(--primary); }
+.shop-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: var(--tracking); display: flex; align-items: center; gap: 6px; }
+.shop-addr { font-size: 13px; color: var(--gray-2); margin-bottom: 6px; letter-spacing: var(--tracking); display: flex; align-items: center; gap: 4px; }
+.shop-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.shop-badge { font-size: 11px; font-weight: 600; background: var(--primary-08); color: var(--primary); padding: 2px 8px; border-radius: var(--r-pill); }
+.shop-dist { font-size: 12px; color: var(--gray-3); display: flex; align-items: center; gap: 3px; }
+
+/* Reserve Card */
+.reserve-card { border: 1.5px solid var(--primary); border-radius: var(--r-card); overflow: hidden; margin: 4px 20px; animation: fadeUp 220ms ease both; }
+.reserve-header { background: var(--primary); color: var(--white); padding: 10px 16px; font-size: 13px; font-weight: 600; letter-spacing: var(--tracking); display: flex; align-items: center; gap: 6px; }
+.reserve-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.reserve-row { display: flex; gap: 8px; align-items: center; }
+.reserve-label { font-size: 12px; color: var(--gray-3); font-weight: 500; min-width: 52px; letter-spacing: var(--tracking); display: flex; align-items: center; gap: 3px; }
+.reserve-value { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: var(--tracking); }
+
+/* Terms */
+.terms-all { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--gray-5); cursor: pointer; margin-bottom: 16px; }
+.terms-all-check { width: 24px; height: 24px; border: 1.5px solid var(--gray-5); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--white); transition: all 150ms; flex-shrink: 0; }
+.terms-all-check.on { background: var(--primary); border-color: var(--primary); color: var(--white); }
+.terms-all-label { font-size: 18px; font-weight: 500; color: var(--text); letter-spacing: var(--tracking); }
+.terms-group { margin-bottom: 16px; }
+.terms-group-title { font-size: 11px; font-weight: 600; color: var(--gray-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.terms-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
+.terms-item:last-child { border-bottom: none; }
+.terms-check { width: 22px; height: 22px; border: 1.5px solid var(--gray-5); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--white); color: transparent; transition: all 150ms; margin-top: 1px; }
+.terms-check.on { background: var(--primary); border-color: var(--primary); color: var(--white); }
+.terms-text { font-size: 15px; color: var(--text); flex: 1; line-height: 1.5; letter-spacing: var(--tracking); }
+.terms-link { font-size: 13px; color: var(--primary); text-decoration: underline; display: block; margin-top: 2px; }
+
+/* Transit */
+.transit-card { background: var(--primary-08); border: 1px solid rgba(0,127,65,0.15); border-radius: var(--r-card); padding: 16px; margin: 4px 20px; animation: fadeUp 220ms ease both; }
+.transit-amount { font-size: 26px; font-weight: 700; color: var(--primary); letter-spacing: var(--tracking); }
+.transit-label { font-size: 13px; color: var(--gray-1); margin-top: 2px; letter-spacing: var(--tracking); }
+
+/* ── Region Sheet 전용 칩 그리드 — 4열 고정 ── */
+.region-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 14px 0 4px;
+}
+.region-chip {
+  height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--gray-5);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--gray-1);
+  font-size: 13px; font-weight: 500;
+  font-family: inherit; letter-spacing: var(--tracking);
+  cursor: pointer; transition: all 150ms;
+  white-space: nowrap;
+}
+.region-chip:hover { border-color: var(--primary); color: var(--primary); }
+.region-chip.selected { background: var(--primary); color: var(--white); border-color: var(--primary); font-weight: 600; }
+
+/* 아코디언 헤더 */
+.region-acc { margin-bottom: 0; }
+.region-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 12px; cursor: pointer;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  border-bottom: 1px solid var(--gray-5);
+  letter-spacing: var(--tracking);
+}
+.region-header .arr { color: var(--gray-3); font-size: 20px; transition: transform 150ms; }
+.region-acc.open .region-header { border-bottom: none; }
+.region-acc:not(.open) .region-header { border-bottom: 1px solid var(--gray-5); }
+
+/* Completion */
+.completion-card { background: linear-gradient(135deg,var(--primary-08) 0%,rgba(0,127,65,0.04) 100%); border: 1px solid rgba(0,127,65,0.15); border-radius: 20px; padding: 28px 20px; text-align: center; margin: 4px 20px; animation: fadeUp 300ms ease both; }
+.completion-icon { font-size: 44px; margin-bottom: 14px; }
+.completion-title { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 10px; letter-spacing: var(--tracking); }
+.completion-desc { font-size: 14px; color: var(--gray-1); line-height: 1.7; letter-spacing: var(--tracking); }
+
+/* Phone */
+.phone-row { display: flex; gap: 8px; align-items: flex-end; }
+.phone-row .form-input { flex: 1; }
+.timer-text { font-size: 13px; color: var(--error); font-weight: 500; }
+.char-counter { font-size: 12px; color: var(--gray-4); text-align: right; }
+
+/* Dialog */
+.dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+.dialog-overlay.open { display: flex; }
+.dialog { background: var(--white); border-radius: 20px; padding: 28px 24px 20px; max-width: 320px; width: 100%; box-shadow: var(--shadow-lg); animation: fadeIn 150ms ease; }
+@keyframes fadeIn { from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)} }
+.dialog-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; letter-spacing: var(--tracking); }
+.dialog-desc { font-size: 14px; color: var(--gray-1); line-height: 1.6; margin-bottom: 24px; letter-spacing: var(--tracking); }
+.dialog-actions { display: flex; gap: 8px; }
+.dialog-actions .btn { flex: 1; }
+
+.hint { font-size: 12px; color: var(--gray-3); text-align: center; padding: 6px 20px; letter-spacing: var(--tracking); }
+/* number input 스피너 제거 */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+.hidden { display: none !important; }
+
+/* Skeleton */
+.skeleton-box {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+<div id="app">
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="logo">
+      <img src="https://www.figma.com/api/mcp/asset/347c78f4-7404-41ee-bfbb-22109876e722" alt="DB손해보험"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="logo-fallback" style="display:none;">
+        <svg width="26" height="26" viewBox="0 0 36 36"><circle cx="10" cy="20" r="7" fill="#E63329"/><circle cx="18" cy="14" r="7" fill="#F8B700"/><circle cx="26" cy="20" r="7" fill="#007f41"/><circle cx="18" cy="22" r="5" fill="#007f41" opacity=".7"/></svg>
+        <span>DB손해보험</span>
+      </div>
+    </div>
+
+    <!-- 우측: 차량번호 + 종료 버튼 -->
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="vehicle-badge" id="vehicle-badge">
+        <span class="badge-plate" id="badge-plate"></span>
+        <button class="badge-edit" onclick="openSheet('vehicle')">
+          <span class="material-symbols-rounded" style="font-size:16px;color:var(--gray-3);">edit</span>
+        </button>
+      </div>
+      <button class="exit-btn" onclick="handleExitClick()">
+        종료
+        <span class="material-symbols-rounded" style="font-size:14px;">power_settings_new</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CHAT -->
+  <main id="chat"></main>
+
+  <!-- COMPOSER -->
+  <div id="input-bar">
+    <p id="plate-error" style="display:none;font-size:12px;color:var(--error);padding:0 4px 6px;letter-spacing:var(--tracking);">차량번호는 '숫자+한글+숫자' 형식으로 입력해 주세요.</p>
+    <p id="phone-error" style="display:none;font-size:12px;color:var(--error);padding:0 4px 6px;letter-spacing:var(--tracking);">휴대폰 번호 형식을 확인해 주세요. (예: 01012345678)</p>
+    <div class="chat-input-wrap">
+      <input id="chat-input" type="text" placeholder="차량번호를 입력해 주세요."
+        onkeydown="if(event.key==='Enter')sendPlate()" oninput="onPlateInput()">
+      <button id="send-btn" onclick="sendPlate()" disabled>
+        <span class="material-symbols-rounded">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 세로 Step Nav — 화면 우측 바깥 -->
+<nav id="step-nav">
+  <button class="step-pill active" data-step="0" onclick="jumpTo('0')">
+    <span class="material-symbols-rounded">home</span>인트로
+  </button>
+  <button class="step-pill" data-step="1" onclick="jumpTo('1')">
+    <span class="material-symbols-rounded">directions_car</span>차량확인
+  </button>
+  <button class="step-pill" data-step="1f" onclick="jumpTo('1f')">
+    <span class="material-symbols-rounded">car_crash</span>차량확인불가
+  </button>
+  <button class="step-pill" data-step="2" onclick="jumpTo('2')">
+    <span class="material-symbols-rounded">alt_route</span>서비스선택
+  </button>
+  <button class="step-pill" data-step="3" onclick="jumpTo('3')">
+    <span class="material-symbols-rounded">calculate</span>교통비조회
+  </button>
+  <button class="step-pill" data-step="4" onclick="jumpTo('4')">
+    <span class="material-symbols-rounded">location_on</span>지역선택
+  </button>
+  <button class="step-pill" data-step="5" onclick="jumpTo('5')">
+    <span class="material-symbols-rounded">phone_iphone</span>본인인증
+  </button>
+  <button class="step-pill" data-step="6" onclick="jumpTo('6')">
+    <span class="material-symbols-rounded">edit_note</span>추가요청
+  </button>
+  <button class="step-pill" data-step="7" onclick="jumpTo('7')">
+    <span class="material-symbols-rounded">check_circle</span>신청완료
+  </button>
+  <button class="step-pill" data-step="8" onclick="jumpTo('8')">
+    <span class="material-symbols-rounded">garage</span>정비업체
+  </button>
+</nav>
+</div>
+
+<!-- EXIT MODAL -->
+<div id="exit-modal-overlay" onclick="closeExitModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:flex-end;justify-content:center;">
+  <div onclick="event.stopPropagation()" style="background:var(--white);border-radius:20px 20px 0 0;width:375px;padding:28px 20px 40px;animation:slideUp 300ms cubic-bezier(0,0,0.2,1);">
+    <p style="font-size:20px;font-weight:700;line-height:1.4;letter-spacing:var(--tracking);color:var(--text);margin:0 0 4px;">대화를 종료할까요?<br>이런 혜택들을 놓치게 돼요!</p>
+    <p style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);margin:0 0 20px;">대화 종료 시 차량 조회 화면으로 이동합니다.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+      <div style="border:1.5px solid var(--gray-5);border-radius:14px;padding:16px;">
+        <p style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:var(--tracking);margin:0 0 6px;">딜리버리 서비스 기본 제공 🚐</p>
+        <p style="font-size:13px;color:var(--gray-2);line-height:1.6;letter-spacing:var(--tracking-sm);margin:0;">사고로 인한 불편함을 최소화하기 위해 렌터카 서비스 이용 시, 고객님의 차량을 수리 공업사로 대신 이동해 드리고 수리 종료 후 고객님께 전달해 드리는 차량 딜리버리 서비스를 제공해 드려요.</p>
+      </div>
+      <div style="border:1.5px solid var(--gray-5);border-radius:14px;padding:16px;">
+        <p style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:var(--tracking);margin:0 0 6px;">국내 최초 자차 면책금 50% 지원 🔥</p>
+        <p style="font-size:13px;color:var(--gray-2);line-height:1.6;letter-spacing:var(--tracking-sm);margin:0;">렌트 차량은 "자차/종합보험(대인, 대물, 자손)"에 가입되어 있어요. 국내 서비스 중 유일하게 고객님의 귀책 사유로 발생한 사고 처리 시 렌터카 업체로 납입해야 하는 자차 보험 처리 면책금의 50%를 지원해 드려요.</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="location.reload()" style="flex:1;padding:15px;background:var(--white);color:var(--text);border:1.5px solid var(--gray-5);border-radius:12px;font-size:15px;font-weight:600;font-family:inherit;letter-spacing:var(--tracking);cursor:pointer;">종료할게요</button>
+      <button onclick="closeExitModal();document.getElementById('exit-btn-wrap')?.remove();userMsg('🚗 렌터카로 바꿀게요');runS6();" style="flex:2;padding:15px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:inherit;letter-spacing:var(--tracking);cursor:pointer;">렌터카 신청하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEETS -->
+<div class="overlay" id="overlay-vehicle" onclick="vehicleCancel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="vehicle-sheet-title">사고 차량 정보를 입력해 주세요.</span>
+      <button class="sheet-close" onclick="vehicleCancel()">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="form-group">
+        <label class="form-label">차량번호</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="form-input" id="e-plate" value="12가1234" oninput="checkVehicleForm()" style="flex:1;">
+          <button onclick="lookupFromSheet()" style="flex-shrink:0;background:none;border:none;color:var(--primary);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;padding:0 4px;letter-spacing:var(--tracking);">조회</button>
+        </div>
+        <p id="sheet-plate-error" style="display:none;font-size:12px;color:var(--error);margin-top:4px;letter-spacing:var(--tracking);"></p>
+      </div>
+      <div class="form-group"><label class="form-label">차량명</label><input class="form-input" id="e-name" placeholder="차량명을 입력해 주세요." value="베라 크루즈" oninput="checkVehicleForm()"></div>
+      <div class="form-group"><label class="form-label">차량 규모</label><select id="e-cls" class="form-select" onchange="checkVehicleForm()"><option value="">선택</option><option>승용</option><option>RV(SUV)</option><option>승합</option><option>화물(픽업트럭)</option></select></div>
+      <div class="form-group"><label class="form-label">배기량(cc)</label><select id="e-cc" class="form-select" onchange="checkVehicleForm()"><option value="">선택</option><option>1600 미만</option><option>1600 ~ 1999</option><option>2000 ~ 2499</option><option>2500 ~ 2999</option><option>3000 이상</option></select></div>
+      <div class="form-group"><label class="form-label">연식</label><select id="e-year" class="form-select" onchange="checkVehicleForm()"><option value="">선택</option><option>5년 이하</option><option>5년 초과</option></select></div>
+    </div>
+    <div class="sheet-footer">
+      <button id="vehicle-submit-btn" class="btn btn-primary btn-lg btn-full" onclick="submitVehicle()" disabled>
+        입력완료
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-days" onclick="daysCancel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="days-title">예상 수리 기간 선택</span>
+      <button class="sheet-close" onclick="daysCancel()">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div id="days-hint" style="font-size:13px;color:var(--gray-2);margin-bottom:12px;">수리 가능 최대 25일 기준 (160시간 초과 시 30일 적용)</div>
+      <!-- 4열 고정 그리드 — 이용지역 선택과 동일 -->
+      <div id="days-chips" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-primary btn-lg btn-full" id="days-done" onclick="daysDone()" disabled>
+        완료
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-region" onclick="regionCancel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">이용 지역 선택</span>
+      <button class="sheet-close" onclick="regionCancel()">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div class="region-acc open" id="acc-seoul">
+        <div class="region-header" onclick="toggleAcc('seoul')">
+          서울특별시
+          <span class="material-symbols-rounded arr">expand_less</span>
+        </div>
+        <div class="region-chips" id="chips-seoul"></div>
+      </div>
+      <div class="region-acc" id="acc-busan">
+        <div class="region-header" onclick="toggleAcc('busan')">
+          부산광역시
+          <span class="material-symbols-rounded arr">expand_more</span>
+        </div>
+        <div class="region-chips hidden" id="chips-busan">
+          <p style="font-size:13px;color:var(--gray-3);padding:8px 0;grid-column:1/-1;">서비스 준비 중입니다.</p>
+        </div>
+      </div>
+      <div class="region-acc" id="acc-daegu">
+        <div class="region-header" onclick="toggleAcc('daegu')">
+          대구광역시
+          <span class="material-symbols-rounded arr">expand_more</span>
+        </div>
+        <div class="region-chips hidden" id="chips-daegu">
+          <p style="font-size:13px;color:var(--gray-3);padding:8px 0;grid-column:1/-1;">서비스 준비 중입니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-primary btn-lg btn-full" id="region-done" onclick="regionDone()" disabled>
+        선택 완료
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Shop Region Sheet: 정비업체 지역 선택 (최대 3개) -->
+<div class="overlay" id="overlay-shop-region" onclick="shopRegionCancel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">정비업체 지역 선택</span>
+      <button class="sheet-close" onclick="shopRegionCancel()">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div style="font-size:13px;color:var(--gray-2);margin-bottom:14px;letter-spacing:var(--tracking);">
+        최대 3개 지역까지 선택할 수 있어요.
+        <span id="shop-region-count" style="color:var(--primary);font-weight:600;">0</span>/3
+      </div>
+      <div class="region-acc open" id="acc-sr-seoul">
+        <div class="region-header" onclick="toggleShopRegionAcc('seoul')">
+          서울특별시
+          <span class="material-symbols-rounded arr">expand_less</span>
+        </div>
+        <div class="region-chips" id="sr-chips-seoul"></div>
+      </div>
+      <div class="region-acc" id="acc-sr-busan">
+        <div class="region-header" onclick="toggleShopRegionAcc('busan')">
+          부산광역시
+          <span class="material-symbols-rounded arr">expand_more</span>
+        </div>
+        <div class="region-chips hidden" id="sr-chips-busan">
+          <p style="font-size:13px;color:var(--gray-3);padding:8px 0;grid-column:1/-1;">서비스 준비 중입니다.</p>
+        </div>
+      </div>
+      <div class="region-acc" id="acc-sr-daegu">
+        <div class="region-header" onclick="toggleShopRegionAcc('daegu')">
+          대구광역시
+          <span class="material-symbols-rounded arr">expand_more</span>
+        </div>
+        <div class="region-chips hidden" id="sr-chips-daegu">
+          <p style="font-size:13px;color:var(--gray-3);padding:8px 0;grid-column:1/-1;">서비스 준비 중입니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-primary btn-lg btn-full" id="shop-region-done" onclick="shopRegionDone()" disabled>
+        선택 완료
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-terms" onclick="termsCancel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">약관 동의</span>
+      <button class="sheet-close" onclick="termsCancel()">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:var(--tracking);">필수 약관 동의</span>
+        <button onclick="toggleAll()" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--primary);font-family:inherit;letter-spacing:var(--tracking);padding:0;">전체 선택</button>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(0)">
+        <div class="terms-check" id="t0"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">만 21세 이상입니다.</div>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(1)">
+        <div class="terms-check" id="t1"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">렌카의 이용 약관에 동의합니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(1,event)">chevron_right</span>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(2)">
+        <div class="terms-check" id="t2"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">렌카의 개인정보 처리방침에 동의합니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(2,event)">chevron_right</span>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(3)">
+        <div class="terms-check" id="t3"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">가해자 렌트 불가 안내를 확인했습니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(3,event)">chevron_right</span>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(4)">
+        <div class="terms-check" id="t4"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">교통비 이중 수급 불가 안내를 확인했습니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(4,event)">chevron_right</span>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(5)">
+        <div class="terms-check" id="t5"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">대리기사 사고 건 렌트 불가 안내를 확인했습니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(5,event)">chevron_right</span>
+      </div>
+      <div class="terms-item" onclick="toggleTerm(6)">
+        <div class="terms-check" id="t6"><span class="material-symbols-rounded icon-sm icon-fill">check</span></div>
+        <div class="terms-text">영업용 차량 대차 불가 안내를 확인했습니다.</div>
+        <span class="material-symbols-rounded" style="color:var(--gray-4);font-size:18px;flex-shrink:0;align-self:center;" onclick="openTermDetail(6,event)">chevron_right</span>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-primary btn-lg btn-full" id="terms-done" onclick="termsDone()" disabled>
+        동의하고 신청하기
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-term-detail" onclick="overlayTap(event,'term-detail')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="term-detail-title"></span>
+      <button class="sheet-close" onclick="closeSheet('term-detail')">
+        <span class="material-symbols-rounded icon-lg">close</span>
+      </button>
+    </div>
+    <div class="sheet-body" id="term-detail-body" style="font-size:14px;color:var(--gray-1);line-height:1.8;letter-spacing:var(--tracking);"></div>
+    <div class="sheet-footer">
+      <button class="btn btn-primary btn-lg btn-full" onclick="closeSheet('term-detail')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dialog-exit" onclick="if(event.target===this)closeDialog('exit')">
+  <div class="dialog">
+    <div class="dialog-title">정말 종료하시겠어요?</div>
+    <div class="dialog-desc">종료하시면 입력하신 정보가 모두 삭제되고, 처음부터 다시 시작해야 합니다.</div>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary btn-md" onclick="closeDialog('exit')">
+        <span class="material-symbols-rounded">arrow_back</span>계속 진행
+      </button>
+      <button class="btn btn-danger btn-md" onclick="location.reload()">
+        <span class="material-symbols-rounded">power_settings_new</span>종료
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="dialog-overlay" id="dialog-exit-shop" onclick="if(event.target===this)closeDialog('exit-shop')">
+  <div class="dialog">
+    <div class="dialog-title">정말 종료하시겠어요?</div>
+    <div class="dialog-desc">렌터카 신청은 완료되었어요.<br>정비업체는 선택하지 않고 종료하실 수 있어요.</div>
+    <div class="dialog-actions">
+      <button class="btn btn-secondary btn-md" onclick="closeDialog('exit-shop')">
+        <span class="material-symbols-rounded">arrow_back</span>계속할게요
+      </button>
+      <button class="btn btn-danger btn-md" onclick="location.reload()">
+        <span class="material-symbols-rounded">power_settings_new</span>종료
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ STATE ═══════════════ */
+const S = { plate:'', region:'', days:null, fault:null, shopSelected:null, phoneVerified:false, showMore:false, rentalDone:false, flowDone:false };
+let codeTimerInterval = null;
+let _flowId = 0;
+const SHOPS = [
+  {name:'강남 현대카센터', addr:'서울 강남구 테헤란로 123', dist:'0.5km', spec:['수입차 전문','DB협력'], phone:'02-1234-5678'},
+  {name:'서초 모터스',     addr:'서울 강남구 서초대로 456', dist:'1.2km', spec:['판금도장','DB협력'],   phone:'02-9876-5432'},
+  {name:'압구정 오토샵',   addr:'서울 강남구 압구정로 78',  dist:'1.8km', spec:['전기차 전문'],         phone:'02-5555-1234'},
+  {name:'삼성동 카케어',   addr:'서울 강남구 봉은사로 90',  dist:'2.4km', spec:['수입차','판금'],        phone:'02-3333-9999'},
+];
+const SEOUL = ['강남구','강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구'];
+let daysMode = 'days', timerInterval = null;
+
+const chatEl = () => document.getElementById('chat');
+
+/* ═══════════════ STEP NAV POSITION ═══════════════
+   app 우측 바깥에 고정 — viewport 중앙 기준으로 계산 */
+function positionNav() {
+  const app = document.getElementById('app');
+  const nav = document.getElementById('step-nav');
+  const rect = app.getBoundingClientRect();
+  nav.style.left = (rect.right) + 'px';
+}
+window.addEventListener('resize', positionNav);
+
+/* ═══════════════ TYPING ENGINE ═══════════════ */
+function wait(ms) {
+  const myFlow = _flowId;
+  return new Promise(r => setTimeout(() => { if (_flowId === myFlow) r(); }, ms));
+}
+
+/* 직전 형제 중 data-side가 있는 가장 가까운 요소의 side (marker 등 건너뜀) */
+function prevSidedSide() {
+  let el = chatEl().lastElementChild;
+  while (el) {
+    if (el.dataset && el.dataset.side) return el.dataset.side;
+    el = el.previousElementSibling;
+  }
+  return null;
+}
+
+/* 현재 추가할 side(curSide) vs 직전 side 비교 → 전환 24px / 동일 8px */
+function gapMargin(curSide) {
+  const prev = prevSidedSide();
+  if (!prev) return '';            // 첫 메시지
+  return prev === curSide ? '8px' : '24px';
+}
+function scrollEnd() { const c = chatEl(); c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' }); }
+
+function insertDot() {
+  const w = document.createElement('div');
+  w.className = 'typing-wrap';
+  // data-side 없음 → prevSidedSide 계산에서 무시됨 (임시 요소)
+  const m = gapMargin('bot');
+  if (m) w.style.marginTop = m;
+  w.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+  chatEl().appendChild(w); scrollEnd(); return w;
+}
+
+function tokenize(html) {
+  const tokens = []; const re = /(<[^>]+>)/g; let last = 0, m;
+  while ((m = re.exec(html)) !== null) {
+    if (m.index > last) tokens.push({ t:'text', v:html.slice(last, m.index) });
+    tokens.push({ t:'tag', v:m[0] }); last = m.index + m[0].length;
+  }
+  if (last < html.length) tokens.push({ t:'text', v:html.slice(last) });
+  return tokens;
+}
+
+function typeInto(bubble, html, speed) {
+  const VOID = new Set(['br','hr','img','input','meta','link','area','base','col','embed','param','source','track','wbr']);
+
+  return new Promise(resolve => {
+    const tokens = tokenize(html);
+    const cursor = document.createElement('span'); cursor.className = 'tw-cursor';
+    bubble.appendChild(cursor);
+    let tIdx = 0, cIdx = 0;
+    function tick() {
+      if (tIdx >= tokens.length) {
+        cursor.remove();
+        // 개별 TextNode를 하나로 병합 → 숫자 간격 깨짐 방지
+        bubble.normalize();
+        resolve();
+        return;
+      }
+      const tok = tokens[tIdx];
+      if (tok.t === 'tag') {
+        const isClose = tok.v.startsWith('</');
+        // 태그 이름 정확히 추출: <br>, <br/>, <span class=...> 등 모두 처리
+        const tagName = (tok.v.match(/^<\/?([a-zA-Z][a-zA-Z0-9]*)/) || [])[1]?.toLowerCase() || '';
+
+        if (VOID.has(tagName)) {
+          // void 태그 (<br> 등): cursor 앞에 삽입, cursor 위치 유지
+          cursor.parentNode.insertBefore(document.createElement(tagName), cursor);
+        } else if (!isClose) {
+          // 여는 태그: 새 element → cursor 이동
+          const tmp = document.createElement('div');
+          tmp.innerHTML = tok.v + '</' + tagName + '>';
+          const tagEl = tmp.firstChild; tagEl.innerHTML = '';
+          cursor.parentNode.insertBefore(tagEl, cursor);
+          tagEl.appendChild(cursor);
+        } else {
+          // 닫는 태그: cursor를 부모 밖으로
+          const parent = cursor.parentNode;
+          if (parent && parent !== bubble) parent.parentNode.insertBefore(cursor, parent.nextSibling);
+        }
+        tIdx++; cIdx = 0; setTimeout(tick, 0);
+      } else {
+        if (cIdx < tok.v.length) {
+          const ch = tok.v[cIdx];
+          cursor.parentNode.insertBefore(document.createTextNode(ch), cursor);
+          cIdx++;
+          setTimeout(tick, ch === ' ' ? speed * 0.4 : speed);
+          scrollEnd();
+        } else { tIdx++; cIdx = 0; setTimeout(tick, 0); }
+      }
+    }
+    tick();
+  });
+}
+
+async function botMessage(html, dotMs = 650, speed = 22, marginOverride) {
+  const myFlow = _flowId;
+  const normalized = html.replace(/\n/g, '<br>');
+  const dot = insertDot(); await wait(dotMs); dot.remove();
+  if (_flowId !== myFlow) return null;
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap';
+  wrap.dataset.side = 'bot';
+  const m = marginOverride || gapMargin('bot');
+  if (m) wrap.style.marginTop = m;
+  const row = document.createElement('div'); row.className = 'msg-bot';
+  const bubble = document.createElement('div'); bubble.className = 'bot-bubble';
+  row.appendChild(bubble); wrap.appendChild(row); chatEl().appendChild(wrap); scrollEnd();
+  await typeInto(bubble, normalized, speed); scrollEnd();
+  return bubble;
+}
+
+function userMsg(text, marginTop, isHtml) {
+  const w = document.createElement('div');
+  w.className = 'msg-wrap';
+  w.dataset.side = 'user';
+  const m = marginTop || gapMargin('user');
+  if (m) w.style.marginTop = m;
+  const content = isHtml ? text : text.replace(/</g,'&lt;');
+  w.innerHTML = `<div class="msg-user"><div class="user-bubble">${content}</div></div>`;
+  chatEl().appendChild(w); scrollEnd();
+}
+
+/* 선택지: 우측 정렬
+   선택 시 → 버튼 그룹 전체 제거 + 선택한 항목을 user 말풍선으로 자동 에코
+   c.emoji  → 이모지 포함 라벨
+   c.icon   → Material Symbols 아이콘
+   c.echoLabel → 에코 시 표시할 별도 텍스트 (없으면 label 그대로) */
+function choices(list) {
+  return new Promise(resolve => {
+    const grp = document.createElement('div'); grp.className = 'qc-group';
+    list.forEach(c => {
+      const b = document.createElement('button'); b.className = 'qc-btn';
+      let prefix = '';
+      if (c.emoji) {
+        prefix = `<span class="btn-emoji" aria-hidden="true">${c.emoji}</span>`;
+      } else if (c.icon) {
+        prefix = `<span class="material-symbols-rounded" style="font-size:16px;">${c.icon}</span>`;
+      }
+      b.innerHTML = `${prefix}${c.label}`;
+      b.onclick = () => {
+        // 버튼 그룹 전체 제거
+        grp.remove();
+        // 선택한 항목을 user 말풍선으로 에코
+        const echo = c.echoLabel ?? (c.emoji ? `${c.emoji} ${c.label}` : c.label);
+        userMsg(echo);
+        setTimeout(() => resolve(c.value), 120);
+      };
+      grp.appendChild(b);
+    });
+    chatEl().appendChild(grp); scrollEnd();
+  });
+}
+
+/* 선택지 — 행(row) 단위 그룹 배치
+   rows: [[btn,btn],[btn]] → 각 배열이 한 줄 */
+function choicesGrouped(rows) {
+  return new Promise(resolve => {
+    const container = document.createElement('div');
+    container.style.cssText = 'display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding:10px 20px 6px;animation:fadeUp 220ms ease both;';
+
+    const allBtns = [];
+    rows.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = 'display:flex;gap:4px;justify-content:flex-end;';
+      row.forEach(c => {
+        const b = document.createElement('button'); b.className = 'qc-btn';
+        const prefix = c.emoji ? `<span class="btn-emoji" aria-hidden="true">${c.emoji}</span>` : '';
+        b.innerHTML = `${prefix}${c.label}`;
+        b.onclick = () => {
+          container.remove();
+          const echo = c.echoLabel ?? (c.emoji ? `${c.emoji} ${c.label}` : c.label);
+          userMsg(echo);
+          setTimeout(() => resolve(c.value), 120);
+        };
+        rowEl.appendChild(b);
+        allBtns.push(b);
+      });
+      container.appendChild(rowEl);
+    });
+    chatEl().appendChild(container); scrollEnd();
+  });
+}
+
+/* 액션 필: 우측 정렬
+   클릭 시 pill-wrap 제거 (선택지 버튼처럼 사라짐) */
+function pill(label, icon = '') {
+  const isEmoji = icon && /\p{Emoji}/u.test(icon);
+  const prefix = icon
+    ? isEmoji
+      ? `<span class="btn-emoji">${icon}</span>`
+      : `<span class="material-symbols-rounded" style="font-size:16px;">${icon}</span>`
+    : '';
+  return new Promise(resolve => {
+    const w = document.createElement('div'); w.className = 'pill-wrap';
+    const b = document.createElement('button'); b.className = 'action-pill';
+    b.innerHTML = `${prefix}${label}`;
+    b.onclick = () => {
+      w.remove(); // pill-wrap 전체 제거
+      resolve();
+    };
+    w.appendChild(b); chatEl().appendChild(w); scrollEnd();
+  });
+}
+
+function append(el) { chatEl().appendChild(el); scrollEnd(); }
+
+/* ═══════════════ NAV ═══════════════ */
+// step 순서 정의 — 1과 1f는 동일 레벨(플로우 위치 1)
+const STEP_ORDER = ['0','1','1f','2','3','4','5','6','7','8'];
+const STEP_LEVEL = {'0':0,'1':1,'1f':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8};
+const STEP_FN    = {'0':()=>runS1(),'1':()=>runS3(),'1f':()=>runS3Fail(),
+                    '2':()=>runS4(),'3':()=>runS5(),'4':()=>runS6Intro(),
+                    '5':()=>runS7(),'6':()=>runS8(),'7':()=>runS9(),'8':()=>runS9Shop()};
+
+function jumpTo(key) {
+  _flowId++;
+  key = String(key);
+  chatEl().innerHTML = '';
+  if (key === '1f')    S.plate = '00가0000';
+  else if (!S.plate)   S.plate = '12가1234';
+  if (!S.region)       S.region = '강남구';
+  if (!S.days)         S.days = 5;
+  if (S.fault == null) S.fault = 20;
+  if (!S.shopSelected) S.shopSelected = SHOPS[0];
+  document.getElementById('input-bar').style.display = 'none';
+  setNav(key);
+  if (key !== '0') showBadge(S.plate); else hideBadge();
+  STEP_FN[key]?.();
+}
+function setNav(key) {
+  key = String(key);
+  const curLevel = STEP_LEVEL[key] ?? 0;
+  document.querySelectorAll('.step-pill').forEach(p => {
+    const s = p.dataset.step;
+    const lv = STEP_LEVEL[s] ?? 0;
+    p.classList.remove('active','done');
+    if (s === key)       p.classList.add('active');
+    else if (lv < curLevel) p.classList.add('done');
+  });
+}
+function showBadge(p) { document.getElementById('badge-plate').textContent = p; document.getElementById('vehicle-badge').classList.add('visible'); }
+function hideBadge()  { document.getElementById('vehicle-badge').classList.remove('visible'); }
+
+/* ═══════════════ PLATE ═══════════════ */
+function onPlateInput() {
+  const val = document.getElementById('chat-input').value.trim();
+  const valid = /^\d{2,3}[가-힣]\d{4}$/.test(val);
+  document.getElementById('send-btn').disabled = !valid;
+  const err = document.getElementById('plate-error');
+  if (err) err.style.display = (val.length > 0 && !valid) ? 'block' : 'none';
+}
+function sendPlate() {
+  const v = document.getElementById('chat-input').value.trim();
+  if (!/^\d{2,3}[가-힣]\d{4}$/.test(v)) return;
+  S.plate = v; document.getElementById('input-bar').style.display = 'none';
+  document.getElementById('chat-input').value = ''; userMsg(`<strong>${v}</strong>`, null, true);
+  // 실패 시뮬레이션: 00가0000 입력 시 조회 실패 흐름
+  if (v === '00가0000') { runS3Fail(); } else { runS3(); }
+}
+
+/* ═══════════════ FLOWS ═══════════════ */
+
+async function runS1() {
+  setNav('0'); hideBadge();
+  await botMessage('고객님, 갑작스런 사고로 많이 놀라셨죠?', 700, 24);
+  await wait(250);
+  await botMessage('사고 차량번호를 입력해 주시면 <span class="em">예상 교통비 조회</span> 또는 <span class="em">렌터카 이용 신청</span>을 도와드릴게요.', 550, 20);
+  await wait(150);
+  document.getElementById('input-bar').style.display = 'block';
+  scrollEnd();
+  document.getElementById('chat-input').focus();
+}
+
+async function runS3() {
+  setNav('1');
+  await botMessage('<span class="em">차량 정보</span> 조회가 완료되었어요. 🚗', 850, 20);
+
+  const vw = document.createElement('div');
+  vw.className = 'msg-wrap'; vw.dataset.side = 'bot';
+  vw.style.marginTop = '8px';
+  const vc = document.createElement('div');
+  vc.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+  vc.innerHTML = `
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차량번호</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${S.plate}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차량명</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">셀토스</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차종</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">SUV(RV) 1600~1999cc</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">연식</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">2018년 이후 출고</span>
+      </div>
+    </div>`;
+  vw.appendChild(vc); chatEl().appendChild(vw); scrollEnd();
+
+  await wait(300);
+  await botMessage('조회한 <span class="em">차량 정보</span>가 일치하시나요?', 400, 20);
+  showBadge(S.plate);
+  const v = await choices([
+    {label:'차량 정보 수정하기', emoji:'✍️', value:'edit', echoLabel:'✍️ 차량 정보 수정하기'},
+    {label:'네, 일치해요', emoji:'✅', value:'yes'},
+  ]);
+  if (v === 'edit') { openSheet('vehicle'); return; }
+  runS4();
+}
+
+async function runS3Fail() {
+  setNav('1f');
+  await botMessage(`<span class="em">${S.plate}</span> <span class="em">차량 정보</span> 조회에 실패했어요.`, 850, 20);
+  await wait(200);
+  await botMessage('조회하신 <span class="em">차량번호</span>가 실제 차량과 다르다면 차량번호를 다시 입력해 주시고, 일치한다면 <span class="em">차량 정보</span>를 직접 입력해 주세요.', 400, 18);
+  await wait(100);
+  const infoCard = document.createElement('div');
+  infoCard.style.cssText = 'margin:8px 20px;background:#FFFBEE;border:1px solid #F5D848;border-radius:10px;padding:12px 14px;font-size:13px;color:var(--gray-1);line-height:1.6;letter-spacing:var(--tracking);animation:fadeUp 220ms ease both;';
+  infoCard.innerHTML = '<div style="font-weight:600;color:#B8860B;margin-bottom:4px;">⚠️ 보험 접수 했는데 왜 차량 정보 조회가 안되나요?</div>차량 정보 조회는 보험 접수와 별도 시스템으로 운영돼요. 보험 접수 여부와 관계없이 조회에 실패할 수 있으며, 이 경우 차량 정보를 직접 입력해 주세요.';
+  chatEl().appendChild(infoCard); scrollEnd();
+  const v = await choices([
+    {label:'차량번호 재입력', emoji:'🔄', value:'retry'},
+    {label:'차량 정보 직접 입력', emoji:'✍️', value:'manual'},
+  ]);
+  if (v === 'retry') {
+    await botMessage('사고 차량번호를 다시 입력해 주세요.', 400, 20);
+    resetInputBar();
+    document.getElementById('input-bar').style.display = 'block';
+    scrollEnd(); document.getElementById('chat-input').focus();
+  } else {
+    document.getElementById('vehicle-sheet-title').textContent = '사고 차량 정보를 입력해 주세요.';
+    document.getElementById('e-plate').value = S.plate;
+    document.getElementById('e-name').value = '';
+    document.getElementById('e-cls').selectedIndex = 0;
+    document.getElementById('e-cc').selectedIndex = 0;
+    document.getElementById('e-year').selectedIndex = 0;
+    S.vehicleManualEntry = true;
+    openSheet('vehicle');
+  }
+}
+
+async function runS4() {
+  setNav('2'); await wait(250);
+  await botMessage('고객님, 차량이 확인되었어요. 🚗', 550, 20);
+  await wait(200);
+  await botMessage('신청 전에 잠깐 <span class="em">안내사항</span>을 확인해 주세요! 🙏\n\n• 교통비와 렌터카 비용은 동시에 받으실 수 없으니 하나만 선택해 주세요.\n• 과실이 있는 피해 차량의 경우 과실률에 따라 수리비, 렌트비, 교통비 등 간접손해 보험금의 부담이 발생할 수 있어요.\n• 영업용, 화물차 및 이륜차는 별도로 보상 담당자에게 문의해 주세요.', 500, 18);
+  await wait(200);
+  await botMessage('<span class="em">예상 교통비 조회</span>와 <span class="em">렌터카 이용</span> 중 필요하신 서비스를 선택해 주세요.', 400, 20);
+  const v = await choices([
+    {label:'예상 교통비를 확인하고 싶어요.', emoji:'🔍', value:'estimate'},
+    {label:'렌터카를 이용할게요.', emoji:'🚗', value:'rent'},
+  ]);
+  if (v === 'estimate') { runS5(); }
+  else {
+    await botMessage('고객님, 렌터카가 필요하시군요? 😊\n<span class="em">자차/종합보험</span>이 가입된 <span class="em">동급</span>의 깨끗한 차량으로 배정해 드릴게요.', 500, 20);
+    await wait(200);
+    await botMessage('수리 기간 동안 대체 차량의 렌트 비용을 지원받으실 수 있어요.\n\n• 수리 시 최대 <span class="em">25일</span> (160시간 초과 시 30일)\n• 폐차 시 최대 <span class="em">10일</span>', 500, 18);
+    await wait(200);
+    runS6();
+  }
+}
+
+async function runS5() {
+  setNav('3'); await wait(200);
+  await botMessage('렌터카를 이용하지 않으실 경우 렌터카 통상 대여 요금의 <span class="em">35%</span>를 교통비로 지급해 드려요. 아래에서 예상 금액을 바로 확인하실 수 있어요.', 600, 20);
+  await wait(200);
+  await botMessage('<span class="em">예상 수리 기간</span>과 <span class="em">과실 비율</span>을 선택하시면 일일 교통비를 안내해 드릴게요.', 500, 20);
+  await pill('수리 기간 선택', '🗓️');
+  daysMode = 'days';
+  document.getElementById('days-title').textContent = '예상 수리 기간 선택';
+  document.getElementById('days-hint').textContent = '수리 가능 최대 25일 기준 (160시간 초과 시 30일 적용)';
+  buildDays(); document.getElementById('days-done').disabled = true;
+  openSheet('days');
+}
+async function afterS5() {
+  const daily = Math.round(32000 * (100 - S.fault) / 100);
+  userMsg(`수리 기간 <strong>${S.days}일</strong>, 과실 <strong>${S.fault === 0 ? '무과실' : S.fault + '%'}</strong>로 예상되어요.`, null, true);
+  await wait(200);
+  await botMessage('<span class="em">예상 교통비</span> 조회가 완료되었어요. 🎉', 800, 20);
+  await wait(200);
+  const cardWrap = document.createElement('div');
+  cardWrap.className = 'msg-wrap';
+  cardWrap.dataset.side = 'bot';
+  cardWrap.style.marginTop = gapMargin('bot') || '8px';
+
+  const card = document.createElement('div');
+  card.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+  card.innerHTML = `
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--gray-5);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">예상 과실</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${S.fault === 0 ? '무과실' : S.fault + '%'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">예상 수리 기간</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${S.days}일</span>
+      </div>
+    </div>
+    <div style="padding:18px 16px;background:var(--primary-08);border-bottom:1px solid rgba(0,127,65,0.12);display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:12px;color:var(--gray-1);letter-spacing:var(--tracking);margin-bottom:2px;">나의 예상 교통비</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-1);letter-spacing:var(--tracking);">1일당</span>
+        <span style="font-size:16px;font-weight:600;color:var(--primary);letter-spacing:var(--tracking);">${daily.toLocaleString()}원</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-1);letter-spacing:var(--tracking);">예상 총액</span>
+        <span style="font-size:22px;font-weight:700;color:var(--primary);letter-spacing:var(--tracking);">${(daily * S.days).toLocaleString()}원</span>
+      </div>
+    </div>
+    <div style="padding:12px 16px;background:var(--gray-7);display:flex;flex-direction:column;gap:5px;">
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>실제 수리 기간 및 과실비율에 따라 금액이 상이할 수 있습니다.</span></div>
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>본 계산은 100% 확정된 금액이 아니므로 참고용으로 사용하시길 바랍니다.</span></div>
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>교통비는 자동차 소유자인 경우 지급받을 수 있습니다.</span></div>
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>자세한 교통비 지급 안내는 보상 담당자를 통해 확인하실 수 있습니다.</span></div>
+    </div>`;
+  cardWrap.appendChild(card);
+  chatEl().appendChild(cardWrap);
+  scrollEnd();
+
+  await wait(300);
+  await botMessage('혹시 수리 기간 동안 <span class="em">렌터카</span>가 필요하시다면, 대체 차량의 렌트 비용을 <span class="em">최대 25일</span>(폐차 시 최대 10일)까지 지원받으실 수 있어요.\n렌터카 이용 시 고객님이 계신 곳으로 차량을 <span class="em">배송</span>해 드리며, 원하시면 사고 차량 <span class="em">공업사 입고 서비스</span>도 지원해 드려요.', 500, 20);
+  await wait(200);
+  await botMessage('렌터카가 필요하신가요? 🚗', 400, 20);
+  const v = await choices([
+    {label:'교통비로 진행할게요', emoji:'💳', value:'ok'},
+    {label:'렌터카가 필요해요', emoji:'🚗', value:'rent'},
+  ]);
+  if (v === 'rent') {
+    await botMessage('고객님, 렌터카가 필요하시군요? 😊\n<span class="em">자차/종합보험</span>이 가입된 <span class="em">동급</span>의 깨끗한 차량으로 배정해 드릴게요.', 500, 20);
+    await wait(200);
+    runS6();
+  }
+  else {
+    await botMessage('이용해 주셔서 감사드려요.\n도움이 필요하실 때 언제든지 찾아주세요! 😊', 500, 20);
+    await wait(300);
+    setNav('8');
+    const btn = document.createElement('div');
+    btn.style.cssText = 'padding:16px 20px 40px;';
+    btn.id = 'exit-btn-wrap';
+    btn.innerHTML = `<button onclick="showExitModal()" style="width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;font-family:inherit;letter-spacing:var(--tracking);cursor:pointer;">대화 종료하기</button>`;
+    chatEl().appendChild(btn);
+    scrollEnd();
+  }
+}
+
+async function runS6Intro() {
+  await botMessage('고객님, 렌터카가 필요하시군요? 😊\n<span class="em">자차/종합보험</span>이 가입된 <span class="em">동급</span>의 깨끗한 차량으로 배정해 드릴게요.', 500, 20);
+  await wait(200);
+  runS6();
+}
+
+async function runS6() {
+  setNav('4'); await wait(200);
+  await botMessage('참고로 본 서비스는 <span class="em">DB손해보험</span>과 제휴하여 운영돼요. 이용 중 문의사항은 편하게 연락 주세요. 📞', 500, 20);
+  await wait(200);
+  await botMessage('렌터카를 받으실 지역을 선택해 주세요.', 500, 20);
+  await pill('렌터카 이용 지역 선택', '🔍');
+  openSheet('region');
+}
+async function afterRegion() {
+  document.getElementById('region-marker')?.remove();
+  const marker = document.createElement('div');
+  marker.id = 'region-marker';
+  marker.style.display = 'none';
+  chatEl().appendChild(marker);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap';
+  wrap.dataset.side = 'user';
+  const m = gapMargin('user');
+  if (m) wrap.style.marginTop = m;
+  wrap.innerHTML = `
+    <div class="msg-user"><div class="user-bubble"><strong>서울특별시 ${S.region}</strong>입니다.</div></div>
+    <div style="display:flex;justify-content:flex-end;padding-top:6px;">
+      <button onclick="retryRegion()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--gray-3);text-decoration:underline;font-family:inherit;letter-spacing:var(--tracking);padding:0;">이용 지역 수정</button>
+    </div>`;
+  chatEl().appendChild(wrap);
+  scrollEnd();
+
+  await wait(200);
+  runS7();
+}
+
+function retryRegion() {
+  clearInterval(codeTimerInterval);
+  document.getElementById('input-bar').style.display = 'none';
+  document.getElementById('resend-btn')?.remove();
+  resetInputBar();
+
+  const marker = document.getElementById('region-marker');
+  if (marker) {
+    let next = marker.nextSibling;
+    while (next) { const r = next; next = next.nextSibling; r.remove(); }
+    marker.remove();
+  }
+
+  document.querySelectorAll('#chips-seoul .region-chip').forEach(b => b.classList.remove('selected'));
+  document.getElementById('region-done').disabled = true;
+  S.region = '';
+  openSheet('region');
+}
+
+async function runS7() {
+  setNav('5'); await wait(200);
+
+  // 기존 마커가 있으면 제거 (재진입 시)
+  document.getElementById('s7-marker')?.remove();
+
+  // S7 시작 위치 마커 (숨겨진 div)
+  const marker = document.createElement('div');
+  marker.id = 's7-marker';
+  marker.style.display = 'none';
+  chatEl().appendChild(marker);
+
+  await botMessage('렌터카 배송 시 통화 가능한 <span class="em">휴대폰 번호</span>를 알려주세요.', 600, 20);
+
+  // 챗 입력창을 연락처 입력 모드로 전환
+  const input = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('send-btn');
+  // 이전 상태 완전 초기화
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.pattern = '[0-9]*';
+  input.maxLength = 11;          // 숫자 11자리
+  input.placeholder = '휴대폰 번호를 입력해 주세요.';
+  input.value = '';
+  input.oninput = () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 11);
+    const len = input.value.length;
+    document.getElementById('phone-error').style.display = (len > 0 && len < 11) ? 'block' : 'none';
+    sendBtn.disabled = len < 11;
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') submitPhone(); };
+  sendBtn.onclick = submitPhone;
+  sendBtn.disabled = true;
+  document.getElementById('input-bar').style.display = 'block';
+  scrollEnd(); input.focus();
+}
+
+async function submitPhone() {
+  const input = document.getElementById('chat-input');
+  const val = input.value.replace(/\D/g, '').slice(0, 11);
+  if (val.length < 11) return;
+
+  // 입력창 숨기고 번호 에코
+  document.getElementById('input-bar').style.display = 'none';
+  input.value = '';
+  S.phone = val;
+
+  // 번호 말풍선 + 하단 "연락처 수정" 버튼
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap';
+  wrap.dataset.side = 'user';
+  wrap.innerHTML = `
+    <div class="msg-user"><div class="user-bubble"><strong>${val}</strong></div></div>
+    <div style="display:flex;justify-content:flex-end;padding-top:6px;">
+      <button onclick="retryPhone(this)" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--gray-3);text-decoration:underline;font-family:inherit;letter-spacing:var(--tracking);padding:0;">휴대폰 번호 수정</button>
+    </div>`;
+  chatEl().appendChild(wrap); scrollEnd();
+
+  // 인증번호 발송 안내 — bubble 직접 반환받아 버튼 삽입
+  const bubble = await botMessage('입력하신 번호로 <span class="em">인증번호</span>를 발송했어요.\n6자리를 입력해 주세요.', 700, 20);
+  appendResendBtn(bubble);
+
+  // 인증번호 입력창 노출
+  const sendBtn = document.getElementById('send-btn');
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.pattern = '[0-9]*';
+  input.maxLength = 6;
+  input.placeholder = '인증번호 6자리를 입력해 주세요.';
+  input.value = '';
+  input.oninput = () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 6);
+    sendBtn.disabled = input.value.length < 6;
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') submitCode(); };
+  sendBtn.onclick = submitCode;
+  sendBtn.disabled = true;
+  document.getElementById('input-bar').style.display = 'block';
+  scrollEnd(); input.focus();
+}
+
+/* 재발송 버튼을 bubble 바로 아래(msg-wrap 밖) 좌측에 삽입 */
+function appendResendBtn(bubble) {
+  document.getElementById('resend-btn')?.remove();
+  const btn = document.createElement('button');
+  btn.id = 'resend-btn';
+  btn.onclick = resendCode;
+  btn.style.cssText = 'display:flex;align-items:center;gap:4px;margin:6px 20px 0;padding:0;background:none;border:none;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-2);font-family:inherit;letter-spacing:var(--tracking);text-decoration:none;';
+  btn.innerHTML = `<span class="material-symbols-rounded" style="font-size:16px;color:var(--gray-3);">refresh</span>인증번호 재발송<span id="code-timer" style="margin-left:6px;font-size:12px;font-weight:600;color:var(--primary);">03:00</span>`;
+  const msgWrap = bubble.closest('.msg-wrap');
+  if (msgWrap && msgWrap.parentNode) {
+    msgWrap.parentNode.insertBefore(btn, msgWrap.nextSibling);
+  } else {
+    chatEl().appendChild(btn);
+  }
+  scrollEnd();
+  startCodeTimer();
+}
+
+function startCodeTimer() {
+  clearInterval(codeTimerInterval);
+  let remaining = 180;
+  const tick = () => {
+    const el = document.getElementById('code-timer');
+    if (!el) { clearInterval(codeTimerInterval); return; }
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    el.textContent = `${m}:${s}`;
+    if (remaining <= 0) {
+      clearInterval(codeTimerInterval);
+      document.getElementById('input-bar').style.display = 'none';
+      resetInputBar();
+      botMessage('인증번호가 만료되었어요. 😢\n재발송 버튼을 눌러 다시 받아 주세요.', 500, 20);
+      return;
+    }
+    remaining--;
+  };
+  tick();
+  codeTimerInterval = setInterval(tick, 1000);
+}
+
+function retryPhone(btn) {
+  document.getElementById('input-bar').style.display = 'none';
+  document.getElementById('phone-error').style.display = 'none';
+  document.getElementById('resend-btn')?.remove();
+
+  const marker = document.getElementById('s7-marker');
+  if (marker) {
+    let next = marker.nextSibling;
+    while (next) { const r = next; next = next.nextSibling; r.remove(); }
+    marker.remove();
+  }
+  runS7();
+}
+
+/* 인증번호 재발송 */
+async function resendCode() {
+  const btn = document.getElementById('resend-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+  const bubble = await botMessage('<span class="em">인증번호</span>를 재발송했어요. 6자리를 입력해 주세요.', 500, 20);
+  appendResendBtn(bubble);
+}
+
+function submitCode() {
+  const input = document.getElementById('chat-input');
+  const val = input.value.replace(/\D/g,'').slice(0,6);
+  if (val.length < 6) return;
+
+  if (val === '000000') {
+    userMsg(`<strong>${val}</strong>`, null, true);
+    input.value = '';
+    botMessage('입력하신 <span class="em">인증번호</span>가 일치하지 않아요. 😢\n다시 확인 후 입력하거나 인증번호를 재발송해 주세요.', 500, 20);
+    return;
+  }
+
+  clearInterval(codeTimerInterval);
+  document.getElementById('resend-btn')?.remove();
+
+  document.getElementById('input-bar').style.display = 'none';
+  resetInputBar();
+
+  S.phoneVerified = true;
+  userMsg(`<strong>${val}</strong>`, null, true);
+  runS8();
+}
+
+async function runS8() {
+  setNav('6'); await wait(200);
+  await botMessage('<span class="em">휴대폰 번호 인증</span>이 완료되었어요. 😊\n거의 다 왔어요! 마지막 단계예요!', 500, 20);
+  await wait(200);
+  await botMessage('렌터카 업체에 전달할 <span class="em">추가 요청사항</span>이 있으신가요?', 500, 20);
+  const v = await choices([
+    {label:'없어요', emoji:'❌', value:'none'},
+    {label:'네, 있어요', emoji:'⭕', value:'yes'},
+  ]);
+  if (v === 'yes') {
+    // 챗 입력창을 요청사항 입력 모드로 전환
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    input.type = 'text';
+    input.inputMode = '';
+    input.maxLength = 100;
+    input.placeholder = '요청사항을 입력해 주세요. (최대 100자)';
+    input.value = '';
+    input.oninput = () => { sendBtn.disabled = input.value.trim().length === 0; };
+    input.onkeydown = (e) => { if (e.key === 'Enter') submitReq(); };
+    sendBtn.onclick = submitReq;
+    sendBtn.disabled = true;
+    document.getElementById('input-bar').style.display = 'block';
+    scrollEnd(); input.focus();
+  } else {
+    await runTermsThenS9();
+  }
+}
+
+function submitReq() {
+  const input = document.getElementById('chat-input');
+  const val = input.value.trim();
+  if (!val) return;
+
+  document.getElementById('input-bar').style.display = 'none';
+  resetInputBar();
+  S.requestNote = val;
+  userMsg(`<strong>${val}</strong>`, null, true);
+  runTermsThenS9();
+}
+
+/* 약관 동의 후 S9 진행 */
+async function runTermsThenS9() {
+  await botMessage('이제 마지막으로 <span class="em">필수 약관</span>에 동의해 주시면 렌터카 신청이 완료돼요.', 500, 20);
+  await pill('약관 확인하기', '📄');
+  openSheet('terms');
+  // termsDone()이 호출되면 runS9()로 이어짐
+}
+
+async function runS9() {
+  setNav('7'); await wait(200);
+
+  const region = S.region || '-';
+  const phone  = S.phone  || '-';
+  const note   = S.requestNote || '없음';
+
+  await botMessage('<span class="em">렌터카 신청</span>이 완료되었어요! 🥳', 700, 22);
+
+  // 완료 카드
+  const cw = document.createElement('div');
+  cw.className = 'msg-wrap'; cw.dataset.side = 'bot';
+  cw.style.marginTop = '8px';
+  const cc = document.createElement('div');
+  cc.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+  cc.innerHTML = `
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--gray-5);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">수령 지역</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">서울특별시 ${region}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">휴대폰 번호</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${phone}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">요청사항</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${note}</span>
+      </div>
+    </div>
+    <div style="padding:18px 16px;background:var(--primary-08);text-align:center;border-bottom:1px solid rgba(0,127,65,0.12);">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--primary);border-radius:50%;margin-bottom:10px;">
+        <span class="material-symbols-rounded icon-fill" style="color:white;font-size:22px;">check</span>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--primary);letter-spacing:var(--tracking);line-height:1.4;">요청해 주신 렌터카 신청이<br>완료되었어요.</div>
+    </div>
+    <div style="padding:12px 16px;background:var(--gray-7);display:flex;flex-direction:column;gap:5px;">
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>고객님께 가장 깨끗하고 좋은 차량을 배송해 드릴게요.</span></div>
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>이후 진행상황은 <strong>카카오톡 알림톡</strong>에서 확인하실 수 있어요.</span></div>
+      <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>정비업체에서 렌터카를 바로 받으시려면 렌트 업체에 미리 말씀해 주세요.</span></div>
+    </div>`;
+  cw.appendChild(cc); chatEl().appendChild(cw); scrollEnd();
+
+  await wait(400);
+  await botMessage('배차 예정 차량과 렌터카 업체가 확정되면\n<span class="em">3분 내로</span> 고객님께 연락드릴게요.\n\n문의사항이 있으시면 고객센터로 연락해 주세요.\n📞 1600-8348 (내선 1번)', 500, 20);
+  S.rentalDone = true;
+  await wait(400);
+  await botMessage('혹시 수리 맡기실 <span class="em">정비업체</span>가 정해지셨나요?\n저희가 <span class="em">보험사 협력 정비업체</span>를 추천해 드릴 수도 있어요.', 500, 20, '20px');
+  const v = await choicesGrouped([
+    [
+      {label:'직접 알아볼게요', emoji:'🔍', value:'ok'},
+      {label:'이미 정했어요', emoji:'🙆', value:'yes'},
+    ],
+    [
+      {label:'추천해 주세요', emoji:'⭐️', value:'no'},
+    ],
+  ]);
+
+  if (v === 'ok') {
+    await botMessage('알겠어요! 나중에 추천이 필요하시면 언제든 말씀해 주세요. <span class="em">렌터카 배정</span>이 완료되면 바로 연락드릴게요. 😊', 500, 20);
+    showCompletionFooter();
+
+  } else if (v === 'yes') {
+    // 정했어요 — 정비업체명 입력
+    await botMessage('그렇군요! 정비업체 이름을 알려주시면 담당자에게 바로 전달할게요.', 500, 20);
+
+    // 챗 입력창 — 정비업체명 입력
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    input.type = 'text'; input.inputMode = ''; input.maxLength = 30;
+    input.placeholder = '정하신 수리 정비업체명을 입력해 주세요.';
+    input.value = '';
+    input.oninput = () => { sendBtn.disabled = input.value.trim().length === 0; };
+    input.onkeydown = (e) => { if (e.key === 'Enter') submitShop(); };
+    sendBtn.onclick = submitShop;
+    sendBtn.disabled = true;
+    document.getElementById('input-bar').style.display = 'block';
+    scrollEnd(); input.focus();
+
+  } else {
+    // 추천해 주세요
+    await botMessage('물론이죠! 사고 수리 경험이 풍부한 <span class="em">보험사 협력 정비업체</span>를 찾아 드릴게요.', 500, 20);
+    showShopPill();
+  }
+}
+
+/* 보험사 협력 정비업체 플로우: 지역 선택 먼저 */
+async function runS9Shop() {
+  setNav('8');
+  await botMessage('물론이죠! 사고 수리 경험이 풍부한 <span class="em">보험사 협력 정비업체</span>를 찾아 드릴게요.', 500, 20);
+  showShopPill();
+}
+
+async function showShopPill() {
+  S.shopRegions = [S.region];
+  await botMessage(`고객님의 이용 지역인 <span class="em">서울특별시 ${S.region}</span> 근처 <span class="em">보험사 협력 정비업체</span>를 찾아봤어요.\n마음에 드시는 곳을 선택해 주세요. 😊`, 600, 20);
+  renderShopList();
+}
+
+/* 정비업체 지역 시트 칩 빌드 (다중 선택 최대 3개) */
+function buildShopRegionChips() {
+  const c = document.getElementById('sr-chips-seoul');
+  c.innerHTML = '';
+  SEOUL.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'region-chip';
+    b.textContent = g;
+    b.onclick = e => {
+      e.stopPropagation();
+      if (!S.shopRegions) S.shopRegions = [];
+      if (b.classList.contains('selected')) {
+        b.classList.remove('selected');
+        S.shopRegions = S.shopRegions.filter(r => r !== g);
+      } else {
+        if (S.shopRegions.length >= 3) return; // 최대 3개
+        b.classList.add('selected');
+        S.shopRegions.push(g);
+      }
+      const cnt = S.shopRegions.length;
+      document.getElementById('shop-region-count').textContent = cnt;
+      document.getElementById('shop-region-done').disabled = cnt === 0;
+    };
+    c.appendChild(b);
+  });
+}
+
+function toggleShopRegionAcc(city) {
+  const el = document.getElementById('acc-sr-'+city);
+  const ch = document.getElementById('sr-chips-'+city);
+  el.classList.toggle('open'); ch.classList.toggle('hidden');
+  el.querySelector('.arr').textContent = el.classList.contains('open') ? 'expand_less' : 'expand_more';
+}
+
+function showShopResults() {
+  botMessage('다시 업체를 선택해 주세요.', 400, 20).then(() => renderShopList());
+}
+
+function vehicleCancel() {
+  const wasManual = S.vehicleManualEntry;
+  closeSheet('vehicle');
+  if (wasManual) return; // closeSheet가 이미 pill 처리
+  pill('차량 정보 수정하기', '✍️').then(() => openSheet('vehicle'));
+}
+
+function daysCancel() {
+  closeSheet('days');
+  pill('수리 기간 / 과실 선택', '📋').then(() => {
+    buildDays();
+    setTimeout(() => openSheet('days'), 150);
+  });
+}
+
+function regionCancel() {
+  closeSheet('region');
+  pill('렌터카 이용 지역 선택', '🔍').then(() => openSheet('region'));
+}
+
+function termsCancel() {
+  closeSheet('terms');
+  pill('약관 동의하기', '📄').then(() => openSheet('terms'));
+}
+
+function shopRegionCancel() {
+  closeSheet('shop-region');
+  if (!S.shopRegions || S.shopRegions.length === 0) {
+    pill('정비업체 지역 선택', '📍').then(() => {
+      S.shopRegions = [];
+      document.getElementById('shop-region-done').disabled = true;
+      document.getElementById('shop-region-count').textContent = '0';
+      openSheet('shop-region');
+    });
+  } else {
+    // 이미 선택한 지역이 있으면 지역 변경 버튼 재표시
+    const existing = document.getElementById('change-region-btn');
+    if (!existing) {
+      const rb = document.createElement('button');
+      rb.id = 'change-region-btn';
+      rb.style.cssText = 'display:flex;align-items:center;gap:3px;margin:6px 20px 0;padding:0;background:none;border:none;cursor:pointer;font-size:12px;color:var(--gray-3);font-family:inherit;letter-spacing:var(--tracking);';
+      rb.innerHTML = `<span class="material-symbols-rounded" style="font-size:14px;">sync</span>정비업체 지역 변경하기`;
+      rb.onclick = () => openSheet('shop-region');
+      chatEl().appendChild(rb); scrollEnd();
+    }
+  }
+}
+
+function shopRegionDone() {
+  if (!S.shopRegions || S.shopRegions.length === 0) return;
+  closeSheet('shop-region');
+  const label = S.shopRegions.join(' · ');
+  userMsg(`<strong>서울특별시 ${label}</strong> 정비업체를 찾아 주세요.`, null, true);
+  showShopResults();
+}
+
+function renderShopList() {
+  const box = document.createElement('div');
+  box.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:8px 20px 0;';
+
+  SHOPS.slice(0, S.showMore ? SHOPS.length : 2).forEach(sh => {
+    const d = document.createElement('div');
+    d.className = 'shop-card-new';
+    d.style.cssText = `
+      background:var(--gray-6); border-radius:12px; padding:14px 16px;
+      cursor:pointer; transition:box-shadow 150ms; border:1.5px solid transparent;`;
+    d.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:15px;font-weight:700;color:var(--text);letter-spacing:var(--tracking);margin-bottom:4px;">${sh.name}</div>
+          <div style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sh.addr}</div>
+        </div>
+        <span class="material-symbols-rounded" style="font-size:20px;color:var(--gray-3);flex-shrink:0;">chevron_right</span>
+      </div>`;
+    d.onclick = async () => {
+      S.shopSelected = sh;
+
+      // 리스트 전체 제거 (box + 더보기 + 지역변경 버튼)
+      box.remove();
+      document.getElementById('change-region-btn')?.remove();
+      // 더보기 버튼도 제거 (box 다음 sibling일 수 있음)
+      chatEl().querySelectorAll('button').forEach(b => {
+        if (b.textContent.includes('보험사 협력 정비업체 더보기')) b.remove();
+      });
+
+      userMsg(`<strong>${sh.name}</strong>으로 정비업체를 선택할게요.`, null, true);
+      await botMessage('선택하신 <span class="em">정비업체 정보</span>를 확인해 주세요.', 500, 20);
+
+      const sw = document.createElement('div');
+      sw.className = 'msg-wrap'; sw.dataset.side = 'bot';
+      sw.style.marginTop = '8px';
+      const sc = document.createElement('div');
+      sc.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+      sc.innerHTML = `
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--gray-5);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">정비업체명</span>
+            <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${sh.name}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);flex-shrink:0;">위치</span>
+            <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);text-align:right;">${sh.addr}</span>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--gray-7);">
+          <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);"><span>-</span><span>신청하신 렌터카와 정비업체 확인 후 담당자가 빠르게 연락드릴게요.</span></div>
+          <div style="display:flex;gap:5px;font-size:12px;color:var(--gray-2);line-height:1.55;letter-spacing:var(--tracking-sm);margin-top:4px;"><span>-</span><span>신청 정보 수정 시 담당자에게 문의해 주세요.</span></div>
+        </div>`;
+      sw.appendChild(sc); chatEl().appendChild(sw); scrollEnd();
+
+      await wait(300);
+      await botMessage('정비업체 <span class="em">예약</span>을 도와드릴까요?', 400, 20);
+      const reserveChoice = await choices([
+        {label:'다시 선택할게요', emoji:'↩️', value:'retry'},
+        {label:'네, 예약해 주세요', emoji:'⭕', value:'yes'},
+      ]);
+      if (reserveChoice === 'retry') {
+        S.showMore = false;
+        showShopResults();
+        return;
+      }
+      await botMessage('<span class="em">정비업체 정보</span>를 담당자에게 전달했어요. 😊\n렌터카 배정 시 <span class="em">정비업체 예약</span>도 함께 도와드릴게요!', 500, 20);
+      await wait(300);
+      showCompletionFooter();
+    };
+    box.appendChild(d);
+  });
+  append(box);
+
+  // 더보기 — 텍스트+밑줄 스타일
+  if (!S.showMore) {
+    const moreBtn = document.createElement('button');
+    moreBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:4px;margin:4px 20px 0;padding:10px 0;background:none;border:1.5px solid var(--gray-5);border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-2);font-family:inherit;letter-spacing:var(--tracking);width:calc(100% - 40px);';
+    moreBtn.innerHTML = `보험사 협력 정비업체 더보기 <span class="material-symbols-rounded" style="font-size:16px;">expand_more</span>`;
+    moreBtn.onclick = () => { S.showMore=true; box.remove(); moreBtn.remove(); renderShopList(); };
+    append(moreBtn);
+  }
+}
+
+/* 입력창을 기본 상태(차량번호 입력)로 복구 */
+function resetInputBar() {
+  const input = document.getElementById('chat-input');
+  input.type = 'text';
+  input.removeAttribute('inputmode');
+  input.removeAttribute('pattern');
+  input.maxLength = 524288;
+  input.placeholder = '차량번호를 입력해 주세요.';
+  input.value = '';
+  input.oninput = onPlateInput;
+  input.onkeydown = (e) => { if (e.key === 'Enter') sendPlate(); };
+  document.getElementById('send-btn').onclick = sendPlate;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('phone-error').style.display = 'none';
+}
+
+function submitShop() {
+  const input = document.getElementById('chat-input');
+  const n = input.value.trim();
+  if (!n) return;
+
+  document.getElementById('input-bar').style.display = 'none';
+  resetInputBar();
+
+  S.shopSelected = { name: n, addr: '직접 입력', phone: '-' };
+  userMsg(`<strong>${n}</strong>으로 정비업체를 선택할게요.`, null, true);
+  runS10();
+}
+
+async function runS10() {
+  await wait(200);
+  await botMessage('입력하신 <span class="em">정비업체 정보</span>를 확인해 주세요.', 500, 20);
+
+  const sw = document.createElement('div');
+  sw.className = 'msg-wrap'; sw.dataset.side = 'bot';
+  sw.style.marginTop = '8px';
+  const sc = document.createElement('div');
+  sc.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+  sc.innerHTML = `
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">정비업체명</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${S.shopSelected.name}</span>
+      </div>
+    </div>`;
+  sw.appendChild(sc); chatEl().appendChild(sw); scrollEnd();
+
+  await wait(300);
+  await botMessage('정비업체 <span class="em">예약</span>을 도와드릴까요?', 400, 20);
+  const reserveChoice = await choices([
+    {label:'다시 입력할게요', emoji:'↩️', value:'retry'},
+    {label:'네, 예약해 주세요', emoji:'⭕', value:'yes'},
+  ]);
+  if (reserveChoice === 'retry') {
+    await botMessage('네, 다시 입력해 주세요. 정비업체 이름을 알려주시면 바로 담당자에게 전달할게요.', 500, 20);
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    input.placeholder = '정하신 수리 정비업체명을 입력해 주세요.';
+    input.value = '';
+    input.oninput = () => { sendBtn.disabled = input.value.trim().length === 0; };
+    input.onkeydown = (e) => { if (e.key === 'Enter') submitShop(); };
+    sendBtn.onclick = submitShop;
+    sendBtn.disabled = true;
+    document.getElementById('input-bar').style.display = 'block';
+    scrollEnd(); input.focus();
+    return;
+  }
+  await botMessage('<span class="em">정비업체 정보</span>를 담당자에게 전달했어요. 😊\n렌터카 배정과 함께 담당자가 빠르게 연락드릴게요!', 500, 20);
+  await botMessage('담당자가 렌터카 배정 시 <span class="em">정비업체 예약</span>도 함께 도와드릴게요. 😊', 400, 20);
+  await wait(300);
+  showCompletionFooter();
+}
+
+function showExitModal() {
+  const el = document.getElementById('exit-modal-overlay');
+  el.style.display = 'flex';
+}
+function closeExitModal() {
+  const el = document.getElementById('exit-modal-overlay');
+  el.style.display = 'none';
+}
+
+function showCompletionFooter() {
+  S.flowDone = true;
+  setNav('8');
+  const btn = document.createElement('div');
+  btn.style.cssText = 'padding:16px 20px 40px;';
+  btn.innerHTML = `<button onclick="location.reload()" style="width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;font-family:inherit;letter-spacing:var(--tracking);cursor:pointer;">대화 종료하기</button>`;
+  chatEl().appendChild(btn);
+  scrollEnd();
+}
+
+
+
+/* ═══════════════ SHEETS / DIALOGS ═══════════════ */
+function lookupFromSheet() {
+  const plate = document.getElementById('e-plate').value.trim();
+  const errEl = document.getElementById('sheet-plate-error');
+  if (!/^\d{2,3}[가-힣]\d{4}$/.test(plate)) {
+    errEl.textContent = '차량번호는 \'숫자+한글+숫자\' 형식으로 입력해 주세요.';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  // 스켈레톤 오버레이
+  const sheetBody = document.querySelector('#overlay-vehicle .sheet-body');
+  sheetBody.style.position = 'relative';
+  const sk = document.createElement('div');
+  sk.style.cssText = 'position:absolute;inset:0;background:var(--white);padding:16px 20px;display:flex;flex-direction:column;gap:14px;z-index:2;border-radius:inherit;';
+  const labels = ['차량번호', '차량명', '차량 규모', '배기량(cc)', '연식'];
+  sk.innerHTML = labels.map(l =>
+    `<div style="display:flex;flex-direction:column;gap:6px;">
+       <span style="font-size:13px;font-weight:500;color:var(--gray-1);letter-spacing:var(--tracking);">${l}</span>
+       <div class="skeleton-box" style="width:100%;height:44px;border-radius:12px;"></div>
+     </div>`
+  ).join('');
+  sheetBody.appendChild(sk);
+  document.getElementById('vehicle-submit-btn').disabled = true;
+
+  setTimeout(() => {
+    sk.remove();
+    sheetBody.style.position = '';
+    if (plate === '00가0000') {
+      errEl.textContent = '차량 정보 조회에 실패했어요. 아래 항목을 직접 입력해 주세요.';
+      errEl.style.display = 'block';
+      checkVehicleForm();
+    } else {
+      S.plate = plate;
+      S.vehicleManualEntry = false;
+      closeSheet('vehicle');
+      userMsg(`<strong>${plate}</strong>`, null, true);
+      runS3();
+    }
+  }, 900);
+}
+
+function checkVehicleForm() {
+  const ok = document.getElementById('e-plate').value.trim() &&
+             document.getElementById('e-name').value.trim() &&
+             document.getElementById('e-cls').value &&
+             document.getElementById('e-cc').value &&
+             document.getElementById('e-year').value;
+  document.getElementById('vehicle-submit-btn').disabled = !ok;
+}
+function openSheet(n) {
+  document.getElementById('overlay-'+n).classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (n === 'vehicle') checkVehicleForm();
+}
+function closeSheet(n) {
+  document.getElementById('overlay-'+n).classList.remove('open');
+  document.body.style.overflow = '';
+  if (n === 'vehicle' && S.vehicleManualEntry) {
+    S.vehicleManualEntry = false;
+    const w = document.createElement('div');
+    w.className = 'pill-wrap';
+    const b = document.createElement('button');
+    b.className = 'action-pill';
+    b.innerHTML = '<span class="btn-emoji">✍️</span>차량 정보 다시 입력하기';
+    b.onclick = () => { w.remove(); S.vehicleManualEntry = true; openSheet('vehicle'); };
+    w.appendChild(b); chatEl().appendChild(w); scrollEnd();
+  }
+}
+function overlayTap(e,n){ if(e.target===document.getElementById('overlay-'+n)) closeSheet(n); }
+function openDialog(n)  { document.getElementById('dialog-'+n).classList.add('open');     document.body.style.overflow='hidden'; }
+function closeDialog(n) { document.getElementById('dialog-'+n).classList.remove('open');  document.body.style.overflow=''; }
+function handleExitClick() {
+  if (S.flowDone)       { location.reload(); }
+  else if (S.rentalDone){ openDialog('exit-shop'); }
+  else                  { openDialog('exit'); }
+}
+
+async function submitVehicle() {
+  S.vehicleManualEntry = false;
+  const p = document.getElementById('e-plate').value.trim();
+  const name = document.getElementById('e-name').value.trim();
+  const cls = document.getElementById('e-cls').value;
+  const cc = document.getElementById('e-cc').value;
+  const year = document.getElementById('e-year').value;
+  if(p){ S.plate=p; showBadge(p); }
+  S.vehicle = { name, cls, cc, year };
+  closeSheet('vehicle');
+
+  // 수정된 차량 정보 확인 메시지 후 S4로 진행
+  await botMessage('입력하신 <span class="em">차량 정보</span>를 확인해 주세요.', 600, 20);
+
+  const vw = document.createElement('div');
+  vw.className = 'msg-wrap'; vw.dataset.side = 'bot';
+  vw.style.marginTop = '8px';
+  const vc = document.createElement('div');
+  vc.style.cssText = 'border:1.5px solid var(--gray-5);border-radius:var(--r-card);overflow:hidden;animation:fadeUp 220ms ease both;flex-shrink:0;';
+  vc.innerHTML = `
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차량번호</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${S.plate}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차량명</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${name}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">차종</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${cls} · ${cc}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">연식</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${year}</span>
+      </div>
+    </div>`;
+  vw.appendChild(vc); chatEl().appendChild(vw); scrollEnd();
+  await wait(300);
+  await botMessage('<span class="em">차량 정보</span>가 맞나요?', 400, 20);
+  const v = await choices([
+    {label:'다시 수정하기', emoji:'✍️', value:'edit', echoLabel:'✍️ 다시 수정하기'},
+    {label:'네, 맞아요', emoji:'✅', value:'yes'},
+  ]);
+  if (v === 'edit') { openSheet('vehicle'); return; }
+  runS4();
+}
+
+function buildDays(){
+  const c = document.getElementById('days-chips'); c.innerHTML='';
+  const hint = document.getElementById('days-hint');
+
+  if (daysMode === 'days') {
+    hint.style.display = 'block';
+    Array.from({length:25},(_,i)=>({v:i+1,l:(i+1)+'일'})).forEach(item=>{
+      const b=document.createElement('button');
+      b.className='region-chip'; b.textContent=item.l;
+      b.onclick=()=>{ c.querySelectorAll('.region-chip').forEach(x=>x.classList.remove('selected')); b.classList.add('selected'); S.days=item.v; document.getElementById('days-done').disabled=false; };
+      c.appendChild(b);
+    });
+  } else {
+    hint.style.display = 'none'; // "0%는 무과실" 텍스트 숨김
+    [0,10,20,30,40,50,60,70,80,90,100].forEach(x=>{
+      const b=document.createElement('button');
+      b.className='region-chip'; b.textContent=x===0?'무과실':x+'%';
+      b.onclick=()=>{ c.querySelectorAll('.region-chip').forEach(ch=>ch.classList.remove('selected')); b.classList.add('selected'); S.fault=x; document.getElementById('days-done').disabled=false; };
+      c.appendChild(b);
+    });
+  }
+}
+function daysDone(){
+  if(daysMode==='days'){
+    closeSheet('days'); daysMode='fault';
+    document.getElementById('days-title').textContent='예상 과실 비율 선택';
+    document.getElementById('days-hint').textContent='0%는 무과실을 의미합니다';
+    document.getElementById('days-done').disabled=true;
+    buildDays(); setTimeout(()=>openSheet('days'),150);
+  } else { closeSheet('days'); daysMode='days'; afterS5(); }
+}
+
+function buildSeoul(){
+  const c = document.getElementById('chips-seoul');
+  SEOUL.forEach(g=>{
+    const b=document.createElement('button');
+    b.className='region-chip'; b.textContent=g;
+    b.onclick=e=>{
+      e.stopPropagation();
+      c.querySelectorAll('.region-chip').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');
+      S.region=g;
+      document.getElementById('region-done').disabled=false;
+    };
+    c.appendChild(b);
+  });
+}
+function regionDone(){ closeSheet('region'); afterRegion(); }
+function toggleAcc(city) {
+  const el = document.getElementById('acc-'+city);
+  const ch = document.getElementById('chips-'+city);
+  const arr = el.querySelector('.arr');
+  el.classList.toggle('open');
+  ch.classList.toggle('hidden');
+  arr.textContent = el.classList.contains('open') ? 'expand_less' : 'expand_more';
+}
+
+const TERM_DETAILS = [
+  null,
+  { title: '렌카의 이용 약관', body: '본 서비스 이용 시 운전자는 만 21세 이상이어야 하며, 유효한 운전면허를 보유해야 합니다.<br><br>렌터카 이용 중 사고 발생 시 렌터카 업체의 보험 처리 절차에 따라 진행됩니다.<br><br>이용 기간 중 교통법규를 준수해야 하며, 위반 시 관련 책임은 이용자에게 있습니다.' },
+  { title: '개인정보 처리방침', body: '<strong>수집 항목:</strong> 이름, 연락처, 차량번호<br><strong>수집 목적:</strong> 렌터카 배정 및 서비스 제공, 본인 인증<br><strong>보유 기간:</strong> 서비스 이용 종료 후 3년<br><br>귀하는 개인정보 수집·이용 동의를 거부할 권리가 있으나, 거부 시 서비스 이용이 제한될 수 있습니다.' },
+  { title: '가해자 렌트 불가 안내', body: '교통사고 가해자(과실비율 100%)는 렌트 서비스를 이용하실 수 없습니다.<br><br>과실이 있는 피해자(과실비율 0% 초과 99% 이하)는 과실 비율에 따라 렌트비가 조정될 수 있습니다.' },
+  { title: '교통비 이중 수급 불가 안내', body: '교통비와 렌트비는 동시에 지급받으실 수 없습니다.<br><br>두 서비스 중 하나를 선택하셔야 하며, 이중 수급이 확인될 경우 지급된 금액이 환수될 수 있으므로 유의하시기 바랍니다.' },
+  { title: '대리기사 사고 건 렌트 불가 안내', body: '대리운전 중 발생한 사고의 경우 대리운전 보험으로 처리되며, 렌트 서비스 지원이 제한될 수 있습니다.<br><br>자세한 사항은 보상 담당자에게 문의해 주세요.' },
+  { title: '영업용 차량 렌트 불가 안내', body: '택시, 화물차, 버스 등 영업용 차량과 이륜차(오토바이)는 대차 서비스 대상이 아닙니다.<br><br>해당 차량의 경우 보상 담당자에게 별도로 문의해 주세요.' },
+];
+function openTermDetail(idx, e) {
+  e.stopPropagation();
+  const d = TERM_DETAILS[idx];
+  if (!d) return;
+  document.getElementById('term-detail-title').textContent = d.title;
+  document.getElementById('term-detail-body').innerHTML = d.body;
+  openSheet('term-detail');
+}
+
+const TS=[false,false,false,false,false,false,false];
+function syncTerms(){
+  const all=TS.every(Boolean);
+  TS.forEach((v,i)=>{ const el=document.getElementById('t'+i); if(el) el.className='terms-check'+(v?' on':''); });
+  document.getElementById('terms-done').disabled=!all;
+}
+function toggleTerm(i){ TS[i]=!TS[i]; syncTerms(); }
+function toggleAll(){ const v=!TS.every(Boolean); TS.fill(v); syncTerms(); }
+function termsDone(){ closeSheet('terms'); userMsg('<strong>필수 약관</strong>에 동의하고 렌터카를 신청할게요.', null, true); runS9(); }
+
+/* ═══════════════ INIT ═══════════════ */
+window.onload = () => {
+  buildSeoul(); syncTerms();
+  positionNav();   // 사이드 nav 위치 계산
+  runS1();
+};
+</script>
+</body>
+</html>
