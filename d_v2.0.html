@@ -1588,9 +1588,9 @@ async function runS9() {
         <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">휴대폰 번호</span>
         <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${phone}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;flex-direction:column;gap:4px;">
         <span style="font-size:13px;color:var(--gray-2);letter-spacing:var(--tracking);">요청사항</span>
-        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);">${note}</span>
+        <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:var(--tracking);word-break:break-all;line-height:1.5;">${note}</span>
       </div>
     </div>
     <div style="padding:18px 16px;background:var(--primary-08);text-align:center;border-bottom:1px solid rgba(0,127,65,0.12);">
