@@ -1152,7 +1152,7 @@ async function runS1() {
   setNav('0'); hideBadge();
   await botMessage('고객님, 갑작스런 사고로 많이 놀라셨죠?', 700, 24);
   await wait(250);
-  await botMessage('사고 차량번호를 입력하시면 <span class="em">교통비 조회</span>와 <span class="em">렌터카 신청</span>이 가능해요.', 550, 20);
+  await botMessage('사고 차량번호를 입력해주시면 <span class="em">예상 교통비</span> 또는 <span class="em">렌터카 이용 신청</span>을 도와드리겠습니다.', 550, 20);
   await wait(150);
   document.getElementById('input-bar').style.display = 'block';
   scrollEnd();
@@ -1233,9 +1233,7 @@ async function runS3Fail() {
 
 async function runS4() {
   setNav('2'); await wait(250);
-  await botMessage('불편함을 빠르게 해결할 수 있도록 저희가 도와드릴게요. 😊', 550, 20);
-  await wait(200);
-  await botMessage('신청 전에 잠깐 확인해 주세요! 🙏\n\n• 과실이 있는 경우 과실률에 따라 수리비, 렌터카 비용, 교통비 등이 줄어들 수 있어요.\n• 교통비와 렌터카 비용은 동시에 받으실 수 없으니 하나만 선택해 주세요.\n• 영업용, 화물차 및 이륜차는 별도로 보상 담당자에게 문의해 주세요.', 500, 18);
+  await botMessage('잠깐 교통비/렌터카 이용전 확인해주세요! 🙏\n\n• 과실이 있는 경우 과실률에 따라 수리비, 렌터카 비용, 교통비 등이 줄어들 수 있어요.\n• 교통비와 렌터카 비용은 동시에 받으실 수 없으니 하나만 선택해 주세요.\n• 영업용, 화물차 및 이륜차는 별도로 보상 담당자에게 문의해 주세요.', 500, 18);
   await wait(200);
   await botMessage('<span class="em">예상 교통비 조회</span>와 <span class="em">렌터카 이용</span> 중 필요하신 서비스를 선택해 주세요.', 400, 20);
   const v = await choices([
