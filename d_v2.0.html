@@ -1152,7 +1152,7 @@ async function runS1() {
   setNav('0'); hideBadge();
   await botMessage('고객님, 갑작스런 사고로 많이 놀라셨죠?', 700, 24);
   await wait(250);
-  await botMessage('사고 차량번호를 입력해주시면 <span class="em">예상 교통비</span> 또는 <span class="em">렌터카 이용 신청</span>을 도와드리겠습니다.', 550, 20);
+  await botMessage('사고 차량번호를 입력해주시면 <span class="em">예상 교통비 조회</span> 또는 <span class="em">렌터카 이용 신청</span>을 도와드리겠습니다.', 550, 20);
   await wait(150);
   document.getElementById('input-bar').style.display = 'block';
   scrollEnd();
@@ -1523,6 +1523,7 @@ async function runS8() {
     {label:'네, 있어요', emoji:'⭕', value:'yes'},
   ]);
   if (v === 'yes') {
+    await botMessage('어떤 요청사항이 있으신지 편하게 말씀해 주세요. 😊', 500, 20);
     // 챗 입력창을 요청사항 입력 모드로 전환
     const input = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
