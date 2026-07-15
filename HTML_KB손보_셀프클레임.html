@@ -1938,8 +1938,16 @@ function handleRequestChoice(v, isEdit) {
   runTermsThenS9();
 }
 
-/* 요청사항 입력창 활성화 — 최초 진입(isEdit=false) 및 "요청사항 수정"/"없어요→있어요" 전환(isEdit=true) 공용 */
-function activateRequestNoteInput(isEdit) {
+/* 요청사항 입력창 활성화 — 최초 진입(isEdit=false) 및 "요청사항 수정"/"없어요→있어요" 전환(isEdit=true) 공용.
+   안내 봇 메시지는 최초 진입(isEdit=false)에만 노출 — "수정" 클릭은 사용자가 이미 입력 위치를 알고
+   누른 명시적 동작이라 안내가 끼어들면 입력창이 늦게 열리는 것처럼 느껴진다 */
+async function activateRequestNoteInput(isEdit) {
+  let anchor = document.getElementById('req-choice-wrap');
+  if (!isEdit) {
+    const bubble = await botMessage('아래 <span class="em">입력창</span>에 요청사항을 작성해 주세요.\n(최대 100자)', 400, 20);
+    if (bubble) anchor = bubble.closest('.msg-wrap') || anchor;
+  }
+  S.requestNoteAnchor = anchor; // 요청사항 말풍선을 이 바로 다음에 끼워 넣기 위한 기준점(그 사이 다른 메시지가 쌓여도 안내/선택 말풍선 바로 아래 유지)
   S.requestNoteEditPending = isEdit;
   const input = document.getElementById('chat-input');
   const sendBtn = document.getElementById('send-btn');
@@ -1993,7 +2001,8 @@ function submitReq() {
     noteWrap.id = 'req-note-wrap';
     noteWrap.className = 'msg-wrap';
     noteWrap.dataset.side = 'user';
-    choiceWrap.parentNode.insertBefore(noteWrap, choiceWrap.nextSibling);
+    const anchor = S.requestNoteAnchor || choiceWrap;
+    anchor.parentNode.insertBefore(noteWrap, anchor.nextSibling);
   }
   noteWrap.innerHTML = `
     <div class="msg-user"><div class="user-bubble"><strong>${val}</strong></div></div>
