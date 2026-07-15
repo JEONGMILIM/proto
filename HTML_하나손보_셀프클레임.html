@@ -1906,7 +1906,7 @@ const REQ_EDIT_BTN_STYLE = 'background:none;border:none;cursor:pointer;font-size
 /* O/X 선택 처리 — 최초 응답(isEdit=false) 및 "없어요→있어요" 전환(isEdit=true) 공용.
    O(있어요) 말풍선은 수정 버튼이 없다 — 마음이 바뀌면 아래 요청사항 텍스트를 "없음"으로 고쳐 쓰면 되기 때문.
    X(없어요) 말풍선만 수정 버튼을 가지며, 누르면 바로 요청사항 입력으로 전환된다 */
-function handleRequestChoice(v, isEdit) {
+async function handleRequestChoice(v, isEdit) {
   const wasAnswered = S.requestAnswered;
   let choiceWrap = document.getElementById('req-choice-wrap');
   if (!choiceWrap) {
@@ -1920,6 +1920,9 @@ function handleRequestChoice(v, isEdit) {
   if (v === 'yes') {
     choiceWrap.innerHTML = `<div class="msg-user"><div class="user-bubble">⭕ 네, 있어요</div></div>`;
     scrollEnd();
+    if (!isEdit && !wasAnswered) {
+      await botMessage('아래 <span class="em">입력창</span>에 요청사항을 작성해 주세요.\n(최대 100자)', 400, 20);
+    }
     activateRequestNoteInput(isEdit || wasAnswered);
     return;
   }
