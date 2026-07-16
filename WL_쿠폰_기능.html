@@ -834,6 +834,14 @@
               <span class="demo-code-desc">이미 사용된 쿠폰</span>
             </div>
             <div class="demo-code-row">
+              <code>A1PEND0001</code>
+              <button type="button" class="copy-btn" onclick="copyCode(this)" title="복사" aria-label="쿠폰번호 복사">
+                <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 13V5.5A1.5 1.5 0 0 1 6 4h7.5" stroke="currentColor" stroke-width="1.5"/></svg>
+              </button>
+              <span class="copy-feedback">복사됨</span>
+              <span class="demo-code-desc">결제 대기 중(가예약)</span>
+            </div>
+            <div class="demo-code-row">
               <code>A1JEJU0001</code>
               <button type="button" class="copy-btn" onclick="copyCode(this)" title="복사" aria-label="쿠폰번호 복사">
                 <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 13V5.5A1.5 1.5 0 0 1 6 4h7.5" stroke="currentColor" stroke-width="1.5"/></svg>
@@ -958,6 +966,14 @@
         </button>
         <span class="copy-feedback">복사됨</span>
         <span class="demo-code-desc">이미 사용된 쿠폰</span>
+      </div>
+      <div class="demo-code-row">
+        <code>A1PEND0001</code>
+        <button type="button" class="copy-btn" onclick="copyCode(this)" title="복사" aria-label="쿠폰번호 복사">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 13V5.5A1.5 1.5 0 0 1 6 4h7.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+        <span class="copy-feedback">복사됨</span>
+        <span class="demo-code-desc">결제 대기 중(가예약)</span>
       </div>
       <div class="demo-code-row">
         <code>A1JEJU0001</code>
@@ -1609,6 +1625,7 @@
   var VALID_CODE = 'A17K4M9XQ2';
   var ERROR_CODES = {
     'A1USED0001': '이미 사용된 쿠폰입니다.',
+    'A1PEND0001': '결제 진행 중인 예약이 있어 쿠폰을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
     'A1JEJU0001': '이 예약에는 적용할 수 없는 쿠폰입니다.',
     'A1EXPR0001': '사용 기간이 만료된 쿠폰입니다.',
     'A1FAR00001': '예약 가능 기간을 초과했습니다. 예약 기간을 변경해 주세요.'
