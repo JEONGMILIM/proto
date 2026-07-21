@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>ims.form 어드민 - 무료 청구 모달 목업</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: #f4f5f7;
+    color: #222;
+    font-size: 14px;
+  }
+
+  /* ===== 상단 헤더 ===== */
+  .topbar {
+    background: #4b4b4b;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 20px;
+    gap: 10px;
+  }
+  .topbar input {
+    height: 28px;
+    border: none;
+    border-radius: 3px;
+    padding: 0 10px;
+    font-size: 13px;
+    width: 180px;
+  }
+  .topbar .link {
+    color: #eee;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* ===== 컨텐츠 래퍼 ===== */
+  .content {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+  }
+
+  /* ===== 타이틀 바 ===== */
+  .title-bar {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 24px;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    border-radius: 4px;
+  }
+  .title-bar h1 {
+    font-size: 18px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge {
+    background: #2f7bf5;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .badge.fax-badge {
+    background: #1a73e8;
+  }
+  .title-actions { display: flex; gap: 8px; }
+  .btn {
+    border: none;
+    border-radius: 4px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: default;
+  }
+  .btn-yellow { background: #f5c518; color: #3a2c00; }
+  .btn-blue   { background: #2f7bf5; color: #fff; }
+  .btn-green  { background: #33ab5f; color: #fff; }
+  .btn-gray   { background: #8b8f96; color: #fff; }
+  #openModalBtn {
+    cursor: pointer;
+    animation: pulse 1.6s ease-out infinite;
+  }
+  #faxInquiryBtn {
+    cursor: pointer;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(47, 123, 245, 0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(47, 123, 245, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(47, 123, 245, 0); }
+  }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ===== 섹션 공통 ===== */
+  section.panel {
+    background: #fff;
+    margin: 16px 24px 0;
+    padding: 20px 24px;
+    border-radius: 4px;
+  }
+  section.panel h2 {
+    font-size: 15px;
+    margin: 0 0 16px;
+    font-weight: 700;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .panel-head h2 { margin: 0; }
+  .doc-actions { display: flex; gap: 8px; }
+  .doc-btn {
+    border: none;
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: default;
+    color: #fff;
+  }
+  .doc-btn.gray  { background: #9497a1; }
+  .doc-btn.blue  { background: #2f7bf5; }
+  .doc-btn.yellow{ background: #f5c518; color:#3a2c00; }
+  .doc-btn.teal  { background: #35c2c1; }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr repeat(4, 1fr);
+    gap: 8px;
+  }
+  .status-grid .label { color: #8a8f98; margin-bottom: 6px; }
+  .status-grid .value.big { font-size: 16px; font-weight: 700; margin-top: 20px; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    row-gap: 18px;
+  }
+  .info-grid .label { color: #8a8f98; margin-bottom: 6px; }
+  .info-grid .value { font-weight: 600; }
+  .info-grid .value.link { color: #2f7bf5; font-weight: 500; }
+
+  h3.sub {
+    font-size: 14px;
+    margin: 24px 0 12px;
+  }
+
+  /* ===== 모달 ===== */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 22, 26, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .overlay.show { display: flex; }
+
+  .modal {
+    background: #fff;
+    width: 430px;
+    border-radius: 8px;
+    padding: 28px 28px 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    animation: pop .15s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(0.96); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .modal h3 {
+    font-size: 16px;
+    margin: 0 0 20px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .modal .check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: #f7f8fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .modal .check-row input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: #2f7bf5;
+    cursor: pointer;
+  }
+  .modal .check-row label {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .modal .check-row.disabled {
+    opacity: 0.55;
+  }
+  .modal .check-row.disabled input,
+  .modal .check-row.disabled label {
+    cursor: not-allowed;
+  }
+
+  .demo-bar {
+    margin: 12px 24px 0;
+    padding: 10px 14px;
+    border: 1px dashed #c7cad1;
+    border-radius: 4px;
+    background: #fbfbfc;
+    font-size: 12px;
+    color: #8a8f98;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .demo-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .demo-tab {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid #d7d9de;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+  }
+  .demo-tab.active {
+    background: #2f7bf5;
+    border-color: #2f7bf5;
+    color: #fff;
+  }
+
+  .fax-hint {
+    font-size: 12.5px;
+    color: #8a8f98;
+    margin: -8px 2px 20px;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .modal .btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .modal .btn-row button {
+    flex: 1;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-cancel { background: #eef0f2; color: #444; }
+  .btn-submit { background: #2f7bf5; color: #fff; }
+  .btn-submit:disabled {
+    background: #a9c8fb;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .demo-toggle {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2e4e8;
+    font-size: 11.5px;
+    color: #b0b3ba;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .demo-toggle input { accent-color: #b0b3ba; }
+
+  /* ===== 팩스 상태 조회 모달 ===== */
+  .fax-status-modal {
+    width: 380px;
+    text-align: left;
+  }
+  .fax-status-modal .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .fax-status-modal .modal-head h3 {
+    margin: 0;
+    text-align: left;
+  }
+  .fax-status-modal .modal-close {
+    border: none;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+    color: #8a8f98;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .fax-status-block {
+    margin-bottom: 16px;
+  }
+  .fax-status-block .label {
+    font-size: 12.5px;
+    color: #8a8f98;
+    margin-bottom: 6px;
+  }
+  .fax-status-block .steps {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .fax-status-block .steps .done {
+    color: #f5a623;
+    font-weight: 700;
+  }
+  .fax-status-message {
+    font-size: 13px;
+    color: #555;
+    margin: 4px 0 20px;
+  }
+  .fax-status-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .fax-status-footer button {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: #2f7bf5;
+    color: #fff;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <input type="text" placeholder="요청번호 입력">
+    <span class="link">내정보</span>
+    <span class="link">로그아웃</span>
+  </div>
+
+  <div class="content">
+    <div class="demo-bar">
+      <span>[데모 전용] 보험사 변경:</span>
+      <div class="demo-tabs" id="insurerTabs">
+        <button class="demo-tab active" data-insurer="DB손해보험" data-target="true">DB손해보험 (팩스 대상)</button>
+        <button class="demo-tab" data-insurer="롯데손해보험" data-target="false">롯데손해보험 (비대상)</button>
+      </div>
+    </div>
+
+    <div class="title-bar">
+      <h1>
+        IMS연번 8568
+        <span class="badge">보험</span>
+        <span class="badge fax-badge" id="faxBadge" style="display:none;">FAX 전송 완료</span>
+      </h1>
+      <div class="title-actions">
+        <button class="btn btn-yellow">배차중 전환</button>
+        <button class="btn btn-blue" id="openModalBtn">무료 청구</button>
+        <button class="btn btn-gray" id="faxInquiryBtn" style="display:none;">팩스조회</button>
+        <button class="btn btn-green">새로고침</button>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>상태</h2>
+      <div class="status-grid">
+        <div class="value big" id="statusValue">청구대기 / 청구 0회</div>
+        <div>
+          <div class="label">작성일</div>
+          <div class="value">2026-05-06 15:37:19</div>
+        </div>
+        <div>
+          <div class="label">검수신청일</div>
+          <div class="value">-</div>
+        </div>
+        <div>
+          <div class="label">청구일</div>
+          <div class="value">-</div>
+        </div>
+        <div>
+          <div class="label">입금일</div>
+          <div class="value">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>청구 사업자 정보</h2>
+        <div class="doc-actions">
+          <button class="doc-btn gray">사업자등록증</button>
+          <button class="doc-btn blue">통장사본</button>
+          <button class="doc-btn yellow">요금표</button>
+          <button class="doc-btn teal">법인인감</button>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div><div class="label">사업자 업체명</div><div class="value">케이제이렌트카</div></div>
+        <div><div class="label">사업자 대표</div><div class="value">정미림</div></div>
+        <div><div class="label">사업자번호</div><div class="value">177-86-01958</div></div>
+        <div><div class="label">업체 번호</div><div class="value link">9027</div></div>
+        <div><div class="label">보험사</div><div class="value" id="insurerValue">DB손해보험</div></div>
+        <div><div class="label">세금계산서 ID</div><div class="value">-</div></div>
+        <div><div class="label">사업자 주소지</div><div class="value">서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</div></div>
+      </div>
+
+      <h3 class="sub">청구 직원</h3>
+      <div class="info-grid">
+        <div><div class="label">이름</div><div class="value">-</div></div>
+        <div><div class="label">연락처</div><div class="value">-</div></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== 무료 청구 모달 ===== -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h3>무료로 청구하시겠습니까?</h3>
+      <p class="fax-hint">
+        렌카 사용료는 기존과 동일하게 적용됩니다.
+      </p>
+
+      <div class="check-row" id="checkRow">
+        <input type="checkbox" id="faxCheck">
+        <label for="faxCheck">팩스 청구로 변경 (대상 보험사: DB/현대/KB/삼성)</label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-cancel" id="cancelBtn">취소</button>
+        <button class="btn-submit" id="submitBtn">청구하기</button>
+      </div>
+
+      <label class="demo-toggle">
+        <input type="checkbox" id="failSim">
+        실패 응답 시뮬레이션
+      </label>
+    </div>
+  </div>
+
+  <!-- ===== 팩스 상태 조회 모달 (기존 기능, 그대로 유지) ===== -->
+  <div class="overlay" id="faxStatusOverlay">
+    <div class="modal fax-status-modal">
+      <div class="modal-head">
+        <h3>팩스 상태 조회</h3>
+        <button class="modal-close" id="faxStatusCloseBtn">&times;</button>
+      </div>
+
+      <div class="fax-status-block">
+        <div class="label">팩스 전송 상태</div>
+        <div class="steps">접수 &gt; 업로드중 &gt; 전송중 &gt; <span class="done">완료</span></div>
+      </div>
+      <div class="fax-status-block">
+        <div class="label">팩스 변환 상태</div>
+        <div class="steps">대기중 &gt; 업로드 &gt; <span class="done">완료</span></div>
+      </div>
+      <p class="fax-status-message">팩스전송에 성공하였습니다.</p>
+
+      <div class="fax-status-footer">
+        <button id="faxStatusRefreshBtn">새로고침</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const openBtn        = document.getElementById('openModalBtn');
+  const overlay        = document.getElementById('overlay');
+  const cancelBtn      = document.getElementById('cancelBtn');
+  const submitBtn      = document.getElementById('submitBtn');
+  const faxCheck       = document.getElementById('faxCheck');
+  const checkRow       = document.getElementById('checkRow');
+  const failSim        = document.getElementById('failSim');
+  const insurerTabs    = document.querySelectorAll('#insurerTabs .demo-tab');
+  const insurerValue   = document.getElementById('insurerValue');
+  const faxBadge       = document.getElementById('faxBadge');
+  const faxInquiryBtn  = document.getElementById('faxInquiryBtn');
+  const faxStatusOverlay  = document.getElementById('faxStatusOverlay');
+  const faxStatusCloseBtn = document.getElementById('faxStatusCloseBtn');
+  const statusValue       = document.getElementById('statusValue');
+
+  let currentIsTarget = true;
+
+  insurerTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      insurerTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentIsTarget = tab.dataset.target === 'true';
+      insurerValue.textContent = tab.dataset.insurer;
+    });
+  });
+
+  function openModal() {
+    const isTarget = currentIsTarget;
+
+    faxCheck.checked = false;
+    faxCheck.disabled = !isTarget;
+    checkRow.classList.toggle('disabled', !isTarget);
+
+    resetSubmitBtn();
+    overlay.classList.add('show');
+  }
+  function closeModal() {
+    overlay.classList.remove('show');
+  }
+  function resetSubmitBtn() {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '청구하기';
+  }
+
+  openBtn.addEventListener('click', openModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+
+  function openFaxStatusModal() {
+    faxStatusOverlay.classList.add('show');
+  }
+  function closeFaxStatusModal() {
+    faxStatusOverlay.classList.remove('show');
+  }
+  faxInquiryBtn.addEventListener('click', openFaxStatusModal);
+  faxStatusCloseBtn.addEventListener('click', closeFaxStatusModal);
+  faxStatusOverlay.addEventListener('click', (e) => {
+    if (e.target === faxStatusOverlay) closeFaxStatusModal();
+  });
+
+  submitBtn.addEventListener('click', () => {
+    const isFaxRequest = faxCheck.checked;
+
+    // 로딩 상태 (중복 클릭 방지)
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span>처리 중...';
+
+    setTimeout(() => {
+      const isFail = failSim.checked;
+
+      if (isFail) {
+        // 실패: 공통 실패 알럿, 버튼 재활성화, 모달 유지
+        resetSubmitBtn();
+        alert('요청 처리에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        // 성공: 공통 성공 알럿 후 모달 닫기
+        closeModal();
+        alert('무료 청구가 완료되었습니다.');
+
+        // 청구 실행 시 상태 변경 (기존 청구 처리와 동일, 청구 횟수는 카운트되지 않음)
+        statusValue.textContent = '청구완료 / 청구 0회';
+
+        // 팩스 청구 성공 시 기존 팩스 전송 상태 UI 노출 (기존 팩스 청구와 동일)
+        if (isFaxRequest) {
+          faxBadge.style.display = 'inline-block';
+          faxInquiryBtn.style.display = 'inline-block';
+        }
+      }
+    }, 1100);
+  });
+</script>
+</body>
+</html>
