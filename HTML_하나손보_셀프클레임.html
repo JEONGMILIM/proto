@@ -1554,10 +1554,17 @@ async function runServiceSelect() {
   }
 }
 
-/* 렌터카 인트로 안내 — 서비스 선택 직후("렌터카가 필요해요") 및 교통비 결과 카드 이후 갈아타기 공용 */
-async function rentalIntroMsgs() {
+/* 렌터카 인트로 안내(공통 부분) — 서비스 선택 직후("렌터카가 필요해요") 및 교통비 결과 카드 이후 갈아타기 공용 */
+async function rentalIntroCore() {
   await botMessage('고객님, 렌터카가 필요하시군요? 😊\n<span class="em">자차/종합보험</span>이 가입된 <span class="em">동급</span>의 깨끗한 차량으로 배정해 드릴게요.', 500, 20);
   await wait(200);
+}
+
+/* 렌터카 인트로 안내(전체) — 서비스 선택에서 곧바로 "렌터카가 필요해요"를 고른 경우 전용.
+   교통비 결과 카드 이후 갈아타는 경우는 렌트 비용 지원 안내를 결과 카드 직후 이미 노출했으므로
+   rentalIntroCore()만 호출해 중복 노출을 막는다(afterS5 참고). */
+async function rentalIntroMsgs() {
+  await rentalIntroCore();
   await botMessage('수리 기간 동안 대체 차량의 렌트 비용을 지원받으실 수 있어요.\n\n• 수리 시 최대 <span class="em">25일</span> (160시간 초과 시 30일)\n• 폐차 시 최대 <span class="em">10일</span>', 500, 18);
   await wait(200);
 }
@@ -1665,7 +1672,7 @@ async function afterS5() {
     {label:'렌터카가 필요해요', emoji:'🚗', value:'rent'},
   ]);
   if (v === 'rent') {
-    await rentalIntroMsgs();
+    await rentalIntroCore();
     runRegionForRental();
   }
   else {
