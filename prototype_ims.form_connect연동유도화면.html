@@ -1,0 +1,637 @@
+<title>IMS.connect 연동 유도 화면 — AS-IS/TO-BE</title>
+<style>
+  :root {
+    --bg: #f4f5f8;
+    --canvas: #eaecf1;
+    --surface: #ffffff;
+    --surface-2: #fbfbfd;
+    --border: #e3e6ec;
+    --border-strong: #d3d7e0;
+    --text: #23262b;
+    --text-muted: #888e99;
+    --text-faint: #aeb3bd;
+    --accent-orange: #ee9436;
+    --accent-orange-strong: #dd7d16;
+    --accent-cert: #3b4fd9;
+    --accent-cert-strong: #2c3db3;
+    --accent-cert-soft: #eef0ff;
+    --accent-cert-soft-border: #ccd3fb;
+    --accent-red: #d94b4b;
+    --accent-red-soft: #fbeaea;
+    --accent-red-soft-border: #f1c9c9;
+    --tag-bg: #f1f2f5;
+    --tag-text: #5c616c;
+    --shadow: 0 1px 2px rgba(23, 26, 33, 0.04), 0 8px 20px -12px rgba(23, 26, 33, 0.12);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16181d;
+    --canvas: #1b1e24;
+    --surface: #22252c;
+    --surface-2: #1d2026;
+    --border: #33363e;
+    --border-strong: #43474f;
+    --text: #e9eaee;
+    --text-muted: #9297a1;
+    --text-faint: #6b6f78;
+    --accent-orange: #f0a34f;
+    --accent-orange-strong: #f7b972;
+    --accent-cert: #8296ff;
+    --accent-cert-strong: #a7b6ff;
+    --accent-cert-soft: rgba(130, 150, 255, 0.14);
+    --accent-cert-soft-border: rgba(130, 150, 255, 0.35);
+    --accent-red: #e57676;
+    --accent-red-soft: rgba(229, 118, 118, 0.14);
+    --accent-red-soft-border: rgba(229, 118, 118, 0.35);
+    --tag-bg: #2b2e36;
+    --tag-text: #b7bbc4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d;
+      --canvas: #1b1e24;
+      --surface: #22252c;
+      --surface-2: #1d2026;
+      --border: #33363e;
+      --border-strong: #43474f;
+      --text: #e9eaee;
+      --text-muted: #9297a1;
+      --text-faint: #6b6f78;
+      --accent-orange: #f0a34f;
+      --accent-orange-strong: #f7b972;
+      --accent-cert: #8296ff;
+      --accent-cert-strong: #a7b6ff;
+      --accent-cert-soft: rgba(130, 150, 255, 0.14);
+      --accent-cert-soft-border: rgba(130, 150, 255, 0.35);
+      --accent-red: #e57676;
+      --accent-red-soft: rgba(229, 118, 118, 0.14);
+      --accent-red-soft-border: rgba(229, 118, 118, 0.35);
+      --tag-bg: #2b2e36;
+      --tag-text: #b7bbc4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-feature-settings: "tnum" 1;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 28px 96px;
+  }
+
+  .doc-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+  .doc-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent-cert); text-transform: uppercase; }
+  .doc-title { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  .doc-desc { font-size: 14px; color: var(--text-muted); }
+
+  .toolbar {
+    position: sticky; top: 16px; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 32px; box-shadow: var(--shadow);
+  }
+  .toolbar-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .segmented { display: inline-flex; background: var(--tag-bg); border-radius: 9px; padding: 3px; gap: 2px; }
+  .segmented button {
+    appearance: none; border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 26, 33, 0.16); }
+  body[data-mode="tobe"] .segmented button[data-mode-btn="tobe"] { color: var(--accent-cert-strong); }
+  .toolbar-hint { font-size: 12px; color: var(--text-faint); }
+
+  .section { margin-bottom: 40px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .mode-chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-muted);
+  }
+  body[data-mode="tobe"] .mode-chip { color: var(--accent-cert-strong); background: var(--accent-cert-soft); border-color: var(--accent-cert-soft-border); }
+
+  .canvas { background: var(--canvas); border: 1px solid var(--border); border-radius: 16px; padding: 24px; overflow-x: auto; }
+
+  .annotation {
+    display: none; margin-top: 16px; background: var(--accent-cert-soft); border: 1px solid var(--accent-cert-soft-border);
+    border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--text); gap: 10px;
+  }
+  body[data-mode="tobe"] .annotation { display: flex; }
+  .annotation-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-cert); margin-top: 5px; }
+  .annotation b { color: var(--accent-cert-strong); }
+  .annotation-list { margin: 4px 0 0; padding-left: 16px; }
+  .annotation-list li { margin-bottom: 3px; }
+  .annotation.always { display: flex; background: var(--surface-2); border-color: var(--border-strong); }
+  .annotation.always .annotation-dot { background: var(--text-faint); }
+  .annotation.always b { color: var(--text); }
+
+  .legend {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 24px; font-size: 12.5px; color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend-swatch.cert { background: var(--accent-cert-soft); border: 1px solid var(--accent-cert-soft-border); }
+
+  @media (max-width: 560px) { .toolbar { flex-direction: column; align-items: stretch; } }
+
+  /* ============================================================
+     이번 화면 전용 CSS
+     ============================================================ */
+
+  /* 실제 제품 화면 재현 프레임 — 프로토타입 자체의 라이트/다크 테마와 무관하게
+     IMS.form 실제 화면 색상을 고정 재현한다 */
+  .app-frame {
+    min-width: 1060px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    font-size: 14px;
+    color: #1a1a1c;
+  }
+
+  .app-content { background: #ffffff; padding: 44px 44px 40px; position: relative; }
+  .content-headline { font-size: 26px; font-weight: 800; line-height: 1.38; color: #17181c; margin: 0 0 26px; }
+
+  /* AS-IS 탭 */
+  .asis-tabs { display: inline-flex; gap: 6px; margin-bottom: 26px; }
+  .asis-tabs button {
+    appearance: none; border: none; font: inherit; font-size: 14px; font-weight: 700; padding: 9px 22px;
+    border-radius: 999px; cursor: pointer; color: #b7bac2; background: transparent;
+  }
+  .asis-tabs button.active { background: #3b4fd9; color: #fff; }
+
+  .asis-layout { display: flex; gap: 40px; align-items: flex-start; }
+  .asis-text { max-width: 380px; }
+  .asis-text h2 { font-size: 19px; font-weight: 800; margin: 0 0 14px; color: #17181c; }
+  .asis-text p { font-size: 13.5px; color: #55585f; line-height: 1.7; margin: 0 0 22px; }
+  .cta-btn {
+    display: inline-block; padding: 12px 30px; border-radius: 999px; border: 1.5px solid #3b4fd9;
+    color: #3b4fd9; font-weight: 700; font-size: 13.5px; background: #fff; cursor: default;
+  }
+  .asis-preview { flex: none; width: 540px; min-height: 320px; position: relative; }
+  [data-tab-panel] { display: none; }
+
+  /* 미니 프리뷰 카드 공통 */
+  .mini-card {
+    background: #fff; border: 1px solid #eceef2; border-radius: 14px; box-shadow: 0 8px 24px -12px rgba(20,22,30,0.18);
+    padding: 16px 18px; font-size: 12px;
+  }
+
+  /* 평가 탭 프리뷰 */
+  .gauge-stack { position: relative; height: 230px; }
+  .gauge-card { position: absolute; width: 250px; }
+  .gauge-card.back { top: 26px; left: 60px; opacity: 0.75; z-index: 1; }
+  .gauge-card.front { top: 0; left: 0; z-index: 2; }
+  .gauge-row { display: flex; align-items: center; gap: 14px; }
+  .gauge { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
+  .gauge-inner { width: 60px; height: 60px; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gauge-inner b { font-size: 17px; }
+  .gauge-inner span { font-size: 9px; color: #8b8e97; }
+  .gauge-label b { font-size: 15px; }
+  .gauge-label .status-good { color: #2e7d46; }
+  .gauge-label .status-bad { color: #c94b3f; }
+  .gauge-label p { margin: 3px 0 0; font-size: 11px; color: #6c6f78; }
+  .gauge-foot { display: flex; margin-top: 12px; border-top: 1px solid #eef0f3; padding-top: 10px; gap: 18px; }
+  .gauge-foot div span { display: block; font-size: 10px; color: #9a9da5; margin-bottom: 2px; }
+  .gauge-foot div b { font-size: 12px; }
+
+  /* 제어 탭 프리뷰 */
+  .control-wrap { display: flex; gap: 14px; }
+  .control-card { width: 260px; flex: none; }
+  .control-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .plate-badges { display: flex; gap: 5px; }
+  .plate-badges span { width: 18px; height: 18px; border-radius: 4px; background: #eef0f3; }
+  .iot-tag { font-size: 9.5px; color: #9a9da5; }
+  .control-owner { font-size: 10.5px; color: #9a9da5; }
+  .control-plate { font-size: 16px; font-weight: 800; margin: 2px 0 8px; }
+  .control-stats { display: flex; gap: 12px; border-top: 1px solid #eef0f3; border-bottom: 1px solid #eef0f3; padding: 8px 0; margin-bottom: 10px; font-size: 11px; color: #55585f; font-weight: 600; }
+  .control-addr { font-size: 11px; color: #55585f; margin-bottom: 10px; }
+  .control-actions { display: flex; gap: 6px; }
+  .control-actions button { flex: 1; font-size: 10.5px; font-weight: 700; padding: 8px 0; border-radius: 8px; border: 1px solid #e3e6ec; background: #f7f8fa; color: #55585f; }
+  .control-actions button.active { background: #3b4fd9; border-color: #3b4fd9; color: #fff; }
+  .map-box {
+    width: 240px; height: 200px; flex: none; border-radius: 12px; position: relative; overflow: hidden;
+    background: repeating-linear-gradient(0deg, #eef1e8 0 24px, #e6ead9 24px 25px), repeating-linear-gradient(90deg, transparent 0 24px, rgba(0,0,0,0.03) 24px 25px);
+  }
+  .map-pin { position: absolute; width: 34px; height: 34px; border-radius: 50%; background: #3b4fd9; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+  .map-plate { position: absolute; background: #fff; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 9px; padding: 2px 4px; font-weight: 700; }
+
+  /* 정산 탭 프리뷰 */
+  .fee-stack { position: relative; height: 320px; }
+  .fee-card { position: absolute; width: 270px; }
+  .fee-card.back { top: 20px; left: 46px; opacity: 0.7; z-index: 1; }
+  .fee-card.front { top: 0; left: 0; z-index: 2; }
+  .fee-title { font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+  .fee-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11.5px; color: #55585f; }
+  .fee-total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid #eef0f3; margin-top: 8px; padding-top: 10px; }
+  .fee-total b { font-size: 18px; color: #3b4fd9; }
+  .fee-total.refund b { color: #c94b3f; }
+  .fee-note { font-size: 9.5px; color: #9a9da5; text-align: right; margin-top: 2px; }
+  .fee-tip { margin-top: 10px; background: #f7f8fa; border-radius: 8px; padding: 8px 10px; font-size: 9.5px; color: #6c6f78; }
+  .fee-tip b { display: block; color: #3b4fd9; font-size: 10px; margin-bottom: 3px; }
+  .fee-tip ol { margin: 0; padding-left: 14px; }
+
+  /* TO-BE 카드 그리드 */
+  .tobe-block { display: none; }
+  body[data-mode="tobe"] .asis-block { display: none; }
+  body[data-mode="tobe"] .tobe-block { display: block; }
+  .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 760px; margin-top: 20px; }
+  .feature-card { border: 1px solid #eceef2; border-radius: 16px; padding: 22px 22px 20px; background: #fbfbfd; min-height: 190px; }
+  .feature-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .feature-icon { width: 42px; height: 42px; border-radius: 11px; background: #eef0ff; display: flex; align-items: center; justify-content: center; }
+  .feature-icon svg { width: 22px; height: 22px; stroke: #3b4fd9; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .feature-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; color: #9a9da5; text-transform: uppercase; margin-bottom: 6px; }
+  .mini-toggle { display: inline-flex; gap: 3px; }
+  .mini-toggle button {
+    appearance: none; font: inherit; font-size: 10px; font-weight: 700; width: 22px; height: 22px; border-radius: 999px;
+    border: 1px solid #e3e6ec; background: #fff; color: #9a9da5; cursor: pointer; padding: 0;
+  }
+  .mini-toggle button.active { background: #eef0ff; border-color: #ccd3fb; color: #3b4fd9; }
+  .feature-card h3 { font-size: 15.5px; font-weight: 800; margin: 0 0 6px; color: #17181c; line-height: 1.4; }
+  .feature-card p { font-size: 12px; color: #6c6f78; line-height: 1.6; margin: 0; }
+  .tobe-cta { margin-top: 26px; }
+
+  .copy-variant-toggle { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .copy-toggle-label { font-size: 11px; font-weight: 700; color: #9a9da5; margin-right: 2px; }
+  .copy-variant-toggle button {
+    appearance: none; font: inherit; font-size: 11.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px;
+    border: 1px solid #e3e6ec; background: #fff; color: #9a9da5; cursor: pointer;
+  }
+  .copy-variant-toggle button.active { background: #eef0ff; border-color: #ccd3fb; color: #3b4fd9; }
+
+  .cs-line {
+    display: flex; align-items: center; gap: 7px; margin-top: 14px; font-size: 12px; color: #6c6f78;
+  }
+  .cs-line svg { width: 15px; height: 15px; fill: #d94b4b; flex: none; }
+  .cs-line b { color: #17181c; font-weight: 700; }
+
+</style>
+
+<div class="page">
+  <div class="doc-head">
+    <div class="doc-eyebrow">Prototype · IMS.form</div>
+    <h1 class="doc-title">IMS.connect 연동 유도 화면 — 차량 관제센터</h1>
+    <p class="doc-desc">
+      유류량 · 운전자점수 기능 제거로 평가·정산 탭 콘텐츠가 무효화됨에 따른 화면 재구성안입니다.<br>
+      아래 토글로 TO-BE(개선안) / AS-IS(현행)를 비교해 보세요.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-label">화면 상태</span>
+    <div class="segmented" role="group" aria-label="AS-IS TO-BE 전환">
+      <button type="button" data-mode-btn="tobe" aria-pressed="true">TO-BE · 개선안</button>
+      <button type="button" data-mode-btn="asis" aria-pressed="false">AS-IS · 현행</button>
+    </div>
+    <span class="toolbar-hint">좌측 사이드바 "차량 관제센터" 진입 시 노출되는 화면</span>
+  </div>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title">차량 관제센터 <small>connect 연동 유도 화면 (미연동 사용자 대상)</small></div>
+      <span class="mode-chip" data-chip-text></span>
+    </div>
+
+    <div class="canvas">
+      <div class="app-frame">
+          <div class="app-content">
+
+            <!-- AS-IS: 탭 전환형 -->
+            <div class="asis-block">
+              <h1 class="content-headline">OBD 결합으로<br>한 번 더 진화한 IMS.form</h1>
+              <div class="asis-tabs">
+                <button type="button" data-asis-tab="평가" class="active">평가</button>
+                <button type="button" data-asis-tab="제어">제어</button>
+                <button type="button" data-asis-tab="정산">정산</button>
+              </div>
+
+              <div class="asis-layout">
+                <div class="asis-text">
+                  <div data-tab-panel="평가" style="display:block;">
+                    <h2>국내 최초 고객 운전 습관 평가</h2>
+                    <p>계약서 작성 전 고객의 지난 운전 습관 평가 점수를 확인하고 사고 위험 고객의 계약을 방지할 수 있습니다.<br>반납 후엔 대여기간 동안 고객의 운전 습관을 확인할 수 있습니다.</p>
+                  </div>
+                  <div data-tab-panel="제어">
+                    <h2>IMS.form에서 바로 시동・도어 제어</h2>
+                    <p>별도의 차량관제 App 설치 없이 IMS.form에서 바로 차량을 제어할 수 있습니다.<br>위험 상황 혹은 계약서 작성 시 차량을 제어해보세요.</p>
+                  </div>
+                  <div data-tab-panel="정산">
+                    <h2>복잡한 계산 없이 최종 유류비 자동 정산</h2>
+                    <p>고객이 실제로 사용한 유류량을 OBD로 체크하여 반납 시 최종 유류비를 자동으로 정산해주며, 전국 평균 기준가로 투명한 유류비 정산 체계를 만들어 나갑니다.</p>
+                  </div>
+                  <span class="cta-btn">시작하기</span>
+                </div>
+
+                <div class="asis-preview">
+                  <!-- 평가 -->
+                  <div data-tab-panel="평가">
+                    <div class="gauge-stack">
+                      <div class="mini-card gauge-card back">
+                        <div class="gauge-row">
+                          <div class="gauge" style="background:conic-gradient(#3b4fd9 23%, #eef0f3 0);">
+                            <div class="gauge-inner"><b>23<span style="font-size:11px;">점</span></b></div>
+                          </div>
+                          <div class="gauge-label"><b class="status-bad">위험 ⨯</b><p>운전 습관이 위험합니다. 주의해주세요.</p></div>
+                        </div>
+                        <div class="gauge-foot">
+                          <div><span>이용 기간</span><b>7일 2시간 22분</b></div>
+                          <div><span>총 이용거리</span><b>46.7 km</b></div>
+                        </div>
+                      </div>
+                      <div class="mini-card gauge-card front">
+                        <div class="gauge-row">
+                          <div class="gauge" style="background:conic-gradient(#3b4fd9 93%, #eef0f3 0);">
+                            <div class="gauge-inner"><b>93<span style="font-size:11px;">점</span></b></div>
+                          </div>
+                          <div class="gauge-label"><b class="status-good">우수 ⌣</b><p>운전 습관이 우수합니다!</p></div>
+                        </div>
+                        <div class="gauge-foot">
+                          <div><span>이용 기간</span><b>7일 2시간 22분</b></div>
+                          <div><span>총 이용거리</span><b>46.7 km</b></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 제어 -->
+                  <div data-tab-panel="제어">
+                    <div class="control-wrap">
+                      <div class="mini-card control-card">
+                        <div class="control-top">
+                          <div class="plate-badges"><span></span><span></span></div>
+                          <span class="iot-tag">IoT진단</span>
+                        </div>
+                        <div class="control-owner">(주)이노스텐트카 본점</div>
+                        <div class="control-plate">65호2575 <span style="color:#c9cbd1;font-weight:400;font-size:12px;">기아 K7</span></div>
+                        <div class="control-stats">
+                          <span>87,269.2Km</span><span>경유</span><span>27.3L</span><span>12.9V</span>
+                        </div>
+                        <div class="control-addr">경기 수원시 권선구 평동 57-3</div>
+                        <div class="control-actions">
+                          <button>차량제어</button><button>통합관리</button><button class="active">운행이력</button>
+                        </div>
+                      </div>
+                      <div class="map-box">
+                        <div class="map-pin" style="top:22px;left:100px;">40</div>
+                        <div class="map-pin" style="top:70px;left:130px;">15</div>
+                        <div class="map-plate" style="top:12px;left:44px;">34호9032</div>
+                        <div class="map-plate" style="bottom:26px;left:110px;">101가3589</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 정산 -->
+                  <div data-tab-panel="정산">
+                    <div class="fee-stack">
+                      <div class="mini-card fee-card back">
+                        <div class="fee-title">유류비 자동 정산</div>
+                        <div class="fee-row"><span>유종</span><span>휘발유</span></div>
+                        <div class="fee-row"><span>사용 유류량</span><span>-64L</span></div>
+                        <div class="fee-row"><span>유가 (전국 평균 기준가)</span><span>1,600원</span></div>
+                        <div class="fee-total refund"><span style="font-size:11.5px;color:#55585f;">최종 유류비</span><b>-102,400원</b></div>
+                        <div class="fee-note">(고객님께 지급해주세요.)</div>
+                      </div>
+                      <div class="mini-card fee-card front">
+                        <div class="fee-title">유류비 자동 정산</div>
+                        <div class="fee-row"><span>유종</span><span>휘발유</span></div>
+                        <div class="fee-row"><span>사용 유류량</span><span>32L</span></div>
+                        <div class="fee-row"><span>유가 (전국 평균 기준가)</span><span>1,600원</span></div>
+                        <div class="fee-total"><span style="font-size:11.5px;color:#55585f;">최종 유류비</span><b>51,200원</b></div>
+                        <div class="fee-note">(고객님께 추가 요금을 받아주세요.)</div>
+                        <div class="fee-tip">
+                          <b>IMS.connect 연동 차량 유류량/주행거리 입력 Tip</b>
+                          <ol>
+                            <li>시동을 껐다 켜주시면 유류량/주행거리 데이터가 더 정확해집니다.</li>
+                            <li>실제와 다를 경우 직접 입력해주세요.</li>
+                            <li>전기, 수소차량의 경우 주행거리만 자동입력됩니다.</li>
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TO-BE: 카드 그리드형 -->
+            <div class="tobe-block">
+              <div class="copy-variant-toggle" role="group" aria-label="헤더 카피 옵션">
+                <span class="copy-toggle-label">헤더</span>
+                <button type="button" data-headline-variant-btn="a" class="active">A</button>
+                <button type="button" data-headline-variant-btn="b">B</button>
+                <button type="button" data-headline-variant-btn="c">C</button>
+              </div>
+              <h1 class="content-headline" data-headline-variant="a">내 차량의 모든 것,<br>IMS.form 하나로</h1>
+              <h1 class="content-headline" data-headline-variant="b" style="display:none;">복잡한 차량 관리,<br>IMS.connect 연동 한 번으로 끝</h1>
+              <h1 class="content-headline" data-headline-variant="c" style="display:none;">내 차량 상태,<br>이제 손안에서 한눈에</h1>
+
+              <div class="feature-grid">
+                <div class="feature-card">
+                  <div class="feature-card-head">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.72 0"/></svg></div>
+                    <div class="mini-toggle">
+                      <button type="button" data-card-variant-btn="a" class="active">A</button>
+                      <button type="button" data-card-variant-btn="b">B</button>
+                    </div>
+                  </div>
+                  <div class="feature-tag">제어</div>
+                  <div data-card-variant="a">
+                    <h3>IMS.form에서 바로 시동・도어 제어</h3>
+                    <p>사고・도난 위험 시 앱 설치 없이 원격으로 시동을 끄고 문을 잠가보세요.</p>
+                  </div>
+                  <div data-card-variant="b" style="display:none;">
+                    <h3>위급 상황에도, 현장에 가지 않고 바로 제어</h3>
+                    <p>앱 설치 없이 시동과 도어를 원격으로 제어하고, 실시간 위치까지 확인할 수 있습니다.</p>
+                  </div>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-card-head">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 22s7-7.58 7-12A7 7 0 0 0 5 10c0 4.42 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+                    <div class="mini-toggle">
+                      <button type="button" data-card-variant-btn="a" class="active">A</button>
+                      <button type="button" data-card-variant-btn="b">B</button>
+                    </div>
+                  </div>
+                  <div class="feature-tag">트래킹</div>
+                  <div data-card-variant="a">
+                    <h3>대여 중인 내 차, 지금 어디 있는지 바로 확인</h3>
+                    <p>실시간 위치와 주행 여부는 물론, 주행거리・연료량까지 한눈에 확인해보세요.</p>
+                  </div>
+                  <div data-card-variant="b" style="display:none;">
+                    <h3>분실・도난 걱정 없는, 실시간 위치 확인</h3>
+                    <p>지도에서 실시간 위치와 주행 상태를 바로 확인할 수 있습니다.</p>
+                  </div>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-card-head">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+                    <div class="mini-toggle">
+                      <button type="button" data-card-variant-btn="a" class="active">A</button>
+                      <button type="button" data-card-variant-btn="b">B</button>
+                    </div>
+                  </div>
+                  <div class="feature-tag">운행이력</div>
+                  <div data-card-variant="a">
+                    <h3>분쟁 발생 시, 운행기록이 곧 증거</h3>
+                    <p>날짜별 운행 이력과 상세 주행 정보를 언제든 다시 확인해보세요.</p>
+                  </div>
+                  <div data-card-variant="b" style="display:none;">
+                    <h3>고객이 언제, 어디를 다녀왔는지 자동 기록</h3>
+                    <p>날짜・시간별 주행 데이터가 자동으로 쌓입니다.</p>
+                  </div>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-card-head">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></div>
+                    <div class="mini-toggle">
+                      <button type="button" data-card-variant-btn="a" class="active">A</button>
+                      <button type="button" data-card-variant-btn="b">B</button>
+                    </div>
+                  </div>
+                  <div class="feature-tag">통합관리</div>
+                  <div data-card-variant="a">
+                    <h3>다음 고객 맞기 전에, 차량 상태를 미리 확인</h3>
+                    <p>배터리・소모품・경고등까지 연결된 기기로 실시간 진단해 드립니다.</p>
+                  </div>
+                  <div data-card-variant="b" style="display:none;">
+                    <h3>눈에 보이지 않아도, 차량 컨디션 원격 점검</h3>
+                    <p>배터리부터 소모품, 경고등까지 원격으로 미리 점검할 수 있습니다.</p>
+                  </div>
+                </div>
+              </div>
+              <span class="cta-btn tobe-cta">시작하기</span>
+              <div class="cs-line">
+                <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z"/></svg>
+                IMS.connect 가입・설치 및 계정 연동 문의 <b>1600-8348</b>
+              </div>
+            </div>
+
+          </div>
+      </div>
+    </div>
+
+    <div class="annotation">
+      <span class="annotation-dot"></span>
+      <div>
+        <b>TO-BE</b>: 유류량・운전자점수 기능 제거로 평가・정산 탭 콘텐츠가 무효화되어, 탭 구조를 폐기하고 카드 그리드로 재구성했습니다.
+        <ul class="annotation-list">
+          <li>제어(AS-IS 유지) + 트래킹 / 운행이력 / 통합관리 3개 카드로 구성 — IMS.connect FMS 소개 자료의 검증된 4개 기능(트래킹・운행이력・통합관리・AI리포트) 중 AI리포트는 제거 대상인 운전자점수 기능과 동일하여 제외</li>
+          <li>탭 전환 없이 한 화면에서 모든 혜택을 한눈에 볼 수 있도록 구성 — 콘텐츠 기획/개발 부담 감소</li>
+          <li>카피는 렌터카 사업자 관점(고객・대여・정비 등 실제 업무 맥락)으로 작성, 헤더 A/B/C・카드별 A/B로 후보 문구를 프로토타입에서 바로 비교할 수 있게 구성 — 최종 문구는 미확정</li>
+          <li>"시작하기" 버튼 아래 IMS.connect 가입・설치 및 계정 연동 문의 전화번호(1600-8348)를 추가 — 기존 로그인 화면에만 있던 안내를 미연동 사용자에게 미리 노출해 진입장벽 완화</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch cert"></span>TO-BE 개선 사항 안내</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var body = document.body;
+    var buttons = document.querySelectorAll('[data-mode-btn]');
+    var chips = document.querySelectorAll('[data-chip-text]');
+
+    function setMode(mode) {
+      body.setAttribute('data-mode', mode);
+      buttons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-mode-btn') === mode ? 'true' : 'false');
+      });
+      chips.forEach(function (chip) {
+        chip.textContent = mode === 'tobe' ? 'TO-BE' : 'AS-IS';
+      });
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        setMode(btn.getAttribute('data-mode-btn'));
+      });
+    });
+
+    setMode('tobe');
+  })();
+
+  (function () {
+    var tabs = document.querySelectorAll('[data-asis-tab]');
+    var panels = document.querySelectorAll('[data-tab-panel]');
+
+    function setTab(tab) {
+      tabs.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-asis-tab') === tab);
+      });
+      panels.forEach(function (p) {
+        p.style.display = p.getAttribute('data-tab-panel') === tab ? 'block' : 'none';
+      });
+    }
+
+    tabs.forEach(function (b) {
+      b.addEventListener('click', function () {
+        setTab(b.getAttribute('data-asis-tab'));
+      });
+    });
+
+    setTab('평가');
+  })();
+
+  function makeVariantToggle(btnAttr, targetAttr) {
+    var btns = document.querySelectorAll('[' + btnAttr + ']');
+    var variants = document.querySelectorAll('[' + targetAttr + ']');
+
+    function setVariant(v) {
+      btns.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute(btnAttr) === v);
+      });
+      variants.forEach(function (el) {
+        el.style.display = el.getAttribute(targetAttr) === v ? 'block' : 'none';
+      });
+    }
+
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        setVariant(b.getAttribute(btnAttr));
+      });
+    });
+
+    setVariant('a');
+  }
+
+  makeVariantToggle('data-headline-variant-btn', 'data-headline-variant');
+
+  document.querySelectorAll('.feature-card').forEach(function (card) {
+    var btns = card.querySelectorAll('[data-card-variant-btn]');
+    var variants = card.querySelectorAll('[data-card-variant]');
+
+    function setVariant(v) {
+      btns.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-card-variant-btn') === v);
+      });
+      variants.forEach(function (el) {
+        el.style.display = el.getAttribute('data-card-variant') === v ? 'block' : 'none';
+      });
+    }
+
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        setVariant(b.getAttribute('data-card-variant-btn'));
+      });
+    });
+
+    setVariant('a');
+  });
+</script>
