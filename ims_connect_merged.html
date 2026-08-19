@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMS.form · 차량 관제센터 안내 (시안 v2)</title>
+<style>
+  :root{
+    --primary:#4F56E2;--primary-dark:#3F37C9;--primary-soft:#EEF0FF;
+    --ink:#1B1B2A;--ink2:#4A4A5C;--ink3:#8A8AA0;--line:#ECECF2;
+    --sidebar:#141418;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#EDEDF2;color:var(--ink);-webkit-font-smoothing:antialiased;word-break:keep-all;}
+  .app{display:flex;min-height:100vh;background:#fff;}
+  .sidebar{width:210px;background:var(--sidebar);color:#fff;flex-shrink:0;padding:18px 0;}
+  .brand{padding:0 20px 18px;font-size:19px;font-weight:800;letter-spacing:-.5px;}
+  .brand span{opacity:.55;font-weight:500;}
+  .biz{padding:0 20px;}.biz .name{font-size:15px;font-weight:700;}.biz .no{font-size:12px;color:#8a8aa0;margin:5px 0 14px;}
+  .wallet{padding:0 20px 14px;font-size:12px;color:#b9b9cc;display:flex;flex-direction:column;gap:5px;}
+  .wallet .row{display:flex;justify-content:space-between;}.wallet b{color:#fff;font-weight:600;}
+  .sbtn{margin:4px 16px 6px;padding:10px;border:1px solid #38383f;border-radius:8px;text-align:center;font-size:13px;color:#e6e6ee;}
+  .sbtn.dark{background:#26262c;border:none;}
+  .nav{margin-top:12px;}.nav a{display:block;padding:9px 20px;font-size:13px;color:#b9b9cc;text-decoration:none;}
+  .nav a.group{color:#F59E0B;font-weight:700;}
+  .nav a.sub{padding-left:20px;color:#d5d5e2;}.nav a.sub.on{color:#F59E0B;}
+  .side-cs{margin:18px 20px 0;padding-top:14px;border-top:1px solid #26262c;font-size:12px;color:#e6e6ee;}
+  .side-cs b{display:block;font-size:13px;}
+  .side-cs .hrs{color:#8a8aa0;margin-top:2px;}
+  .side-cs .bubble{width:26px;height:26px;border-radius:50%;background:#1FBE6B;display:flex;align-items:center;justify-content:center;margin-top:10px;font-size:13px;}
+  .main{flex:1;min-width:0;background:#fff;}
+  .topbar{height:56px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:flex-end;padding:0 26px;gap:18px;}
+  .topbar .u{font-weight:700;font-size:14px;}.topbar .mut{color:var(--ink3);font-size:13px;}
+  .topbar .bell{position:relative;width:20px;height:20px;color:var(--ink3);}
+  .topbar .bell svg{width:20px;height:20px;}
+  .topbar .bell .badge{position:absolute;top:-6px;right:-8px;background:#E5484D;color:#fff;font-size:10px;font-weight:700;min-width:15px;height:15px;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+  .canvas{max-width:1120px;margin:0 auto;padding:30px 40px 60px;}
+
+  /* HERO */
+  .hero{position:relative;border-radius:22px;overflow:hidden;
+        background:linear-gradient(120deg,#3B34C4 0%,#4F46E5 45%,#6D5EF0 100%);
+        color:#fff;padding:44px 46px;display:flex;align-items:center;gap:34px;}
+  .hero::after{content:"";position:absolute;right:-70px;top:-70px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.09);}
+  .hero-l{flex:1.12;position:relative;z-index:2;}
+  .kicker{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:15px;}
+  .hero h1{font-size:30px;line-height:1.34;font-weight:800;letter-spacing:-.6px;}
+  .hero h1 .hl{color:#C9F5DE;}
+  .hero p.sub{margin-top:14px;font-size:15px;line-height:1.7;color:#E4E3FF;max-width:560px;}
+  .cta-row{margin-top:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .btn-primary{background:#fff;color:var(--primary-dark);border:none;padding:15px 32px;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.18);}
+  .hero-chips{margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;}
+  .hero-chips .chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;}
+  .hero-chips .chip svg{flex-shrink:0;}
+  .hero-r{flex:.88;position:relative;z-index:2;display:flex;justify-content:center;}
+  .device{width:280px;background:#fff;border-radius:18px;box-shadow:0 22px 46px rgba(15,10,60,.35);padding:16px;color:var(--ink);}
+  .device .dhead{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--ink3);}
+  .device .plate{font-size:20px;font-weight:800;margin:8px 0 2px;letter-spacing:.5px;}
+  .device .model{font-size:12.5px;color:var(--ink2);}
+  .device .stat{display:flex;gap:6px;margin:12px 0;}
+  .device .stat div{flex:1;background:#F4F5FA;border-radius:8px;padding:7px 4px;text-align:center;font-size:11px;color:var(--ink2);}
+  .device .stat b{display:block;font-size:12.5px;color:var(--ink);margin-bottom:2px;}
+  .device .map{height:112px;border-radius:12px;background:radial-gradient(circle at 60% 40%, #DCE6FF 0 30%, transparent 31%),linear-gradient(135deg,#EAF0FF,#F3F6FF);position:relative;overflow:hidden;}
+  .device .pin{position:absolute;width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;left:52%;top:40%;box-shadow:0 6px 14px rgba(79,86,226,.5);}
+  .device .ctrls{display:flex;gap:6px;margin-top:12px;}
+  .device .ctrls button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 0;font-size:11.5px;color:var(--ink2);}
+  .device .ctrls button.p{background:var(--primary);color:#fff;border:none;font-weight:700;}
+
+  /* section label */
+  .slabel{font-size:16px;font-weight:800;margin:38px 0 16px;display:flex;align-items:center;gap:9px;}
+  .slabel .bar{width:4px;height:17px;border-radius:2px;background:var(--primary);}
+
+  /* features */
+  .feat{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .feat .f{border:1px solid var(--line);border-radius:16px;padding:22px 20px;background:#fff;transition:.15s;}
+  .feat .f:hover{border-color:#D9D6FF;box-shadow:0 8px 20px rgba(79,70,229,.07);}
+  .feat .fic{width:46px;height:46px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:22px;}
+  .feat .f h4{font-size:15.5px;font-weight:800;margin-bottom:7px;}
+  .feat .f p{font-size:13.2px;color:var(--ink2);line-height:1.6;}
+
+  /* CS band (landing.html과 동일 디자인) */
+  .csband{margin-top:38px;border-radius:18px;background:linear-gradient(120deg,#141418,#26263a);color:#fff;
+          padding:28px 34px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+  .csband .l h3{font-size:18px;font-weight:800;margin-bottom:6px;}
+  .csband .l p{font-size:13.5px;color:#c7c7d8;line-height:1.6;}
+  .csband .r{text-align:right;}
+  .csband .r .lab{font-size:12.5px;color:#a6a6bd;}
+  .csband .r .tel2{font-size:26px;font-weight:800;letter-spacing:.5px;margin-top:3px;}
+  .csband .r .tel2 .ext{display:inline-block;background:var(--primary);color:#fff;font-size:13px;font-weight:700;padding:3px 10px;border-radius:8px;vertical-align:middle;margin-left:8px;}
+  .csband .r .hours{font-size:12px;color:#a6a6bd;margin-top:5px;}
+
+  /* 기능 그리드 확인사항 — 라벨 아래, 그리드 위 */
+  .feat-note{margin:-8px 0 16px;padding-left:13px;font-size:13.5px;color:var(--ink3);line-height:1.6;text-align:left;}
+  .feat-note b{color:var(--ink2);font-weight:700;}
+
+  /* connect modal — 시작하기 클릭.png(AS-IS 로그인 화면)을 현재 톤앤매너로 재구성 */
+  .modal-overlay{position:fixed;inset:0;background:rgba(18,17,26,.55);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;max-width:460px;}
+  .modal-card{position:relative;width:100%;background:#fff;border-radius:20px;padding:36px 32px 30px;box-shadow:0 30px 60px rgba(15,10,60,.35);}
+  .modal-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;border:none;background:#F4F5FA;color:var(--ink2);font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:#EAEAF2;}
+  .modal-card h2{font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:10px;}
+  .modal-card .desc{font-size:13.5px;color:var(--ink2);line-height:1.65;margin-bottom:26px;}
+  .modal-field{margin-bottom:16px;}
+  .modal-field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:6px;}
+  .modal-field input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;}
+  .modal-field input::placeholder{color:var(--ink3);}
+  .modal-field input:focus{outline:none;border-color:var(--primary);}
+  .modal-login-btn{width:100%;margin-top:8px;background:var(--primary);color:#fff;border:none;padding:14px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;}
+  .modal-login-btn:hover{background:var(--primary-dark);}
+  .modal-footnote{margin-top:20px;font-size:12.5px;color:var(--ink3);line-height:1.6;text-align:center;}
+  .modal-footnote a{color:var(--primary);font-weight:600;text-decoration:underline;}
+  .modal-cs{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--ink2);}
+  .modal-cs b{font-weight:800;color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">IMS<span>.form</span></div>
+    <div class="biz"><div class="name">서울영업소</div><div class="no">[ 업체번호 15692 ]</div></div>
+    <div class="wallet"><div class="row"><span>캐시</span><b>0</b></div><div class="row"><span>포인트</span><b>6,600</b></div></div>
+    <div class="sbtn">업무일지</div><div class="sbtn dark">차량 예약</div>
+    <nav class="nav">
+      <a class="group">차량 현황</a>
+      <a class="sub">차량 대기 현황</a><a class="sub">차량 관리</a><a class="sub on">차량 관제센터</a>
+      <a>스케줄 관리</a><a>비대면 계약서</a><a>보험 계약서</a><a>일반 계약서</a><a>탁송 관리</a><a>내차팔기 서비스</a><a>회계 관리</a>
+    </nav>
+    <div class="side-cs">
+      <b>CS.1600-8348</b>
+      <div class="hrs">평일 10:00 – 18:00 (연중무휴)</div>
+      <div class="bubble">💬</div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <span class="mut">이용안내</span>
+      <span class="bell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="badge">16</span></span>
+      <span class="u">테스트 님</span>
+    </div>
+    <div class="canvas">
+      <!-- HERO : 단일 CTA (v3) -->
+      <section class="hero">
+        <div class="hero-l">
+          <span class="kicker">IMS.form × IMS.connect</span>
+          <h1>차량 관제부터 원격 제어까지,<br><span class="hl">IMS.connect 연동 한 번</span>으로.</h1>
+          <p class="sub">IMS.connect 계정으로 로그인하면 별도 앱 설치 없이,<br>폼 화면에서 차량의 실시간 위치 확인부터 원격 제어까지 바로 이용할 수 있습니다.</p>
+          <!-- TRUST CHIPS — landing.html에서 가져온 문구, PRD/요청서에 근거 없는 미검증 주장(비용·정책)이라 최종 반영 전 사업팀 확인 필요 -->
+          <div class="hero-chips">
+            <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#8CF5C3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>연동 비용 0원</span>
+            <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#8CF5C3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>1분 만에 연동 완료</span>
+            <span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#8CF5C3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>언제든 자유롭게 해제</span>
+          </div>
+          <!-- TODO: PRD §3.1.1 UI-06·BDD 시나리오1은 버튼명 "시작하기"와 "CTA 버튼 아래" 안내 노출을 요건으로 명시하나, 이 시안은 "연동하기"로 바꾸고 안내는 하단 CS 배너로 대체 — /prototype 단계에서 PRD 반영 여부 확정 필요 -->
+          <div class="cta-row">
+            <button class="btn-primary" onclick="document.getElementById('connectModal').classList.add('show')">연동하기 →</button>
+          </div>
+        </div>
+        <div class="hero-r">
+          <div class="device">
+            <div class="dhead"><span>(주)이노스렌트카 · 본점</span><span>IoT단말</span></div>
+            <div class="plate">65호 2575</div><div class="model">기아 K7 · 경유</div>
+            <div class="stat"><div><b>87,269km</b>주행</div><div><b>27.3L</b>연료</div><div><b>12.9V</b>배터리</div></div>
+            <div class="map"><div class="pin">📍</div></div>
+            <div class="ctrls"><button>차량제어</button><button>통합관리</button><button class="p">운행 이력</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <div class="slabel"><span class="bar"></span>연동 시 제공되는 핵심 관제 기능</div>
+      <div class="feat-note">IMS.form과 IMS.connect에 <b>동일한 차량번호</b>가 등록되어 있어야 데이터가 자동으로 연결됩니다.</div>
+      <div class="feat">
+        <div class="f"><div class="fic">📍</div><h4>실시간 위치 확인</h4><p>지도에서 차량의 현재 위치와 주행 상태를 한눈에 확인합니다.</p></div>
+        <div class="f"><div class="fic">🎛️</div><h4>원격 시동·도어 제어</h4><p>폼 화면에서 바로 시동을 끄고 문을 잠글 수 있습니다.</p></div>
+        <div class="f"><div class="fic">🕒</div><h4>운행 이력 자동 저장</h4><p>날짜 및 시간별 주행 기록이 자동으로 저장되어 효율적으로 관리됩니다.</p></div>
+        <div class="f"><div class="fic">🛡️</div><h4>차량 상태 원격 진단</h4><p>배터리 잔량·소모품·경고등을 원격으로 실시간 진단합니다.</p></div>
+      </div>
+
+      <!-- CS BAND : 자체 h3가 제목 역할을 하므로 별도 소제목 없이 단독 배너로 -->
+      <section class="csband">
+        <div class="l">
+          <h3>커넥트 계정이 없거나 연동이 어려우신가요?</h3>
+          <p>도입 상담부터 계정 연동까지, 커넥트 전문 운영팀이 직접 안내해 드립니다.</p>
+        </div>
+        <div class="r">
+          <div class="lab">IMS.connect 운영팀</div>
+          <div class="tel2">1600-8348 <span class="ext">3번</span></div>
+          <div class="hours">평일 10:00 – 18:00</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- CONNECT MODAL : Out of Scope(§1) — 내용은 AS-IS(자료/시작하기 클릭.png)와 동일, 톤앤매너만 이 화면 스타일로 재구성 -->
+<div class="modal-overlay" id="connectModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal-wrap">
+    <div class="modal-card">
+      <button class="modal-close" onclick="document.getElementById('connectModal').classList.remove('show')">✕</button>
+      <h2>IMS.connect 연동하기</h2>
+      <p class="desc">IMS.connect 계정으로 로그인하면 IMS.form과 자동으로 연동됩니다.</p>
+      <div class="modal-field">
+        <label>아이디</label>
+        <input type="text" placeholder="아이디를 입력해주세요.">
+      </div>
+      <div class="modal-field">
+        <label>비밀번호</label>
+        <input type="password" placeholder="비밀번호를 입력해주세요.">
+      </div>
+      <button class="modal-login-btn">로그인</button>
+      <div class="modal-footnote">계정을 잊으셨다면 <a href="#">IMS.connect 홈페이지</a>에서<br>아이디/비밀번호 찾기를 진행해주세요.</div>
+      <div class="modal-cs">📞 IMS.connect 가입·설치 및 계정 연동 문의 <b>1600-8348 (3번)</b></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
