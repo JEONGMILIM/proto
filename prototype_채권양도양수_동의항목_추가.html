@@ -174,7 +174,11 @@
   .sign-pad {
     height: 90px; border: 1px solid #e3e6ec; border-radius: 10px; margin-bottom: 14px;
     display: flex; align-items: center; justify-content: center; color: #c3c7d0; font-size: 11px;
-    background: #fbfbfd;
+    background: #fbfbfd; cursor: pointer; user-select: none;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .sign-pad.signed {
+    background: #eef0ff; border-color: #ccd3fb; color: #2c3db3; font-weight: 700;
   }
   .terms-block { border: 1px solid #eceef2; border-radius: 10px; overflow: hidden; }
   .term-row {
@@ -188,8 +192,13 @@
   .term-new { display: none; }
   body[data-mode="tobe"] .term-new { display: flex; }
   .optional-stub { margin-top: 10px; font-size: 10.5px; color: #aeb3bd; text-align: center; }
+  .cta-row { display: flex; gap: 8px; margin-top: 14px; }
+  .reset-btn {
+    flex: 0 0 auto; padding: 0 16px; border-radius: 10px; border: 1px solid #d3d7e0;
+    background: #fff; color: #5c616c; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
   .cta-btn {
-    margin-top: 14px; width: 100%; padding: 12px; border-radius: 10px; border: none;
+    flex: 1; padding: 12px; border-radius: 10px; border: none;
     font-size: 13px; font-weight: 700; background: #e4e6ec; color: #aeb3bd; cursor: not-allowed;
     transition: background-color .15s ease, color .15s ease;
   }
@@ -241,7 +250,7 @@
           <div class="phone-head">운전자 서명하기</div>
           <div class="phone-body">
             <div class="sign-caption">빈칸 안에 서명해주세요.</div>
-            <div class="sign-pad"></div>
+            <div class="sign-pad" id="sign-pad" role="button" tabindex="0" aria-pressed="false">탭하여 서명 (데모)</div>
             <div class="terms-block">
               <label class="term-row master"><input type="checkbox" id="master-check"> 필수 약관 모두 동의하기</label>
               <label class="term-row"><input type="checkbox" class="req-check"> [필수] 대여약관 및 주요 고지사항에 대한 동의 <span class="chev">›</span></label>
@@ -251,7 +260,10 @@
               <label class="term-row term-new"><input type="checkbox" class="req-check" data-tobe-only> <span class="term-label">[필수] 채권 양도·양수 계약 동의</span> <span class="chev">›</span></label>
             </div>
             <div class="optional-stub">선택 약관(제3자 마케팅 정보 수신 · 정한닥 교통사고 서비스 안내 가입, 보험 계약 공통 항목) — 변경 없음</div>
-            <button type="button" class="cta-btn" id="cta-btn" disabled>동의하고 서명하기</button>
+            <div class="cta-row">
+              <button type="button" class="reset-btn" id="reset-btn">초기화</button>
+              <button type="button" class="cta-btn" id="cta-btn" disabled>계약서 작성 완료</button>
+            </div>
           </div>
         </div>
       </div>
@@ -263,8 +275,10 @@
         <b>TO-BE</b>: 기존 필수 약관 4종 뒤에 "[필수] 채권 양도·양수 계약 동의" 추가 (기능정의서 FT-02)
         <ul class="annotation-list">
           <li>보험 대차 건에서만 노출, 일반 단기 대여 건에는 미노출</li>
-          <li>새 항목을 포함해 하나라도 미체크면 "동의하고 서명하기" 버튼이 비활성화됩니다 — 체크박스를 눌러 확인해 보세요</li>
+          <li>서명란(탭)과 필수 약관(새 항목 포함) 전체 체크가 모두 되어야 "계약서 작성 완료" 버튼이 활성화됩니다 — 서명 영역을 탭하고 체크박스를 눌러 확인해 보세요</li>
           <li>서명 1회로 계약서 서명과 채권양도인 서명란에 동일 이미지가 동시 반영</li>
+          <li>"초기화" 버튼은 서명만 초기화합니다 — 체크한 약관 동의는 유지됩니다</li>
+          <li>이 버튼 구성(초기화 / 계약서 작성 완료)은 "운전자 서명하기" 경로 기준입니다. 서명 링크 발송·서명 직접 받기 2개 경로는 버튼이 "동의하고 서명하기" 하나로 유지되며, 그 화면에서는 서명 자체를 받지 않습니다</li>
         </ul>
       </div>
     </div>
@@ -310,10 +324,13 @@
 </div>
 
 <script>
-  /* 필수 약관 체크 → 서명 버튼 활성화 데모 */
+  /* 서명(탭) + 필수 약관 체크 → "계약서 작성 완료" 버튼 활성화 데모. 초기화는 서명만 초기화(약관 체크는 유지) */
   (function () {
     var master = document.getElementById('master-check');
     var ctaBtn = document.getElementById('cta-btn');
+    var signPad = document.getElementById('sign-pad');
+    var resetBtn = document.getElementById('reset-btn');
+    var signed = false;
 
     function activeReqChecks() {
       var isTobe = document.body.getAttribute('data-mode') === 'tobe';
@@ -322,11 +339,19 @@
       });
     }
 
+    function setSigned(next) {
+      signed = next;
+      signPad.classList.toggle('signed', signed);
+      signPad.setAttribute('aria-pressed', String(signed));
+      signPad.textContent = signed ? '✓ 서명 완료' : '탭하여 서명 (데모)';
+    }
+
     window.updateCta = function () {
       var checks = activeReqChecks();
       var allChecked = checks.length > 0 && checks.every(function (el) { return el.checked; });
-      ctaBtn.disabled = !allChecked;
-      ctaBtn.classList.toggle('active', allChecked);
+      var canComplete = allChecked && signed;
+      ctaBtn.disabled = !canComplete;
+      ctaBtn.classList.toggle('active', canComplete);
       if (master) {
         master.checked = allChecked;
       }
@@ -340,6 +365,16 @@
         activeReqChecks().forEach(function (el) { el.checked = master.checked; });
         updateCta();
       }
+    });
+
+    signPad.addEventListener('click', function () {
+      setSigned(!signed);
+      updateCta();
+    });
+
+    resetBtn.addEventListener('click', function () {
+      setSigned(false);
+      updateCta();
     });
   })();
 
