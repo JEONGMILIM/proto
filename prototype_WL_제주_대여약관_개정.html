@@ -1,0 +1,1401 @@
+<title>W/L 보험 선택 화면 — 제주 대여약관 개정 대응</title>
+<style>
+  :root {
+    --bg: #f4f5f8;
+    --canvas: #eaecf1;
+    --surface: #ffffff;
+    --surface-2: #fbfbfd;
+    --border: #e3e6ec;
+    --border-strong: #d3d7e0;
+    --text: #23262b;
+    --text-muted: #888e99;
+    --text-faint: #aeb3bd;
+    --accent-orange: #ee9436;
+    --accent-orange-strong: #dd7d16;
+    --accent-cert: #3b4fd9;
+    --accent-cert-strong: #2c3db3;
+    --accent-cert-soft: #eef0ff;
+    --accent-cert-soft-border: #ccd3fb;
+    --accent-red: #d94b4b;
+    --accent-red-soft: #fbeaea;
+    --accent-red-soft-border: #f1c9c9;
+    --tag-bg: #f1f2f5;
+    --tag-text: #5c616c;
+    --shadow: 0 1px 2px rgba(23, 26, 33, 0.04), 0 8px 20px -12px rgba(23, 26, 33, 0.12);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16181d;
+    --canvas: #1b1e24;
+    --surface: #22252c;
+    --surface-2: #1d2026;
+    --border: #33363e;
+    --border-strong: #43474f;
+    --text: #e9eaee;
+    --text-muted: #9297a1;
+    --text-faint: #6b6f78;
+    --accent-orange: #f0a34f;
+    --accent-orange-strong: #f7b972;
+    --accent-cert: #8296ff;
+    --accent-cert-strong: #a7b6ff;
+    --accent-cert-soft: rgba(130, 150, 255, 0.14);
+    --accent-cert-soft-border: rgba(130, 150, 255, 0.35);
+    --accent-red: #e57676;
+    --accent-red-soft: rgba(229, 118, 118, 0.14);
+    --accent-red-soft-border: rgba(229, 118, 118, 0.35);
+    --tag-bg: #2b2e36;
+    --tag-text: #b7bbc4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d;
+      --canvas: #1b1e24;
+      --surface: #22252c;
+      --surface-2: #1d2026;
+      --border: #33363e;
+      --border-strong: #43474f;
+      --text: #e9eaee;
+      --text-muted: #9297a1;
+      --text-faint: #6b6f78;
+      --accent-orange: #f0a34f;
+      --accent-orange-strong: #f7b972;
+      --accent-cert: #8296ff;
+      --accent-cert-strong: #a7b6ff;
+      --accent-cert-soft: rgba(130, 150, 255, 0.14);
+      --accent-cert-soft-border: rgba(130, 150, 255, 0.35);
+      --accent-red: #e57676;
+      --accent-red-soft: rgba(229, 118, 118, 0.14);
+      --accent-red-soft-border: rgba(229, 118, 118, 0.35);
+      --tag-bg: #2b2e36;
+      --tag-text: #b7bbc4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-feature-settings: "tnum" 1;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 28px 96px;
+  }
+
+  .doc-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+  .doc-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent-cert); text-transform: uppercase; }
+  .doc-title { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  .doc-desc { font-size: 14px; color: var(--text-muted); }
+
+  .toolbar {
+    position: sticky; top: 16px; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 32px; box-shadow: var(--shadow);
+  }
+  .toolbar-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .segmented { display: inline-flex; background: var(--tag-bg); border-radius: 9px; padding: 3px; gap: 2px; }
+  .segmented button {
+    appearance: none; border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 26, 33, 0.16); }
+  body[data-mode="tobe"] .segmented button[data-mode-btn="tobe"] { color: var(--accent-cert-strong); }
+  .toolbar-hint { font-size: 12px; color: var(--text-faint); }
+
+  .section { margin-bottom: 40px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .mode-chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-muted);
+  }
+  body[data-mode="tobe"] .mode-chip { color: var(--accent-cert-strong); background: var(--accent-cert-soft); border-color: var(--accent-cert-soft-border); }
+
+  .canvas { background: var(--canvas); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+
+  .annotation {
+    display: none; margin-top: 16px; background: var(--accent-cert-soft); border: 1px solid var(--accent-cert-soft-border);
+    border-radius: 12px; padding: 14px 16px; font-size: 12.5px; color: var(--text); gap: 10px;
+  }
+  body[data-mode="tobe"] .annotation { display: flex; }
+  .annotation-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-cert); margin-top: 5px; }
+  .annotation b { color: var(--accent-cert-strong); }
+  .annotation-list { margin: 4px 0 0; padding-left: 16px; }
+  .annotation-list li { margin-bottom: 3px; }
+  .annotation.always { display: flex; background: var(--surface-2); border-color: var(--border-strong); }
+  .annotation.always .annotation-dot { background: var(--text-faint); }
+  .annotation.always b { color: var(--text); }
+
+  .legend {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 24px; font-size: 12.5px; color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend-swatch.cert { background: var(--accent-cert-soft); border: 1px solid var(--accent-cert-soft-border); }
+  .legend-swatch.tag { background: var(--tag-bg); }
+  .legend-swatch.red { background: var(--accent-red-soft); border: 1px solid var(--accent-red-soft-border); }
+
+  @media (max-width: 560px) { .toolbar { flex-direction: column; align-items: stretch; } }
+
+  /* ============================================================
+     이번 화면 전용 CSS
+     ============================================================ */
+
+  .only-asis { display: inline; }
+  body[data-mode="tobe"] .only-asis { display: none; }
+  .only-tobe { display: none; }
+  body[data-mode="tobe"] .only-tobe { display: inline; }
+  .only-tobe-block { display: none; }
+  body[data-mode="tobe"] .only-tobe-block { display: block; }
+  tr.only-tobe-block { display: none; }
+  body[data-mode="tobe"] tr.only-tobe-block { display: table-row; }
+  .only-asis-block { display: none; }
+  body[data-mode="asis"] .only-asis-block { display: block; }
+  .pay-row.only-asis-block, .mobile-footer-row.only-asis-block { display: none; }
+  body[data-mode="asis"] .pay-row.only-asis-block, body[data-mode="asis"] .mobile-footer-row.only-asis-block { display: flex; }
+  .mobile-footer-row.only-tobe-block { display: none; }
+  body[data-mode="tobe"] .mobile-footer-row.only-tobe-block { display: flex; }
+
+  /* 상단 예약 정보 */
+  .top-grid { display: flex; gap: 20px; align-items: flex-start; }
+  .car-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .car-row { display: flex; gap: 16px; }
+  .car-thumb { width: 76px; height: 56px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border); flex: none; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .car-name { font-size: 16px; font-weight: 700; }
+  .car-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .car-dates { font-size: 13px; margin-top: 10px; }
+  .car-dates b { font-weight: 700; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tag { background: var(--tag-bg); color: var(--tag-text); font-size: 11.5px; padding: 4px 10px; border-radius: 6px; }
+
+  .pay-card { width: 280px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; flex: none; }
+  .pay-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .pay-row { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; margin-bottom: 8px; color: var(--text); }
+  .pay-row.only-tobe-block { display: none; }
+  body[data-mode="tobe"] .pay-row.only-tobe-block { display: flex; }
+  .pay-row .v { font-weight: 600; }
+  .pay-row .v.plus { color: var(--accent-red); }
+  .rental-value-stack { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .original-price.only-tobe { display: none; text-decoration: line-through; color: var(--text-faint); font-weight: 400; font-size: 11.5px; }
+  body[data-mode="tobe"] .original-price.only-tobe { display: block; }
+  .rental-final { white-space: nowrap; }
+  .pay-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .pay-total .v { font-size: 18px; font-weight: 700; color: var(--accent-cert-strong); }
+  .pay-btn { margin-top: 14px; width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--border-strong); color: var(--surface); font-weight: 700; font-size: 13px; }
+
+  /* 보험 카드 그리드 */
+  .insurance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .ins-card {
+    background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 14px;
+    cursor: pointer; transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .ins-card:hover { border-color: var(--border-strong); }
+  .ins-card.selected { border-color: var(--accent-cert); background: var(--accent-cert-soft); }
+  .ins-card.selected-warn { border-color: var(--accent-red); background: var(--accent-red-soft); }
+  .ins-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .ins-title { display: flex; align-items: center; gap: 7px; }
+  .ins-radio {
+    width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid var(--border-strong);
+    background: var(--surface); position: relative;
+  }
+  .ins-radio::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: transparent; }
+  .ins-card.selected .ins-radio { border-color: var(--accent-cert); }
+  .ins-card.selected .ins-radio::after { background: var(--accent-cert); }
+  .ins-card.selected-warn .ins-radio { border-color: var(--accent-red); }
+  .ins-card.selected-warn .ins-radio::after { background: var(--accent-red); }
+  .ins-name { font-weight: 700; font-size: 13px; }
+  .ins-price { font-size: 11.5px; font-weight: 700; white-space: nowrap; color: var(--text); }
+  .price-included { color: #1c9a6c; }
+  .ins-card.selected .ins-price { color: var(--accent-cert); }
+  .ins-card.selected-warn .ins-price { color: var(--accent-red); }
+  .ins-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.6; }
+  .warn-text { font-weight: inherit; }
+  .ins-card.selected-warn .warn-text { color: var(--accent-red); font-weight: 700; }
+
+  /* 상세표 */
+  .detail-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--surface); border-radius: 10px; overflow: hidden; }
+  .detail-table th, .detail-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+  .res-panel .detail-table th, .res-panel .detail-table td { text-align: center; }
+  .detail-table th { background: var(--surface-2); font-weight: 700; color: var(--text-muted); font-size: 12px; }
+  .detail-table tr:last-child td { border-bottom: none; }
+  .detail-table.ins-policy-table { table-layout: fixed; }
+  .detail-table.ins-policy-table th:first-child, .detail-table.ins-policy-table td:first-child { width: 22%; }
+  .detail-table.ins-policy-table th:not(:first-child), .detail-table.ins-policy-table td:not(:first-child) { width: 26%; }
+  .detail-table.deduct-table { table-layout: fixed; }
+  .detail-table.deduct-table th:first-child, .detail-table.deduct-table td:first-child { width: 40%; }
+  .detail-table.deduct-table th:not(:first-child), .detail-table.deduct-table td:not(:first-child) { width: 30%; }
+  .detail-table td[colspan] { text-align: center; }
+
+  .detail-subhead {
+    font-size: 13px; font-weight: 700; margin: 14px 0 10px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .detail-subhead:first-of-type { margin-top: 16px; }
+  .detail-subhead small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .detail-toggle {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    font: inherit; font-size: 13px; font-weight: 700; color: var(--text); text-align: left;
+    margin: 14px 0 10px; padding: 12px 0 0; border: none; border-top: 1px solid var(--border);
+    background: none; cursor: pointer;
+  }
+  .detail-toggle .chevron { color: var(--text-faint); transition: transform 0.15s ease; }
+  .detail-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+  .detail-panel + .detail-toggle { margin-top: 4px; padding-top: 6px; }
+  .table-label { font-size: 13px; font-weight: 700; margin: 12px 0 8px; }
+  .table-footnote { margin: 8px 0 0; font-size: 11px; color: var(--text-faint); line-height: 1.6; }
+
+  /* 화면 전환 (차량상세/예약상세) — 모드·기기 토글과 겹치므로 CSS 우선순위 충돌을 피하기 위해 JS의 inline style로 제어 */
+
+  /* 웹/모바일 전환 — only-tobe-block과 같은 방식으로 결합 선택자에 우선순위 부여 */
+  .web-view { display: block; }
+  body[data-device="mobile"] .web-view { display: none; }
+  .mobile-view { display: none; }
+  body[data-device="mobile"] .mobile-view { display: flex; justify-content: center; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+
+  /* 모바일 프레임 */
+  .mobile-frame {
+    width: 375px; max-width: 100%; height: 780px; background: var(--surface);
+    border: 1px solid var(--border-strong); border-radius: 32px; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: var(--shadow);
+  }
+  .mobile-statusbar {
+    flex: none; display: flex; justify-content: space-between; padding: 10px 20px 0;
+    font-size: 12px; font-weight: 700; color: var(--text);
+  }
+  .mobile-topbar {
+    flex: none; display: flex; align-items: center; gap: 8px; padding: 10px 16px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-back { font-size: 20px; color: var(--text); width: 24px; }
+  .mobile-title { flex: 1; text-align: center; font-size: 15px; font-weight: 700; margin-right: 24px; }
+  .mobile-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+  .mobile-car { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .mobile-car-row { display: flex; gap: 12px; align-items: center; }
+  .mobile-dates { display: flex; gap: 16px; margin-top: 12px; font-size: 12.5px; color: var(--text-muted); }
+  .mobile-date-label { display: block; font-size: 11px; color: var(--text-faint); }
+  .mobile-section-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .mobile-section-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .mobile-insurance-grid { grid-template-columns: 1fr; }
+  .mobile-detail-toggle {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    background: none; border: none; border-top: 1px solid var(--border); margin-top: 16px;
+    padding: 14px 2px; font: inherit; font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer;
+  }
+  .mobile-chevron { color: var(--text-faint); transition: transform 0.15s ease; }
+  .mobile-detail-toggle[aria-expanded="true"] .mobile-chevron { transform: rotate(180deg); }
+  .mobile-detail-panel + .mobile-detail-toggle { margin-top: 4px; padding: 8px 2px; }
+  .mobile-detail-panel { padding-top: 4px; }
+  .mobile-footer {
+    flex: none; padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border); background: var(--surface);
+  }
+  .mobile-footer-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; color: var(--text); }
+  .mobile-footer-row .v.plus { color: var(--accent-red); }
+  .mobile-footer-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin: 8px 0 12px; color: var(--accent-cert-strong); }
+  .mobile-pay-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: var(--accent-cert); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+  @media (max-width: 460px) {
+    .mobile-frame { border-radius: 0; height: calc(100vh - 32px); }
+  }
+
+  /* ============================================================
+     예약 상세 화면 전용 CSS
+     ============================================================ */
+
+  .res-status-banner {
+    background: var(--accent-cert-soft); border: 1px solid var(--accent-cert-soft-border); border-radius: 10px;
+    padding: 12px 16px; font-size: 12.5px; text-align: center; color: var(--text); line-height: 1.6;
+  }
+
+  .res-tabs { display: flex; gap: 2px; background: var(--tag-bg); border-radius: 9px; padding: 3px; margin-bottom: 16px; }
+  .res-tab {
+    flex: 1; text-align: center; padding: 9px; border-radius: 7px; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer; border: none; background: none;
+  }
+  .res-tab[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 26, 33, 0.16); }
+  .res-tab.disabled { cursor: not-allowed; opacity: 0.5; }
+
+  .res-grid { display: flex; gap: 20px; align-items: flex-start; }
+  .res-side { width: 280px; flex: none; }
+  .res-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .res-panel { display: none; }
+  .res-panel.active { display: flex; flex-direction: column; gap: 16px; }
+
+  .info-card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  .info-field { margin-bottom: 14px; }
+  .info-field:last-child { margin-bottom: 0; }
+  .info-label { font-size: 12px; color: var(--text-faint); margin-bottom: 4px; }
+  .info-value { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.5; }
+
+  .cancel-btn {
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--accent-red); background: transparent;
+    color: var(--accent-red); font: inherit; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+
+  .plan-toggle { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .plan-toggle button {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface);
+    font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+  }
+  .plan-toggle button[aria-pressed="true"] { border-color: var(--accent-cert); color: var(--accent-cert-strong); background: var(--accent-cert-soft); }
+  .plan-toggle button.warn[aria-pressed="true"] { border-color: var(--accent-red); color: var(--accent-red); background: var(--accent-red-soft); }
+  .region-toggle { display: inline-flex; background: var(--tag-bg); border-radius: 8px; padding: 3px; margin-bottom: 14px; }
+  .region-toggle button {
+    padding: 6px 16px; border-radius: 6px; border: none; background: none; font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer;
+  }
+  .region-toggle button[aria-pressed="true"] { background: var(--surface); color: var(--text); }
+
+  .policy-list { margin: 12px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--text); line-height: 1.7; }
+  .policy-list li { margin-bottom: 10px; }
+  .policy-example {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+    margin-top: 8px; font-size: 12px; line-height: 1.7;
+  }
+
+  .mobile-res-tabbar {
+    display: flex; gap: 2px; background: var(--tag-bg); border-radius: 9px; padding: 3px; margin: 14px 0;
+    position: sticky; top: 0; z-index: 5; box-shadow: 0 4px 6px -4px rgba(23, 26, 33, 0.12);
+  }
+  .mobile-res-tabbar .res-tab { font-size: 12px; padding: 8px 4px; }
+
+  .frame-label { font-size: 12px; font-weight: 700; color: var(--text-faint); margin-bottom: 8px; text-align: center; }
+
+</style>
+
+<div class="page">
+  <div class="doc-head">
+    <div class="doc-eyebrow">Prototype · W/L 예약 화면 (프리무브 · 다나와 · 서울지방변호사회 공통)</div>
+    <h1 class="doc-title">보험 선택 화면 — 제주 대여약관 개정 대응</h1>
+    <p class="doc-desc">
+      제주특별자치도 자동차 대여약관 규칙 개정 대응 프로토타입입니다.<br>
+      주요 변경: 정가/할인가 구분 표시 · 미가입 옵션 추가 · 단독사고·휴차료·휠/타이어 보장 여부 표시 · "면책금"→"자기부담금" 라벨 정정 · "프리미엄"→"고급" 명칭 변경<br>
+      사고 시 최대 부담금은 자기부담금 표시로 갈음하고, 보상 제외사항 목록은 이번 범위에서 제외합니다.<br><br>
+      아래 토글로 화면(차량상세/예약상세) · 상태(TO-BE/AS-IS) · 기기(웹/모바일)를 전환해 비교해 보세요. 보험 카드·탭을 클릭하면 실제 선택 동작을 확인할 수 있습니다.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-label">화면 상태</span>
+    <div class="segmented" role="group" aria-label="AS-IS TO-BE 전환">
+      <button type="button" data-mode-btn="tobe" aria-pressed="true">TO-BE · 개선안</button>
+      <button type="button" data-mode-btn="asis" aria-pressed="false">AS-IS · 현행</button>
+    </div>
+    <span class="toolbar-label">화면</span>
+    <div class="segmented" role="group" aria-label="차량상세 예약상세 전환">
+      <button type="button" data-screen-btn="car" aria-pressed="true">차량상세 (SCR-01)</button>
+      <button type="button" data-screen-btn="reservation" aria-pressed="false">예약상세 (SCR-02·03)</button>
+    </div>
+    <span class="toolbar-label">화면 종류</span>
+    <div class="segmented" role="group" aria-label="웹 모바일 전환">
+      <button type="button" data-device-btn="web" aria-pressed="true">웹</button>
+      <button type="button" data-device-btn="mobile" aria-pressed="false">모바일</button>
+    </div>
+  </div>
+
+  <div class="web-view">
+  <section class="section screen-car">
+    <div class="section-head">
+      <div class="section-title">차량 상세 화면 <small>대여요금 정가/할인가 구분 표시 · 미가입 옵션 추가 · 표시 항목 확대 (운전자정보·할인정보·결제수단은 이번 개편 범위 밖이라 제외)</small></div>
+      <span class="mode-chip" data-chip-text></span>
+    </div>
+    <div class="canvas">
+      <div class="top-grid">
+        <div class="main-col">
+        <div class="car-card">
+          <div class="car-row">
+            <div class="car-thumb">🚗</div>
+            <div>
+              <div class="car-name">캐스퍼</div>
+              <div class="car-meta">22년식 | 가솔린 | 5인승 · 제주OK렌터카 ★5.0</div>
+              <div class="car-dates">대여 <b>08.13(목) 10:00</b> ~ 반납 <b>08.14(금) 10:00</b> · 대여기간 1일</div>
+            </div>
+          </div>
+          <div class="tag-row">
+            <span class="tag">네비게이션</span><span class="tag">블루투스</span><span class="tag">후방센서</span>
+            <span class="tag">핸들열선</span><span class="tag">후방카메라</span><span class="tag">스마트키</span>
+          </div>
+        </div>
+
+      <div class="detail-subhead">보험 정보</div>
+      <div class="insurance-grid">
+        <div class="ins-card only-tobe" data-plan="none">
+          <div class="ins-head">
+            <span class="ins-title"><span class="ins-radio"></span><span class="ins-name">미가입</span></span>
+            <span class="ins-price">+0원</span>
+          </div>
+          <div class="ins-desc">
+            보장한도: <strong class="warn-text">0원</strong><br>
+            자기부담금: <strong class="warn-text">전액 본인부담</strong><br>
+            단독사고: 미보장<br>
+            휴차료: 미보장<br>
+            휠/타이어: 미보장
+          </div>
+        </div>
+
+        <div class="ins-card" data-plan="general">
+          <div class="ins-head">
+            <span class="ins-title"><span class="ins-radio"></span><span class="ins-name">일반 자차보험</span></span>
+            <span class="ins-price">
+              <span class="only-asis price-included">기본 포함</span>
+              <span class="only-tobe">+10,000원</span>
+            </span>
+          </div>
+          <div class="ins-desc">
+            보장한도: <span class="only-asis">200만원</span><span class="only-tobe">500만원</span><br>
+            <span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span>: 50만원
+            <span class="only-tobe-block">단독사고: 미보장<br>휴차료: 미보장<br>휠/타이어: 미보장</span>
+          </div>
+        </div>
+
+        <div class="ins-card" data-plan="premium">
+          <div class="ins-head">
+            <span class="ins-title"><span class="ins-radio"></span><span class="ins-name"><span class="only-asis">프리미엄 자차보험</span><span class="only-tobe">고급 자차보험</span></span></span>
+            <span class="ins-price">
+              <span class="only-asis">+16,940원</span>
+              <span class="only-tobe">+26,940원</span>
+            </span>
+          </div>
+          <div class="ins-desc">
+            보장한도: <span class="only-asis">200만원</span><span class="only-tobe">1,500만원</span><br>
+            <span class="only-asis">면책금: 없음</span><span class="only-tobe">자기부담금: 면제</span>
+            <span class="only-tobe-block">단독사고: 보장<br>휴차료: 면제<br>휠/타이어: 미보장</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="detail-toggle js-detail-toggle" aria-expanded="true" aria-controls="webDetailPanel">
+        보험 상세 안내 <span class="chevron">⌄</span>
+      </button>
+
+      <div class="detail-panel" id="webDetailPanel" style="display:block;">
+      <div class="table-label">운행 중 사고 시 보장 내용</div>
+      <table class="detail-table">
+        <thead>
+          <tr><th>구분</th><th>자기부담금</th><th>보상 한도</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>자차</td><td>차종별 상이</td><td>차종별 상이</td></tr>
+          <tr><td>자손</td><td>50만원</td><td>1,500만원</td></tr>
+          <tr><td>대물</td><td>50만원</td><td>2,000만원 (캠핑카 1억원)</td></tr>
+          <tr><td>대인</td><td>50만원</td><td>무한</td></tr>
+        </tbody>
+      </table>
+
+      <div class="js-deduct-section">
+      <div class="table-label">자차 보장한도 및 <span class="only-asis">면책금 · 제주/울릉도 기준</span><span class="only-tobe">자기부담금 · 제주 기준</span></div>
+      <table class="detail-table deduct-table" id="deductTable">
+        <thead>
+          <tr>
+            <th>차종</th>
+            <th>보장한도</th>
+            <th><span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span></th>
+          </tr>
+        </thead>
+        <tbody id="deductBody">
+          <tr><td>승용 경, 소형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>승용 준중형, 중형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>승용 준대형, 대형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>프리미엄</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>SUV 경, 소형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>SUV 중형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>SUV 대형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>승합</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>수입, 슈퍼카</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+          <tr><td>캠핑카</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="policy-block">
+        <div class="detail-subhead" style="border-top:none; padding-top:0;">종합 보험 정책</div>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>보장한도</th>
+              <th><span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>대물</td><td>2,000만원 (제주·울릉도)</td><td>50만원</td></tr>
+            <tr><td>대인</td><td>무한</td><td>50만원</td></tr>
+            <tr><td>자손</td><td>1,500만원</td><td>50만원</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-footnote">
+        * 자차 보장 금액은 차종에 따라 달라집니다.<br>
+        * 보험 및 차량손해 면책제도 내용 확인, 가입에 동의하는 것으로 간주합니다.
+      </p>
+      </div>
+
+      <button type="button" class="detail-toggle js-detail-toggle" aria-expanded="false" aria-controls="webPolicyPanel">
+        이용 유의사항 <span class="chevron">⌄</span>
+      </button>
+
+      <div class="detail-panel" id="webPolicyPanel" style="display:none;">
+      <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 10px;">보험의 정확한 보장 범위는 대여 시 작성하는 계약서를 기준으로 결정되며, 렌터카 업체에 따라 프리무브에서 안내된 자기부담금/보상한도 기준보다 더 나은 보장이 적용될 수도 있습니다.</p>
+      <ol class="policy-list">
+        <li>대물/대인/자손/자차 보상은 다음을 의미합니다.
+          <ul class="policy-list" style="margin-top:6px;">
+            <li>대인 보상: 상대 차량의 운전자 및 동승자의 인명 피해 보상</li>
+            <li>대물 보상: 상대 차량이나 시설 등의 물적 재산 피해 보상 (상대 휴차료/대차료 포함)</li>
+            <li>자손 보상: 본인과 본인 차량 동승자의 부상, 사망, 후유 장애 보상</li>
+            <li>자차 보상: 본인 차량 손상 보상</li>
+          </ul>
+          <div class="policy-example">
+            [보상한도 & 자차 자기부담금 보험 적용 예시] 보상 한도 1,000만원, 자기부담금 50만원인 보험인 경우<br><br>
+            1) 사고 발생금액이 30만원: 본인 자기부담금(50만원)이내 이므로 30만원 전액 부담<br>
+            2) 사고 발생금액이 800만원: 본인 자기부담금(50만원) 부담 + 업체에서 750만원(보상한도) 부담<br>
+            3) 사고 발생금액이 1,500만원: 본인 자기부담금(50만원) 부담 + 업체에서 1,000만원(보상한도) 부담 + 차액 450만원은 보장한도를 넘어서므로 본인 부담<br><br>
+            * 사고 발생 시, 대인/대물/자손/자차에서 각각의 자기부담금이 발생할 수도 있습니다.
+          </div>
+        </li>
+        <li>아래 항목은 자차 면책 보상에서 제외될 수 있으며, 대여 업체별 약관에 따라 조건이 다를 수 있습니다.
+          <ul class="policy-list" style="margin-top:6px;">
+            <li>소비성 부품(타이어/휠/배터리 등) 단독 손상</li>
+            <li>비충돌 손해(도난/키분실/침수/혼유/실내오염)</li>
+            <li>사고 또는 고장 시 발생하는 차량 견인 및 구난 비용</li>
+            <li>제주 본섬(본도) 이외의 섬(우도, 추자도 등) 및 타 시·도 지역에서 발생한 사고</li>
+            <li>음주, 무면허 등 중과실 사고 시 보장 불가</li>
+          </ul>
+        </li>
+        <li>휴차료는 보상 한도와 별도로 부과되는 금액으로, 기본 대여료의 50% 금액입니다.<br>
+          * 휴차료란 고객의 귀책사유(사고 및 기타 사유)에 의해 대여 중인 차량에 손해 발생 시, 수리기간 동안 발생하는 영업 손실금에 해당하는 금액을 의미합니다.</li>
+        <li>제2운전자의 사고 시에도 동일하게 보상되며, 보상을 위해서는 차량 대여 시 함께 있어야 하며, 면허증을 지참해야 합니다.</li>
+        <li>울릉도 지역의 보험은 내륙/제주 보험과 상이할 수 있으니 반드시 계약서를 확인해주시기 바랍니다.</li>
+      </ol>
+      </div>
+        </div>
+
+        <div class="pay-card">
+          <div class="pay-title">결제 정보</div>
+          <div class="pay-row">
+            <span><span class="only-asis">대여료 (1일)</span><span class="only-tobe">차량 대여료 (1일)</span></span>
+            <span class="v rental-value-stack">
+              <span class="only-tobe original-price">141,540원</span>
+              <span class="rental-final js-rental-final" id="rentalValue">121,540원</span>
+            </span>
+          </div>
+          <div class="pay-row only-asis-block"><span>자차보험</span><span class="v price-included">포함</span></div>
+          <div class="pay-row only-asis-block js-asis-upgrade-row" style="display:none;"><span>보험 업그레이드</span><span class="v plus">+16,940원</span></div>
+          <div class="pay-row only-tobe-block">
+            <span class="js-ins-label" id="insLabel">보험료 (미가입)</span>
+            <span class="v js-ins-fee-text" id="insFeeText">기본 포함</span>
+          </div>
+          <div class="pay-total"><span>총 결제 금액</span><span class="v js-pay-total" id="payTotal">131,540원</span></div>
+          <button class="pay-btn js-pay-btn-text" id="payBtnText">131,540 원 바로 결제하기</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="section screen-res" style="display:none;">
+    <div class="section-head">
+      <div class="section-title">예약 상세 화면 <small>보험/유의사항 탭 — 표시 항목 확대 · 미가입 옵션 반영 (대여조건·취소수수료·셔틀정보는 이번 개편 범위 밖이라 제외)</small></div>
+      <span class="mode-chip" data-chip-text></span>
+    </div>
+    <div class="canvas">
+      <div class="res-grid">
+        <div class="res-side">
+          <div class="car-card">
+            <div class="car-row">
+              <div class="car-thumb">🚙</div>
+              <div>
+                <div class="car-name">더 뉴 그랜저 IG</div>
+                <div class="car-meta">20년식 | 가솔린 | 5인승 · IMS_QA</div>
+              </div>
+            </div>
+          </div>
+          <div class="res-status-banner" style="margin-top:14px;">
+            결제 및 예약이 확정되었습니다.<br>렌트 관련 궁금하신 점은 업체에 문의해 주세요.
+          </div>
+        </div>
+
+        <div class="res-main">
+          <div class="res-tabs" role="tablist" aria-label="예약내역 탭">
+            <button type="button" class="res-tab js-res-tab" data-res-tab="info" aria-selected="true">예약정보</button>
+            <button type="button" class="res-tab js-res-tab" data-res-tab="insurance" aria-selected="false">보험/유의사항</button>
+            <button type="button" class="res-tab disabled" aria-selected="false" title="이번 개편 범위 아님">업체/리뷰</button>
+          </div>
+
+          <div class="res-panel active" data-res-panel="info">
+            <div class="car-card">
+              <div class="info-card-title">이용정보</div>
+              <div class="info-field"><div class="info-label">예약상태</div><div class="info-value">예약확정</div></div>
+              <div class="info-field"><div class="info-label">예약번호</div><div class="info-value">80637</div></div>
+              <div class="info-field"><div class="info-label">대여기간</div><div class="info-value">09.04(금) 10:00 - 09.05(토) 10:00</div></div>
+              <div class="info-field"><div class="info-label">대여/반납 위치</div><div class="info-value">제주특별자치도 제주시 용담이동 2002 (공항 픽업 셔틀 제공)</div></div>
+            </div>
+
+            <div class="car-card">
+              <div class="info-card-title">차량 정보</div>
+              <div class="info-field">
+                <div class="info-label">보험</div>
+                <div class="info-value">
+                  <span class="only-asis">프리미엄 자차 (보상한도 200만원 / 면책금 없음)</span>
+                  <span class="only-tobe">고급 자차 (보상한도 1,500만원 / 자기부담금 면제)</span>
+                </div>
+              </div>
+              <div class="info-field"><div class="info-label">대여조건</div><div class="info-value">만 26세 이상 / 면허취득 5년 경과</div></div>
+              <div class="info-field">
+                <div class="info-label">옵션</div>
+                <div class="tag-row" style="margin-top:6px;">
+                  <span class="tag">네비게이션</span><span class="tag">블루투스</span><span class="tag">후방센서</span>
+                  <span class="tag">핸들열선</span><span class="tag">후방카메라</span><span class="tag">스마트키</span>
+                  <span class="tag">통풍시트</span><span class="tag">열선시트</span><span class="tag">어라운드뷰</span>
+                  <span class="tag">블랙박스</span><span class="tag">운전석 에어백</span><span class="tag">조수석 에어백</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="car-card">
+              <div class="info-card-title">운전자 정보</div>
+              <div class="info-field"><div class="info-label">이름</div><div class="info-value">홍길동</div></div>
+              <div class="info-field"><div class="info-label">생년월일</div><div class="info-value">880427</div></div>
+              <div class="info-field"><div class="info-label">휴대폰번호</div><div class="info-value">010-3982-6017</div></div>
+            </div>
+
+            <div class="car-card">
+              <div class="info-card-title">결제 정보</div>
+              <div class="pay-row">
+                <span>대여료</span>
+                <span class="v rental-value-stack">
+                  <span class="only-tobe original-price">141,540원</span>
+                  <span class="rental-final">121,540원</span>
+                </span>
+              </div>
+              <div class="pay-row only-asis"><span>보험 (고급자차)</span><span class="v">+26,940원</span></div>
+              <div class="pay-row only-tobe-block"><span>보험료 (고급 자차)</span><span class="v">+26,940원</span></div>
+              <div class="pay-total"><span>총 결제 금액</span><span class="v">148,480원</span></div>
+              <div class="pay-row" style="margin-top:10px;"><span>결제수단</span><span class="v">신용/체크카드</span></div>
+              <div class="pay-row"><span>결제일시</span><span class="v">26.08.11 11:21</span></div>
+            </div>
+
+            <button type="button" class="cancel-btn">예약 취소</button>
+          </div>
+
+          <div class="res-panel" data-res-panel="insurance">
+            <div class="car-card">
+              <div class="info-card-title">보험 안내</div>
+              <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 12px;">이용 중 사고 시 아래와 같이 보장됩니다.</p>
+
+              <div class="region-toggle" role="group" aria-label="지역 선택">
+                <button type="button" aria-pressed="false">내륙</button>
+                <button type="button" aria-pressed="true">제주</button>
+              </div>
+
+              <div class="plan-toggle js-res-plan-toggle" role="group" aria-label="보험 플랜 보기">
+                <button type="button" data-res-plan="none" class="warn only-tobe-block" aria-pressed="false">미가입</button>
+                <button type="button" data-res-plan="general" aria-pressed="true">일반자차</button>
+                <button type="button" data-res-plan="premium" aria-pressed="false"><span class="only-asis">프리미엄 자차</span><span class="only-tobe">고급 자차</span></button>
+              </div>
+
+              <table class="detail-table deduct-table">
+                <thead>
+                  <tr><th>구분</th><th>자기부담금</th><th>보상 한도</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>자차</td><td class="js-res-car-ded">50만</td><td class="js-res-car-limit">200~400만</td></tr>
+                  <tr><td>자손</td><td>50만</td><td>1,500만</td></tr>
+                  <tr><td>대물</td><td>50만</td><td>2,000만 (캠핑카 1억원)</td></tr>
+                  <tr><td>대인</td><td>50만</td><td>무한</td></tr>
+                  <tr class="only-tobe-block"><td>단독사고</td><td colspan="2" class="js-res-solo">미보장</td></tr>
+                  <tr class="only-tobe-block"><td>휴차료</td><td colspan="2" class="js-res-downtime">미보장</td></tr>
+                  <tr class="only-tobe-block"><td>휠/타이어</td><td colspan="2" class="js-res-wheel">미보장</td></tr>
+                </tbody>
+              </table>
+              <p class="table-footnote">
+                * 자차 보장 금액은 차종에 따라 달라집니다.<br>
+                * 보험 및 차량손해 면책제도 내용 확인, 가입에 동의하는 것으로 간주합니다.
+              </p>
+
+              <button type="button" class="detail-toggle js-detail-toggle" aria-expanded="false" aria-controls="resPolicyPanel">
+                상세 정책 <span class="chevron">⌄</span>
+              </button>
+
+              <div class="detail-panel" id="resPolicyPanel" style="display:none;">
+              <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 10px;">보험의 정확한 보장 범위는 대여 시 작성하는 계약서를 기준으로 결정되며, 렌터카 업체에 따라 프리무브에서 안내된 자기부담금/보상한도 기준보다 더 나은 보장이 적용될 수도 있습니다.</p>
+              <ol class="policy-list">
+                <li>대물/대인/자손/자차 보상은 다음을 의미합니다.
+                  <ul class="policy-list" style="margin-top:6px;">
+                    <li>대인 보상: 상대 차량의 운전자 및 동승자의 인명 피해 보상</li>
+                    <li>대물 보상: 상대 차량이나 시설 등의 물적 재산 피해 보상 (상대 휴차료/대차료 포함)</li>
+                    <li>자손 보상: 본인과 본인 차량 동승자의 부상, 사망, 후유 장애 보상</li>
+                    <li>자차 보상: 본인 차량 손상 보상</li>
+                  </ul>
+                  <div class="policy-example">
+                    [보상한도 & 자차 자기부담금 보험 적용 예시] 보상 한도 1,000만원, 자기부담금 50만원인 보험인 경우<br><br>
+                    1) 사고 발생금액이 30만원: 본인 자기부담금(50만원)이내 이므로 30만원 전액 부담<br>
+                    2) 사고 발생금액이 800만원: 본인 자기부담금(50만원) 부담 + 업체에서 750만원(보상한도) 부담<br>
+                    3) 사고 발생금액이 1,500만원: 본인 자기부담금(50만원) 부담 + 업체에서 1,000만원(보상한도) 부담 + 차액 450만원은 보장한도를 넘어서므로 본인 부담<br><br>
+                    * 사고 발생 시, 대인/대물/자손/자차에서 각각의 자기부담금이 발생할 수도 있습니다.
+                  </div>
+                </li>
+                <li>아래 항목은 자차 면책 보상에서 제외될 수 있으며, 대여 업체별 약관에 따라 조건이 다를 수 있습니다.
+                  <ul class="policy-list" style="margin-top:6px;">
+                    <li>소비성 부품(타이어/휠/배터리 등) 단독 손상</li>
+                    <li>비충돌 손해(도난/키분실/침수/혼유/실내오염)</li>
+                    <li>사고 또는 고장 시 발생하는 차량 견인 및 구난 비용</li>
+                    <li>제주 본섬(본도) 이외의 섬(우도, 추자도 등) 및 타 시·도 지역에서 발생한 사고</li>
+                    <li>음주, 무면허 등 중과실 사고 시 보장 불가</li>
+                  </ul>
+                </li>
+                <li>휴차료는 보상 한도와 별도로 부과되는 금액으로, 기본 대여료의 50% 금액입니다.<br>
+                  * 휴차료란 고객의 귀책사유(사고 및 기타 사유)에 의해 대여 중인 차량에 손해 발생 시, 수리기간 동안 발생하는 영업 손실금에 해당하는 금액을 의미합니다.</li>
+                <li>제2운전자의 사고 시에도 동일하게 보상되며, 보상을 위해서는 차량 대여 시 함께 있어야 하며, 면허증을 지참해야 합니다.</li>
+                <li>울릉도 지역의 보험은 내륙/제주 보험과 상이할 수 있으니 반드시 계약서를 확인해주시기 바랍니다.</li>
+              </ol>
+              </div>
+            </div>
+
+            <button type="button" class="cancel-btn">예약 취소</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div class="mobile-view">
+    <div class="screen-car">
+      <div class="frame-label">차량 상세 화면</div>
+      <div class="mobile-frame">
+      <div class="mobile-statusbar">
+        <span>9:41</span>
+        <span>●●●</span>
+      </div>
+      <div class="mobile-topbar">
+        <span class="mobile-back">‹</span>
+        <span class="mobile-title">상세정보</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+      <div class="mobile-scroll">
+        <div class="mobile-car">
+          <div class="mobile-car-row">
+            <div class="car-thumb">🚗</div>
+            <div>
+              <div class="car-name">캐스퍼</div>
+              <div class="car-meta">22년식 | 가솔린 | 5인승 · 제주OK렌터카 ★5.0</div>
+            </div>
+          </div>
+          <div class="mobile-dates">
+            <div><span class="mobile-date-label">대여</span><b>08.13(목) 10:00</b></div>
+            <div><span class="mobile-date-label">반납</span><b>08.14(금) 10:00</b></div>
+          </div>
+          <div class="car-dates">대여기간 <b>1일</b></div>
+          <div class="tag-row">
+            <span class="tag">네비게이션</span><span class="tag">블루투스</span><span class="tag">후방센서</span>
+            <span class="tag">핸들열선</span><span class="tag">후방카메라</span><span class="tag">스마트키</span>
+          </div>
+        </div>
+
+        <div class="mobile-section-title">보험 정보</div>
+        <div class="insurance-grid mobile-insurance-grid">
+          <div class="ins-card only-tobe" data-plan="none">
+            <div class="ins-head">
+              <span class="ins-title"><span class="ins-radio"></span><span class="ins-name">미가입</span></span>
+              <span class="ins-price">+0원</span>
+            </div>
+            <div class="ins-desc">
+              보장한도: <strong class="warn-text">0원</strong><br>
+              자기부담금: <strong class="warn-text">전액 본인부담</strong><br>
+              단독사고: 미보장<br>
+              휴차료: 미보장<br>
+              휠/타이어: 미보장
+            </div>
+          </div>
+
+          <div class="ins-card" data-plan="general">
+            <div class="ins-head">
+              <span class="ins-title"><span class="ins-radio"></span><span class="ins-name">일반 자차보험</span></span>
+              <span class="ins-price">
+                <span class="only-asis price-included">기본 포함</span>
+                <span class="only-tobe">+10,000원</span>
+              </span>
+            </div>
+            <div class="ins-desc">
+              보장한도: <span class="only-asis">200만원</span><span class="only-tobe">500만원</span><br>
+              <span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span>: 50만원
+              <span class="only-tobe-block">단독사고: 미보장<br>휴차료: 미보장<br>휠/타이어: 미보장</span>
+            </div>
+          </div>
+
+          <div class="ins-card" data-plan="premium">
+            <div class="ins-head">
+              <span class="ins-title"><span class="ins-radio"></span><span class="ins-name"><span class="only-asis">프리미엄 자차보험</span><span class="only-tobe">고급 자차보험</span></span></span>
+              <span class="ins-price">
+                <span class="only-asis">+16,940원</span>
+                <span class="only-tobe">+26,940원</span>
+              </span>
+            </div>
+            <div class="ins-desc">
+              보장한도: <span class="only-asis">200만원</span><span class="only-tobe">1,500만원</span><br>
+              <span class="only-asis">면책금: 없음</span><span class="only-tobe">자기부담금: 면제</span>
+              <span class="only-tobe-block">단독사고: 보장<br>휴차료: 면제<br>휠/타이어: 미보장</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="mobile-detail-toggle js-detail-toggle" aria-expanded="true" aria-controls="mobileDetailPanel">
+          보험 상세 안내 <span class="mobile-chevron">⌄</span>
+        </button>
+
+        <div class="mobile-detail-panel" id="mobileDetailPanel" style="display:block;">
+          <div class="table-label">운행 중 사고 시 보장 내용</div>
+          <table class="detail-table">
+            <thead>
+              <tr><th>구분</th><th>자기부담금</th><th>보상 한도</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>자차</td><td>차종별 상이</td><td>차종별 상이</td></tr>
+              <tr><td>자손</td><td>50만원</td><td>1,500만원</td></tr>
+              <tr><td>대물</td><td>50만원</td><td>2,000만원 (캠핑카 1억원)</td></tr>
+              <tr><td>대인</td><td>50만원</td><td>무한</td></tr>
+            </tbody>
+          </table>
+
+          <div class="js-deduct-section">
+          <div class="table-label">자차 보장한도 및 <span class="only-asis">면책금 · 제주/울릉도 기준</span><span class="only-tobe">자기부담금 · 제주 기준</span></div>
+          <table class="detail-table deduct-table">
+            <thead>
+              <tr><th>차종</th><th>보장한도</th><th><span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td>승용 경, 소형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>승용 준중형, 중형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>승용 준대형, 대형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>프리미엄</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>SUV 경, 소형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>SUV 중형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>SUV 대형</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>승합</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>수입, 슈퍼카</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+              <tr><td>캠핑카</td><td class="limit-val">500만원</td><td class="ded-val">50만원</td></tr>
+            </tbody>
+          </table>
+          </div>
+
+          <div class="policy-block">
+            <div class="detail-subhead" style="border-top:none; padding-top:0;">종합 보험 정책</div>
+            <table class="detail-table">
+              <thead>
+                <tr><th>구분</th><th>보장한도</th><th><span class="only-asis">면책금</span><span class="only-tobe">자기부담금</span></th></tr>
+              </thead>
+              <tbody>
+                <tr><td>대물</td><td>2,000만원 (제주·울릉도)</td><td>50만원</td></tr>
+                <tr><td>대인</td><td>무한</td><td>50만원</td></tr>
+                <tr><td>자손</td><td>1,500만원</td><td>50만원</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="table-footnote">
+            * 자차 보장 금액은 차종에 따라 달라집니다.<br>
+            * 보험 및 차량손해 면책제도 내용 확인, 가입에 동의하는 것으로 간주합니다.
+          </p>
+        </div>
+
+        <button type="button" class="mobile-detail-toggle js-detail-toggle" aria-expanded="false" aria-controls="mobilePolicyPanel">
+          이용 유의사항 <span class="mobile-chevron">⌄</span>
+        </button>
+
+        <div class="mobile-detail-panel" id="mobilePolicyPanel" style="display:none;">
+          <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 10px;">보험의 정확한 보장 범위는 대여 시 작성하는 계약서를 기준으로 결정되며, 렌터카 업체에 따라 프리무브에서 안내된 자기부담금/보상한도 기준보다 더 나은 보장이 적용될 수도 있습니다.</p>
+          <ol class="policy-list">
+            <li>대물/대인/자손/자차 보상은 다음을 의미합니다.
+              <ul class="policy-list" style="margin-top:6px;">
+                <li>대인 보상: 상대 차량의 운전자 및 동승자의 인명 피해 보상</li>
+                <li>대물 보상: 상대 차량이나 시설 등의 물적 재산 피해 보상 (상대 휴차료/대차료 포함)</li>
+                <li>자손 보상: 본인과 본인 차량 동승자의 부상, 사망, 후유 장애 보상</li>
+                <li>자차 보상: 본인 차량 손상 보상</li>
+              </ul>
+              <div class="policy-example">
+                [보상한도 & 자차 자기부담금 보험 적용 예시] 보상 한도 1,000만원, 자기부담금 50만원인 보험인 경우<br><br>
+                1) 사고 발생금액이 30만원: 본인 자기부담금(50만원)이내 이므로 30만원 전액 부담<br>
+                2) 사고 발생금액이 800만원: 본인 자기부담금(50만원) 부담 + 업체에서 750만원(보상한도) 부담<br>
+                3) 사고 발생금액이 1,500만원: 본인 자기부담금(50만원) 부담 + 업체에서 1,000만원(보상한도) 부담 + 차액 450만원은 보장한도를 넘어서므로 본인 부담<br><br>
+                * 사고 발생 시, 대인/대물/자손/자차에서 각각의 자기부담금이 발생할 수도 있습니다.
+              </div>
+            </li>
+            <li>아래 항목은 자차 면책 보상에서 제외될 수 있으며, 대여 업체별 약관에 따라 조건이 다를 수 있습니다.
+              <ul class="policy-list" style="margin-top:6px;">
+                <li>소비성 부품(타이어/휠/배터리 등) 단독 손상</li>
+                <li>비충돌 손해(도난/키분실/침수/혼유/실내오염)</li>
+                <li>사고 또는 고장 시 발생하는 차량 견인 및 구난 비용</li>
+                <li>제주 본섬(본도) 이외의 섬(우도, 추자도 등) 및 타 시·도 지역에서 발생한 사고</li>
+                <li>음주, 무면허 등 중과실 사고 시 보장 불가</li>
+              </ul>
+            </li>
+            <li>휴차료는 보상 한도와 별도로 부과되는 금액으로, 기본 대여료의 50% 금액입니다.<br>
+              * 휴차료란 고객의 귀책사유(사고 및 기타 사유)에 의해 대여 중인 차량에 손해 발생 시, 수리기간 동안 발생하는 영업 손실금에 해당하는 금액을 의미합니다.</li>
+            <li>제2운전자의 사고 시에도 동일하게 보상되며, 보상을 위해서는 차량 대여 시 함께 있어야 하며, 면허증을 지참해야 합니다.</li>
+            <li>울릉도 지역의 보험은 내륙/제주 보험과 상이할 수 있으니 반드시 계약서를 확인해주시기 바랍니다.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="mobile-footer">
+        <div class="mobile-footer-row">
+          <span><span class="only-asis">대여료 (1일)</span><span class="only-tobe">차량 대여료 (1일)</span></span>
+          <span class="v rental-value-stack">
+            <span class="only-tobe original-price">141,540원</span>
+            <span class="rental-final js-rental-final">121,540원</span>
+          </span>
+        </div>
+        <div class="mobile-footer-row only-asis-block"><span>자차보험</span><span class="v price-included">포함</span></div>
+        <div class="mobile-footer-row only-asis-block js-asis-upgrade-row" style="display:none;"><span>보험 업그레이드</span><span class="v plus">+16,940원</span></div>
+        <div class="mobile-footer-row only-tobe-block">
+          <span class="js-ins-label">보험료 (미가입)</span>
+          <span class="v js-ins-fee-text">기본 포함</span>
+        </div>
+        <div class="mobile-footer-total"><span>총 결제 금액</span><span class="js-pay-total">131,540원</span></div>
+        <button class="mobile-pay-btn js-pay-btn-text">131,540 원 바로 결제하기</button>
+      </div>
+      </div>
+    </div>
+
+    <div class="screen-res" style="display:none;">
+      <div class="frame-label">예약 상세 화면</div>
+      <div class="mobile-frame">
+      <div class="mobile-statusbar">
+        <span>9:41</span>
+        <span>●●●</span>
+      </div>
+      <div class="mobile-topbar">
+        <span class="mobile-back">‹</span>
+        <span class="mobile-title">예약내역</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+      <div class="mobile-scroll">
+        <div class="mobile-car">
+          <div class="mobile-car-row">
+            <div class="car-thumb">🚙</div>
+            <div>
+              <div class="car-name">더 뉴 그랜저 IG</div>
+              <div class="car-meta">20년식 | 가솔린 | 5인승 · IMS_QA</div>
+            </div>
+          </div>
+          <div class="res-status-banner" style="margin-top:12px;">
+            결제 및 예약이 확정되었습니다.<br>렌트 관련 궁금하신 점은 업체에 문의해 주세요.
+          </div>
+        </div>
+
+        <div class="mobile-res-tabbar" role="tablist" aria-label="예약내역 탭">
+          <button type="button" class="res-tab js-res-tab" data-res-tab="info" aria-selected="true">예약정보</button>
+          <button type="button" class="res-tab js-res-tab" data-res-tab="insurance" aria-selected="false">보험/유의사항</button>
+          <button type="button" class="res-tab disabled" aria-selected="false" title="이번 개편 범위 아님">업체/리뷰</button>
+        </div>
+
+        <div class="res-panel active" data-res-panel="info">
+          <div class="detail-subhead" style="margin-top:0; padding-top:0; border-top:none;">이용정보</div>
+          <div class="info-field"><div class="info-label">예약상태</div><div class="info-value">예약확정</div></div>
+          <div class="info-field"><div class="info-label">예약번호</div><div class="info-value">80637</div></div>
+          <div class="info-field"><div class="info-label">대여기간</div><div class="info-value">09.04(금) 10:00 - 09.05(토) 10:00</div></div>
+          <div class="info-field"><div class="info-label">대여/반납 위치</div><div class="info-value">제주특별자치도 제주시 용담이동 2002 (공항 픽업 셔틀 제공)</div></div>
+
+          <div class="detail-subhead">차량 정보</div>
+          <div class="info-field">
+            <div class="info-label">보험</div>
+            <div class="info-value">
+              <span class="only-asis">프리미엄 자차 (보상한도 200만원 / 면책금 없음)</span>
+              <span class="only-tobe">고급 자차 (보상한도 1,500만원 / 자기부담금 면제)</span>
+            </div>
+          </div>
+          <div class="info-field"><div class="info-label">대여조건</div><div class="info-value">만 26세 이상 / 면허취득 5년 경과</div></div>
+          <div class="info-field">
+            <div class="info-label">옵션</div>
+            <div class="tag-row" style="margin-top:6px;">
+              <span class="tag">네비게이션</span><span class="tag">블루투스</span><span class="tag">후방센서</span>
+              <span class="tag">핸들열선</span><span class="tag">후방카메라</span><span class="tag">스마트키</span>
+            </div>
+          </div>
+
+          <div class="detail-subhead">운전자 정보</div>
+          <div class="info-field"><div class="info-label">이름</div><div class="info-value">홍길동</div></div>
+          <div class="info-field"><div class="info-label">생년월일</div><div class="info-value">880427</div></div>
+          <div class="info-field"><div class="info-label">휴대폰번호</div><div class="info-value">010-3982-6017</div></div>
+
+          <div class="detail-subhead">결제 정보</div>
+          <div class="pay-row">
+            <span>대여료</span>
+            <span class="v rental-value-stack">
+              <span class="only-tobe original-price">141,540원</span>
+              <span class="rental-final">121,540원</span>
+            </span>
+          </div>
+          <div class="pay-row only-asis"><span>보험 (고급자차)</span><span class="v">+26,940원</span></div>
+          <div class="pay-row only-tobe-block"><span>보험료 (고급 자차)</span><span class="v">+26,940원</span></div>
+          <div class="pay-total"><span>총 결제 금액</span><span class="v">148,480원</span></div>
+          <div class="pay-row" style="margin-top:10px;"><span>결제수단</span><span class="v">신용/체크카드</span></div>
+          <div class="pay-row"><span>결제일시</span><span class="v">26.08.11 11:21</span></div>
+
+          <button type="button" class="cancel-btn" style="margin-top:14px;">예약 취소</button>
+        </div>
+
+        <div class="res-panel" data-res-panel="insurance">
+          <div class="detail-subhead" style="margin-top:0; padding-top:0; border-top:none;">보험 안내</div>
+          <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 12px;">이용 중 사고 시 아래와 같이 보장됩니다.</p>
+
+          <div class="region-toggle" role="group" aria-label="지역 선택">
+            <button type="button" aria-pressed="false">내륙</button>
+            <button type="button" aria-pressed="true">제주</button>
+          </div>
+
+          <div class="plan-toggle js-res-plan-toggle" role="group" aria-label="보험 플랜 보기">
+            <button type="button" data-res-plan="none" class="warn only-tobe-block" aria-pressed="false">미가입</button>
+            <button type="button" data-res-plan="general" aria-pressed="true">일반자차</button>
+            <button type="button" data-res-plan="premium" aria-pressed="false"><span class="only-asis">프리미엄 자차</span><span class="only-tobe">고급 자차</span></button>
+          </div>
+
+          <table class="detail-table deduct-table">
+            <thead>
+              <tr><th>구분</th><th>자기부담금</th><th>보상 한도</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>자차</td><td class="js-res-car-ded">50만</td><td class="js-res-car-limit">200~400만</td></tr>
+              <tr><td>자손</td><td>50만</td><td>1,500만</td></tr>
+              <tr><td>대물</td><td>50만</td><td>2,000만 (캠핑카 1억원)</td></tr>
+              <tr><td>대인</td><td>50만</td><td>무한</td></tr>
+              <tr class="only-tobe-block"><td>단독사고</td><td colspan="2" class="js-res-solo">미보장</td></tr>
+              <tr class="only-tobe-block"><td>휴차료</td><td colspan="2" class="js-res-downtime">미보장</td></tr>
+              <tr class="only-tobe-block"><td>휠/타이어</td><td colspan="2" class="js-res-wheel">미보장</td></tr>
+            </tbody>
+          </table>
+          <p class="table-footnote">
+            * 자차 보장 금액은 차종에 따라 달라집니다.<br>
+            * 보험 및 차량손해 면책제도 내용 확인, 가입에 동의하는 것으로 간주합니다.
+          </p>
+
+          <button type="button" class="mobile-detail-toggle js-detail-toggle" aria-expanded="false" aria-controls="mobileResPolicyPanel">
+            상세 정책 <span class="mobile-chevron">⌄</span>
+          </button>
+
+          <div class="mobile-detail-panel" id="mobileResPolicyPanel" style="display:none;">
+          <p style="font-size:12.5px; color:var(--text-muted); margin:0 0 10px;">보험의 정확한 보장 범위는 대여 시 작성하는 계약서를 기준으로 결정되며, 렌터카 업체에 따라 프리무브에서 안내된 자기부담금/보상한도 기준보다 더 나은 보장이 적용될 수도 있습니다.</p>
+          <ol class="policy-list">
+            <li>대물/대인/자손/자차 보상은 다음을 의미합니다.
+              <ul class="policy-list" style="margin-top:6px;">
+                <li>대인 보상: 상대 차량의 운전자 및 동승자의 인명 피해 보상</li>
+                <li>대물 보상: 상대 차량이나 시설 등의 물적 재산 피해 보상 (상대 휴차료/대차료 포함)</li>
+                <li>자손 보상: 본인과 본인 차량 동승자의 부상, 사망, 후유 장애 보상</li>
+                <li>자차 보상: 본인 차량 손상 보상</li>
+              </ul>
+              <div class="policy-example">
+                [보상한도 & 자차 자기부담금 보험 적용 예시] 보상 한도 1,000만원, 자기부담금 50만원인 보험인 경우<br><br>
+                1) 사고 발생금액이 30만원: 본인 자기부담금(50만원)이내 이므로 30만원 전액 부담<br>
+                2) 사고 발생금액이 800만원: 본인 자기부담금(50만원) 부담 + 업체에서 750만원(보상한도) 부담<br>
+                3) 사고 발생금액이 1,500만원: 본인 자기부담금(50만원) 부담 + 업체에서 1,000만원(보상한도) 부담 + 차액 450만원은 보장한도를 넘어서므로 본인 부담<br><br>
+                * 사고 발생 시, 대인/대물/자손/자차에서 각각의 자기부담금이 발생할 수도 있습니다.
+              </div>
+            </li>
+            <li>아래 항목은 자차 면책 보상에서 제외될 수 있으며, 대여 업체별 약관에 따라 조건이 다를 수 있습니다.
+              <ul class="policy-list" style="margin-top:6px;">
+                <li>소비성 부품(타이어/휠/배터리 등) 단독 손상</li>
+                <li>비충돌 손해(도난/키분실/침수/혼유/실내오염)</li>
+                <li>사고 또는 고장 시 발생하는 차량 견인 및 구난 비용</li>
+                <li>제주 본섬(본도) 이외의 섬(우도, 추자도 등) 및 타 시·도 지역에서 발생한 사고</li>
+                <li>음주, 무면허 등 중과실 사고 시 보장 불가</li>
+              </ul>
+            </li>
+            <li>휴차료는 보상 한도와 별도로 부과되는 금액으로, 기본 대여료의 50% 금액입니다.<br>
+              * 휴차료란 고객의 귀책사유(사고 및 기타 사유)에 의해 대여 중인 차량에 손해 발생 시, 수리기간 동안 발생하는 영업 손실금에 해당하는 금액을 의미합니다.</li>
+            <li>제2운전자의 사고 시에도 동일하게 보상되며, 보상을 위해서는 차량 대여 시 함께 있어야 하며, 면허증을 지참해야 합니다.</li>
+            <li>울릉도 지역의 보험은 내륙/제주 보험과 상이할 수 있으니 반드시 계약서를 확인해주시기 바랍니다.</li>
+          </ol>
+          </div>
+
+          <button type="button" class="cancel-btn" style="margin-top:14px;">예약 취소</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation screen-car">
+    <span class="annotation-dot"></span>
+    <div>
+      <b>TO-BE 변경 사항 요약 (SCR-01)</b>
+      <ul class="annotation-list">
+        <li><b>정가 → 할인가, 할인금액 표시</b> (제15조①2호)</li>
+        <li><b>미가입 옵션 신설, 기본값도 "미가입"으로 설정</b> (제4조②③) — 보험료 미부과, "자기부담금: 전액 본인부담" 한 줄로 설명 의무(제4조④) 대체. 별도 선택 없이 예약을 진행하면 미가입 상태로 시작</li>
+        <li><b>대여료·보험료 분리 표기, 결제정보를 "보험료 (상품명): N원" 한 줄로 통일</b> — 일반 면책금은 법정 상한(1만원)으로 역산한 예시 금액(실제 값은 추후 확정), 미가입 기준(0원) 대비 추가금액 표시(일반 +10,000원 · 고급 +26,940원), "자차보험 포함/미포함" + 별도 업그레이드 행 방식 폐지</li>
+        <li><b>"면책금" → "자기부담금" 라벨 정정</b> — "종합 보험 정책" 표도 동일하게 적용</li>
+        <li><b>자차 보장한도 실값 반영, "제주 기준" 명시</b> — 일반 500만원(차종 무관 통일) · 고급 1,500만원, 자기부담금은 일반 50만원 · 고급 면제. 이번 개정은 제주에만 적용되어 울릉도는 기존 값 유지(TO-BE 라벨에서 "울릉도" 제외)</li>
+        <li><b>보험 상품 명칭 "프리미엄" → "고급" 변경</b> — 화면 전반 표기 통일</li>
+        <li><b>"이용 유의사항" 섹션 신설</b> (제15조①4·5호) — 기존엔 예약 확정 후에만 보이는 예약 상세 화면(제목 "상세 정책")에만 있었으나, 결제 전 확인이 가능하도록 동일 내용을 차량 상세 화면에도 별도 토글로 추가(화면 간 제목은 통일하지 않아 "이용 유의사항"으로 다르게 표기). 기본값은 접힘(프로토타입에서는 확인 편의상 펼쳐서 노출)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="annotation screen-res" style="display:none;">
+    <span class="annotation-dot"></span>
+    <div>
+      <b>예약 상세 화면 — TO-BE 변경 사항 (SCR-02·03)</b>
+      <ul class="annotation-list">
+        <li><b>보험 안내 플랜 토글에 "미가입" 탭 추가</b> — 보험/유의사항 탭은 참고용 비교 표라 미가입 조건도 함께 비교 가능해야 함</li>
+        <li><b>단독사고·휴차료·휠/타이어 3행 추가</b> — 차량 상세 화면(SCR-01)과 동일 값. 자기부담금/보상한도 구분이 없는 항목이라 두 칸을 병합해 값 하나만 표시, 플랜 탭 전환 시 함께 갱신</li>
+        <li><b>"상세 정책"의 보상 제외 항목 목록 확장</b> — 기존 "렌터카 서비스는 단독사고를 보장합니다. 단, 소모품(휠/타이어 등)과 중과실 사고는 보험 보장이 불가할 수도 있으며 업체에 따라 조건이 상이할 수 있습니다." 한 문장을 비충돌 손해·견인구난·타 지역 사고 등을 포함한 5개 항목 목록으로 교체</li>
+        <li><b>울릉도 안내 문구 교체</b> — "제주도 지역과 동일합니다" → "내륙/제주와 상이할 수 있으니 계약서 확인" (표준 문구로 통일)</li>
+        <li><b>"휴차보상료"→"휴차료" 용어 정정</b> — 상세 정책 항목 및 각주 문구 통일</li>
+        <li><b>차량정보 라벨 정정</b> — "자차면책금"→"자기부담금"</li>
+        <li><b>결제정보를 "보험료 (상품명): N원" 한 줄 형식으로 유지</b> — 미가입 건은 "보험료 (미가입): 0원"으로 표시. "프리미엄 자차"/"고급자차" 명칭은 "고급 자차"로 통일</li>
+        <li><b>대여료 정가 → 할인가 표시</b> (제15조①2호)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch cert"></span>TO-BE 개선 사항 안내</div>
+    <div class="legend-item"><span class="legend-swatch tag"></span>기존 화면 요소 (변경 없음)</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var body = document.body;
+    var screenButtons = document.querySelectorAll('[data-screen-btn]');
+    var screenCarEls = document.querySelectorAll('.screen-car');
+    var screenResEls = document.querySelectorAll('.screen-res');
+    var modeButtons = document.querySelectorAll('[data-mode-btn]');
+    var deviceButtons = document.querySelectorAll('[data-device-btn]');
+    var chips = document.querySelectorAll('[data-chip-text]');
+    var cards = document.querySelectorAll('.ins-card');
+    var dedVals = document.querySelectorAll('.ded-val');
+    var limitVals = document.querySelectorAll('.limit-val');
+    var rentalValues = document.querySelectorAll('.js-rental-final');
+    var insFeeTexts = document.querySelectorAll('.js-ins-fee-text');
+    var insLabels = document.querySelectorAll('.js-ins-label');
+    var asisUpgradeRows = document.querySelectorAll('.js-asis-upgrade-row');
+    var payTotals = document.querySelectorAll('.js-pay-total');
+    var payBtnTexts = document.querySelectorAll('.js-pay-btn-text');
+    var detailToggles = document.querySelectorAll('.js-detail-toggle');
+
+    var ASIS_RENTAL = 131540; // 대여료·보험료 분리 없이 통합 표기 (현행 화면 그대로)
+    // 일반면책 면책금(fee)은 제5조①1호라목상 1일 5천~1만원 — 상한인 10,000원으로 역산
+    var TOBE_INSURANCE_FEE = { none: 0, general: 10000, premium: 10000 };
+    var TOBE_CAR_RENTAL = ASIS_RENTAL - TOBE_INSURANCE_FEE.general; // 121,540 — AS-IS 합계에서 보험료를 뺀 값으로 역산
+    var UPGRADE_FEE = 16940;
+    var INS_LABEL = {
+      tobe: { none: '보험료 (미가입)', general: '보험료 (일반 자차)', premium: '보험료 (고급 자차)' },
+      asis: { general: '보험 (일반 자차)', premium: '보험 (프리미엄 자차)' }
+    };
+
+    var state = { mode: 'tobe', device: 'web', screen: 'car', selAsIs: 'general', selTobe: 'none' };
+
+    function currentSelection() {
+      return state.mode === 'tobe' ? state.selTobe : state.selAsIs;
+    }
+
+    function fmt(n) {
+      return n.toLocaleString('ko-KR') + '원';
+    }
+
+    function each(list, fn) {
+      list.forEach(fn);
+    }
+
+    function render() {
+      body.setAttribute('data-mode', state.mode);
+      body.setAttribute('data-device', state.device);
+      body.setAttribute('data-screen', state.screen);
+      screenButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-screen-btn') === state.screen ? 'true' : 'false');
+      });
+      each(screenCarEls, function (el) { el.style.display = state.screen === 'car' ? '' : 'none'; });
+      each(screenResEls, function (el) { el.style.display = state.screen === 'reservation' ? '' : 'none'; });
+      modeButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-mode-btn') === state.mode ? 'true' : 'false');
+      });
+      deviceButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-device-btn') === state.device ? 'true' : 'false');
+      });
+      chips.forEach(function (chip) {
+        chip.textContent = state.mode === 'tobe' ? 'TO-BE' : 'AS-IS';
+      });
+
+      var sel = currentSelection();
+
+      cards.forEach(function (card) {
+        var plan = card.getAttribute('data-plan');
+        var visible = plan !== 'none' || state.mode === 'tobe';
+        var isSelected = visible && plan === sel;
+        var isWarn = plan === 'none';
+        card.classList.toggle('selected', isSelected && !isWarn);
+        card.classList.toggle('selected-warn', isSelected && isWarn);
+      });
+
+      each(dedVals, function (el) {
+        if (sel === 'none') {
+          el.textContent = '전액 본인부담';
+        } else if (sel === 'premium') {
+          el.textContent = '면제';
+        } else {
+          el.textContent = '50만원';
+        }
+      });
+      each(limitVals, function (el) {
+        el.textContent = sel === 'none' ? '0원' : (sel === 'premium' ? '1,500만원' : '500만원');
+      });
+
+      var upgrade = sel === 'premium' ? UPGRADE_FEE : 0;
+      var total;
+      if (state.mode === 'tobe') {
+        each(rentalValues, function (el) { el.textContent = fmt(TOBE_CAR_RENTAL); });
+        total = TOBE_CAR_RENTAL + TOBE_INSURANCE_FEE[sel] + upgrade;
+      } else {
+        each(rentalValues, function (el) { el.textContent = fmt(ASIS_RENTAL); });
+        total = ASIS_RENTAL + upgrade;
+      }
+      each(insLabels, function (el) { el.textContent = INS_LABEL[state.mode][sel]; });
+      // AS-IS: 일반 자차보험이 기준(0원)이라 고급(구 프리미엄)만 업그레이드 금액 표시(현행 화면 그대로).
+      // TO-BE: 미가입(0원)이 기준이 되므로 일반·고급 모두 미가입 대비 업그레이드 금액을 표시.
+      each(insFeeTexts, function (el) {
+        if (state.mode === 'tobe') {
+          el.textContent = sel === 'none' ? '0원' : '+' + fmt(TOBE_INSURANCE_FEE[sel] + upgrade);
+        } else {
+          el.textContent = sel === 'premium' ? '+' + fmt(UPGRADE_FEE) : '기본 포함';
+        }
+        el.classList.toggle('plus', el.textContent.charAt(0) === '+');
+      });
+      each(asisUpgradeRows, function (el) { el.style.display = (state.mode === 'asis' && sel === 'premium') ? 'flex' : 'none'; });
+      each(payTotals, function (el) { el.textContent = fmt(total); });
+      each(payBtnTexts, function (el) { el.textContent = total.toLocaleString('ko-KR') + ' 원 바로 결제하기'; });
+    }
+
+    screenButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.screen = btn.getAttribute('data-screen-btn');
+        render();
+      });
+    });
+
+    modeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.mode = btn.getAttribute('data-mode-btn');
+        render();
+      });
+    });
+
+    deviceButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.device = btn.getAttribute('data-device-btn');
+        render();
+      });
+    });
+
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        var plan = card.getAttribute('data-plan');
+        if (plan === 'none' && state.mode !== 'tobe') return;
+        if (state.mode === 'tobe') state.selTobe = plan;
+        else state.selAsIs = plan;
+        render();
+      });
+    });
+
+    // 웹/모바일 "보험 상세 안내" 아코디언
+    detailToggles.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var panel = document.getElementById(btn.getAttribute('aria-controls'));
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+        if (panel) panel.style.display = expanded ? 'none' : 'block';
+      });
+    });
+
+    render();
+  })();
+
+  // ============================================================
+  // 예약 상세 화면 (탭 전환 + 보험 플랜 비교 토글) — 위 상태와 독립적으로 동작
+  // ============================================================
+  (function () {
+    var resPanels = document.querySelectorAll('.res-panel');
+    var planButtons = document.querySelectorAll('.js-res-plan-toggle button');
+    var carDeds = document.querySelectorAll('.js-res-car-ded');
+    var carLimits = document.querySelectorAll('.js-res-car-limit');
+    var soloEls = document.querySelectorAll('.js-res-solo');
+    var downtimeEls = document.querySelectorAll('.js-res-downtime');
+    var wheelEls = document.querySelectorAll('.js-res-wheel');
+
+    var resPlan = 'none';
+
+    function selectResTab(tabKey) {
+      document.querySelectorAll('.js-res-tab').forEach(function (btn) {
+        btn.setAttribute('aria-selected', btn.getAttribute('data-res-tab') === tabKey ? 'true' : 'false');
+      });
+      resPanels.forEach(function (panel) {
+        panel.classList.toggle('active', panel.getAttribute('data-res-panel') === tabKey);
+      });
+    }
+
+    document.querySelectorAll('.js-res-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        selectResTab(btn.getAttribute('data-res-tab'));
+      });
+    });
+
+    var CAR_DED = { general: '50만', premium: '면제', none: '전액 본인부담' };
+    var CAR_LIMIT = { general: '500만', premium: '1,500만', none: '0원' };
+    var SOLO = { general: '미보장', premium: '보장', none: '미보장' };
+    var DOWNTIME = { general: '미보장', premium: '면제', none: '미보장' };
+    var WHEEL = { general: '미보장', premium: '미보장', none: '미보장' };
+
+    function renderResPlan() {
+      planButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-res-plan') === resPlan ? 'true' : 'false');
+      });
+      carDeds.forEach(function (el) { el.textContent = CAR_DED[resPlan]; });
+      carLimits.forEach(function (el) { el.textContent = CAR_LIMIT[resPlan]; });
+      soloEls.forEach(function (el) { el.textContent = SOLO[resPlan]; });
+      downtimeEls.forEach(function (el) { el.textContent = DOWNTIME[resPlan]; });
+      wheelEls.forEach(function (el) { el.textContent = WHEEL[resPlan]; });
+    }
+
+    planButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var plan = btn.getAttribute('data-res-plan');
+        if (plan === 'none' && document.body.getAttribute('data-mode') !== 'tobe') return;
+        resPlan = plan;
+        renderResPlan();
+      });
+    });
+
+    // 지역 토글은 참고용 시각 표시만 (내용은 제주 기준 고정 — 이번 개편 범위 밖)
+    document.querySelectorAll('.region-toggle button').forEach(function (btn, i, list) {
+      btn.addEventListener('click', function () {
+        list.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+
+    // AS-IS로 전환되면 미가입 선택은 무효 — 일반자차로 되돌림
+    document.querySelectorAll('[data-mode-btn]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.getAttribute('data-mode-btn') === 'asis' && resPlan === 'none') {
+          resPlan = 'general';
+          renderResPlan();
+        }
+      });
+    });
+
+    renderResPlan();
+  })();
+</script>
