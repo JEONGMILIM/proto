@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Prototype — 어드민·IMS.form · 롯데 요금표 개편</title>
+<style>
+  :root {
+    --bg: #f4f5f8;
+    --canvas: #eaecf1;
+    --surface: #ffffff;
+    --surface-2: #fbfbfd;
+    --border: #e3e6ec;
+    --border-strong: #d3d7e0;
+    --text: #23262b;
+    --text-muted: #888e99;
+    --text-faint: #aeb3bd;
+    --accent: #3b4fd9;
+    --accent-strong: #2c3db3;
+    --accent-soft: #eef0ff;
+    --accent-soft-border: #ccd3fb;
+    --warn: #d94b4b;
+    --warn-soft: #fbeaea;
+    --warn-soft-border: #f1c9c9;
+    --web: #2f6fed;
+    --web-soft: #eaf1ff;
+    --admin: #a56a00;
+    --admin-soft: #fff6e5;
+    --tag-bg: #f1f2f5;
+    --tag-text: #5c616c;
+    --shadow: 0 1px 2px rgba(23, 26, 33, 0.04), 0 8px 20px -12px rgba(23, 26, 33, 0.12);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16181d;
+    --canvas: #1b1e24;
+    --surface: #22252c;
+    --surface-2: #1d2026;
+    --border: #33363e;
+    --border-strong: #43474f;
+    --text: #e9eaee;
+    --text-muted: #9297a1;
+    --text-faint: #6b6f78;
+    --accent: #8296ff;
+    --accent-strong: #a7b6ff;
+    --accent-soft: rgba(130, 150, 255, 0.14);
+    --accent-soft-border: rgba(130, 150, 255, 0.35);
+    --warn: #e57676;
+    --warn-soft: rgba(229, 118, 118, 0.14);
+    --warn-soft-border: rgba(229, 118, 118, 0.35);
+    --web: #8296ff;
+    --web-soft: rgba(130, 150, 255, 0.14);
+    --admin: #f0a34f;
+    --admin-soft: rgba(240, 163, 79, 0.14);
+    --tag-bg: #2b2e36;
+    --tag-text: #b7bbc4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d;
+      --canvas: #1b1e24;
+      --surface: #22252c;
+      --surface-2: #1d2026;
+      --border: #33363e;
+      --border-strong: #43474f;
+      --text: #e9eaee;
+      --text-muted: #9297a1;
+      --text-faint: #6b6f78;
+      --accent: #8296ff;
+      --accent-strong: #a7b6ff;
+      --accent-soft: rgba(130, 150, 255, 0.14);
+      --accent-soft-border: rgba(130, 150, 255, 0.35);
+      --warn: #e57676;
+      --warn-soft: rgba(229, 118, 118, 0.14);
+      --warn-soft-border: rgba(229, 118, 118, 0.35);
+      --web: #8296ff;
+      --web-soft: rgba(130, 150, 255, 0.14);
+      --admin: #f0a34f;
+      --admin-soft: rgba(240, 163, 79, 0.14);
+      --tag-bg: #2b2e36;
+      --tag-text: #b7bbc4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-feature-settings: "tnum" 1;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  .page { max-width: 1200px; margin: 0 auto; padding: 40px 28px 96px; }
+
+  .doc-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+  .doc-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; }
+  .doc-title { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  .doc-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+  .doc-desc code { background: var(--tag-bg); color: var(--tag-text); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+
+  .toolbar {
+    position: sticky; top: 16px; z-index: 10;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 24px; box-shadow: var(--shadow);
+  }
+  .toolbar-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .toolbar-group[hidden] { display: none; }
+  .toolbar-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .segmented { display: inline-flex; flex-wrap: wrap; background: var(--tag-bg); border-radius: 9px; padding: 3px; gap: 2px; }
+  .segmented button {
+    appearance: none; border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .segmented-screens button { font-size: 12px; padding: 7px 12px; }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 26, 33, 0.16); }
+  body[data-mode="tobe"] .segmented button[data-mode-btn="tobe"] { color: var(--accent-strong); }
+  .segmented-screens button[aria-pressed="true"] { color: var(--accent-strong); }
+  .section[hidden] { display: none; }
+
+  .section { margin-bottom: 40px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .head-chips { display: flex; align-items: center; gap: 6px; }
+  .platform-chip { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; padding: 3px 9px; border-radius: 999px; }
+  .platform-chip.web { color: var(--web); background: var(--web-soft); }
+  .platform-chip.admin { color: var(--admin); background: var(--admin-soft); }
+  .mode-chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-muted);
+  }
+  body[data-mode="tobe"] .mode-chip { color: var(--accent-strong); background: var(--accent-soft); border-color: var(--accent-soft-border); }
+
+  .canvas { background: var(--canvas); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+
+  .annotation {
+    display: flex; margin-top: 14px; background: var(--accent-soft); border: 1px solid var(--accent-soft-border);
+    border-radius: 12px; padding: 12px 16px; font-size: 12.5px; color: var(--text); gap: 10px; line-height: 1.6;
+  }
+  .annotation-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; }
+  .annotation b { color: var(--accent-strong); }
+  .annotation.always { background: var(--surface-2); border-color: var(--border-strong); }
+  .annotation.always .annotation-dot { background: var(--text-faint); }
+  .annotation.always b { color: var(--text); }
+  .annotation.gap { background: var(--warn-soft); border-color: var(--warn-soft-border); }
+  .annotation.gap .annotation-dot { background: var(--warn); }
+  .annotation.gap b { color: var(--warn); }
+
+  .legend {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 24px; font-size: 12.5px; color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend-swatch.accent { background: var(--accent-soft); border: 1px solid var(--accent-soft-border); }
+  .legend-swatch.always { background: var(--surface-2); border: 1px solid var(--border-strong); }
+  .legend-swatch.warn { background: var(--warn-soft); border: 1px solid var(--warn-soft-border); }
+  .legend-swatch.new { background: var(--surface); border: 2px solid var(--accent); }
+
+  @media (max-width: 560px) { .toolbar { flex-direction: column; align-items: stretch; } }
+
+  .only-tobe { display: none; }
+  body[data-mode="tobe"] .only-tobe { display: inline; }
+  .only-tobe-block { display: none; }
+  body[data-mode="tobe"] .only-tobe-block { display: block; }
+  .only-asis { display: none; }
+  body[data-mode="asis"] .only-asis { display: inline; }
+  .only-asis-block { display: none; }
+  body[data-mode="asis"] .only-asis-block { display: block; }
+
+  .only-web { display: none; }
+  body[data-device="web"] .only-web { display: inline; }
+  .only-web-block { display: none; }
+  body[data-device="web"] .only-web-block { display: block; }
+  .only-mobile { display: none; }
+  body[data-device="mobile"] .only-mobile { display: inline; }
+  .only-mobile-block { display: none; }
+  body[data-device="mobile"] .only-mobile-block { display: block; }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .panel:last-child { margin-bottom: 0; }
+  .panel.new { border: 2px solid var(--accent); background: var(--accent-soft); }
+  .panel-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .panel-label { font-size: 12px; color: var(--text-faint); margin-bottom: 3px; }
+  .panel-value { font-size: 18px; font-weight: 700; }
+  .panel-desc { font-size: 13px; color: var(--text); }
+
+  .badge-new {
+    display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--accent-strong); background: var(--accent-soft); border: 1px solid var(--accent-soft-border);
+    border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle;
+  }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12.5px; font-weight: 600;
+    color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 8px 14px; cursor: default;
+  }
+  .btn.new { border: 2px solid var(--accent); color: var(--accent-strong); background: var(--accent-soft); font-weight: 700; }
+  .btn.primary { border: none; color: #fff; background: var(--accent); font-weight: 700; }
+  .btn.tab { border-radius: 8px; }
+  .btn.tab[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-strong); background: var(--accent-soft); font-weight: 700; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--surface); border-radius: 10px; overflow: hidden; margin-top: 10px; }
+  .data-table th, .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+  .data-table th { background: var(--surface-2); font-weight: 700; color: var(--text-muted); font-size: 12px; }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .form-box { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; padding: 18px 20px; max-width: 420px; box-shadow: var(--shadow); }
+  .form-box-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { display: block; font-size: 12px; color: var(--text-faint); margin-bottom: 4px; }
+  .form-field .form-input {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 7px;
+    font-size: 13px; color: var(--text); background: var(--surface-2);
+  }
+  .form-field textarea.form-input { min-height: 56px; resize: vertical; font-family: inherit; }
+
+  .alert-box {
+    background: var(--warn-soft); border: 1px solid var(--warn-soft-border); border-radius: 10px;
+    padding: 12px 14px; font-size: 12.5px; color: var(--text); line-height: 1.6;
+  }
+
+  .asis-shot-wrap { display: inline-block; }
+  .asis-shot { max-width: 100%; border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
+  .asis-empty { font-size: 13px; color: var(--text-faint); padding: 8px 0; }
+
+  .phone-frame { max-width: 300px; border: 1px solid var(--border-strong); border-radius: 22px; padding: 16px 14px; background: var(--surface); box-shadow: var(--shadow); }
+
+  /* 어드민 실제 화면 상단 탭바 재현 — AS-IS 스크린샷과 동일한 탭 목록으로 TO-BE도 같은 틀 안에서 보여주기 위함(SCR-01 전용) */
+  .admin-tabbar {
+    display: flex; gap: 18px; overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+    border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 18px;
+    font-size: 12.5px; color: var(--text-faint);
+  }
+  .admin-tabbar span.active { color: var(--text); font-weight: 700; border-bottom: 2px solid var(--text); padding-bottom: 10px; margin-bottom: -11px; }
+
+  /* ============================================================
+     실제 화면 재현 컴포넌트 — 어드민(렌카) 사이드바·상단바, IMS.form 상단바,
+     모달의 반투명 배경 오버레이(실제 화면 기준)
+     ============================================================ */
+  .mock-frame { position: relative; border: 1px solid var(--border-strong); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); background: #fff; color: #23262b; font-size: 13px; }
+
+  .mock-admin { display: flex; min-height: 480px; }
+  .mock-a-side { width: 140px; flex: none; background: #3a3a3a; color: #d8d8d8; font-size: 11px; padding-bottom: 8px; }
+  .mock-a-side .mock-a-brand { color: #ff8a3d; font-weight: 700; font-size: 15px; padding: 14px; }
+  .mock-a-side .mock-a-item { padding: 8px 14px; }
+  .mock-a-side .mock-a-item.active { background: #ff8a3d; color: #23262b; font-weight: 700; }
+  .mock-a-main { flex: 1; background: #fff; display: flex; flex-direction: column; min-width: 0; }
+  .mock-a-top { background: #2c2c2c; color: #fff; padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex: none; }
+  .mock-a-content { padding: 16px 18px; overflow-x: auto; overflow-y: hidden; flex: 1; }
+
+  .mock-web { display: flex; min-height: 420px; }
+  .mock-w-top { background: #000; color: #fff; padding: 9px 16px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .mock-w-body { flex: 1; background: #fff; display: flex; flex-direction: column; min-width: 0; }
+  .mock-w-crumb { padding: 12px 18px 0; font-size: 11.5px; color: #9297a1; }
+  .mock-w-card-fake { margin: 10px 18px 0; background: #fff; border: 1px solid #e6e7eb; border-radius: 10px; padding: 14px 16px; }
+  .mock-w-card-fake h4 { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #23262b; }
+  .mock-w-row-fake { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; color: #7b8090; border-bottom: 1px dashed #eceef2; }
+  .mock-w-row-fake:last-child { border-bottom: none; }
+
+  /* 모달이 뜨는 실제 화면처럼, 배경(리스트/폼)을 어둡게 깔고 그 위에 modal-mock을 중앙 배치 */
+  .mock-overlay {
+    position: absolute; inset: 0; background: rgba(15, 15, 20, 0.6);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 28px 16px; overflow-y: auto;
+  }
+  .mock-overlay .modal-mock { margin: 0 auto; }
+
+  .mock-m-status { background: #000; color: #fff; font-size: 10.5px; display: flex; justify-content: space-between; padding: 5px 14px 3px; }
+  .mock-m-header { background: #fff; color: #23262b; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+  .mock-m-header .mock-back { font-size: 16px; }
+  .mock-m-header .mock-title { font-size: 14px; font-weight: 700; }
+
+  /* IMS.form Mobile "청구기준 설정" 전체 화면 재현(실제 화면 기준 — 모달 아닌 풀페이지, 라디오 선택, 하단 고정 CTA) */
+  .mock-m-select { margin: 14px; padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #23262b; }
+  .mock-m-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .mock-m-tabs span { flex: 1; text-align: center; padding: 12px 0; font-size: 12.5px; color: var(--text-faint); cursor: pointer; }
+  .mock-m-tabs span.active { color: #ff8a3d; font-weight: 700; border-bottom: 2px solid #ff8a3d; margin-bottom: -1px; }
+  .mock-m-table { width: 100%; border-collapse: collapse; font-size: 11px; color: #23262b; }
+  .mock-m-table th { text-align: left; padding: 8px 10px; color: var(--text-faint); font-weight: 700; border-bottom: 1px solid var(--border); font-size: 10.5px; }
+  .mock-m-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  .mock-m-table tr:nth-child(even) td { background: #f7f7f8; }
+  .mock-m-cta { background: #ff8a3d; color: #fff; text-align: center; padding: 14px; font-weight: 700; font-size: 13.5px; }
+  .mock-m-nav { display: flex; border-top: 1px solid var(--border); }
+  .mock-m-nav span { flex: 1; text-align: center; padding: 8px 0 6px; font-size: 9.5px; color: #9297a1; }
+  .mock-m-nav span.active { color: #23262b; }
+
+  /* IMS.form "청구기준 설정" 모달 실제 화면 재현 */
+  .modal-mock { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); padding: 20px 24px; max-width: 480px; }
+  .modal-mock-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-mock-title { font-size: 17px; font-weight: 700; }
+  .modal-mock-close { color: var(--text-faint); font-size: 18px; line-height: 1; }
+  .modal-subtabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .modal-subtabs span { flex: 1; text-align: center; padding-bottom: 10px; font-size: 13px; color: var(--text-faint); }
+  .modal-subtabs span.active { color: var(--text); font-weight: 700; border-bottom: 2px solid var(--text); margin-bottom: -1px; }
+  .pill-tabs { display: flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+  .pill-tabs[hidden] { display: none; }
+  .mock-m-tabs[hidden] { display: none; }
+  .pill-tabs button {
+    flex: 1; appearance: none; border: none; border-right: 1px solid var(--border-strong); background: var(--surface);
+    padding: 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer;
+    white-space: nowrap; line-height: 1.4;
+  }
+  .pill-tabs button:last-child { border-right: none; }
+  .pill-tabs button[aria-pressed="true"] { background: #4b5563; color: #fff; }
+  :root[data-theme="dark"] .pill-tabs button[aria-pressed="true"], body[data-theme="dark"] .pill-tabs button[aria-pressed="true"] { background: #6b7280; }
+  .fixed-field { padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 7px; font-size: 13px; background: var(--surface-2); color: var(--text-muted); }
+  .form-field label .req { color: var(--warn); }
+  .modal-caption { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+</style>
+</head>
+<body data-mode="tobe" data-device="web">
+
+<div class="page">
+  <div class="doc-head">
+    <div class="doc-eyebrow">Prototype · 어드민·IMS.form</div>
+    <h1 class="doc-title">롯데 요금표 개편</h1>
+    <p class="doc-desc">
+      근거: <code>PRD_롯데 요금표 개편.md</code> / <code>기능정의서_롯데 요금표 개편.md</code><br>
+      "화면" 토글로 화면을 고르고, "화면 상태"(TO-BE/AS-IS)·"기기"(Web/Mobile) 토글로 비교해 보세요.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">화면</span>
+      <div class="segmented segmented-screens" role="group" aria-label="화면 전환">
+        <button type="button" data-screen-btn="scr-01" aria-pressed="true">SCR-01 요금표 등록(리스트)</button>
+        <button type="button" data-screen-btn="scr-02" aria-pressed="false">SCR-02 요금표 변경(모달)</button>
+        <button type="button" data-screen-btn="scr-03" aria-pressed="false">SCR-03 청구기준 설정</button>
+      </div>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">화면 상태</span>
+      <div class="segmented" role="group" aria-label="AS-IS TO-BE 전환">
+        <button type="button" data-mode-btn="tobe" aria-pressed="true">TO-BE · 개선안</button>
+        <button type="button" data-mode-btn="asis" aria-pressed="false">AS-IS · 현행</button>
+      </div>
+    </div>
+    <div class="toolbar-group" id="device-toolbar-group">
+      <span class="toolbar-label">기기</span>
+      <div class="segmented" role="group" aria-label="Web Mobile 전환">
+        <button type="button" data-device-btn="web" aria-pressed="true">Web</button>
+        <button type="button" data-device-btn="mobile" aria-pressed="false">Mobile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ [SCR-01] 어드민 요금표 등록 ============ -->
+  <section class="section" id="scr-01">
+    <div class="section-head">
+      <div class="section-title">[SCR-01] 어드민 요금표 등록 <small>요금표 등록·비활성화 관리</small></div>
+      <div class="head-chips">
+        <span class="platform-chip admin">어드민 Web</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block">
+        <div class="mock-frame">
+          <div class="mock-admin">
+            <div class="mock-a-side">
+              <div class="mock-a-brand">렌카</div>
+              <div class="mock-a-item">Dashboard</div>
+              <div class="mock-a-item">회원 관리</div>
+              <div class="mock-a-item">요청관리 - 보험사대차</div>
+              <div class="mock-a-item">요청관리 - 일반콜단기</div>
+              <div class="mock-a-item">일반콜 배/회차 관리</div>
+              <div class="mock-a-item">렌터카 관리</div>
+              <div class="mock-a-item">캐시 관리</div>
+              <div class="mock-a-item">광고 수익 관리</div>
+              <div class="mock-a-item">계약서 관리</div>
+              <div class="mock-a-item">면허증 관리</div>
+              <div class="mock-a-item active">운영 관리</div>
+              <div class="mock-a-item">수익 관리</div>
+              <div class="mock-a-item">로그 관리</div>
+              <div class="mock-a-item">쿠폰 관리</div>
+            </div>
+            <div class="mock-a-main">
+              <div class="mock-a-top"><span>운영 관리 ▸ 요금표 등록</span><span>내정보 로그아웃</span></div>
+              <div class="mock-a-content">
+                <div class="admin-tabbar"><span class="active">요금표 등록</span></div>
+                <div class="form-field" style="max-width:320px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                  <label style="margin-bottom:0;white-space:nowrap;">요금표 종류</label>
+                  <select class="form-input" id="scr01-rate-type" style="flex:1;">
+                    <option value="domestic" selected>기본(롯데)</option>
+                    <option value="import">수입(롯데)</option>
+                    <option value="rentcar">렌카</option>
+                  </select>
+                </div>
+                <div class="btn-row" style="justify-content:flex-end;margin-bottom:8px;">
+                  <button class="btn primary">등록/수정</button>
+                </div>
+                <table class="data-table" data-rate-table="domestic">
+                  <thead>
+                    <tr>
+                      <th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>배기량</th><th>대표차종</th>
+                      <th>1~3일</th><th>4일</th><th>5~6일</th><th>7일이상</th><th>6시간</th><th>10시간</th><th>12시간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>경차</td><td>-</td><td>모닝 / 스파크 (G) 26년식</td><td>121,000</td><td>109,000</td><td>103,000</td><td>97,000</td><td>68,000</td><td>87,000</td><td>97,000</td></tr>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>소형</td><td>-</td><td>레이 / 액센트 (G) 26년식</td><td>126,000</td><td>113,000</td><td>107,000</td><td>101,000</td><td>71,000</td><td>91,000</td><td>101,000</td></tr>
+                  </tbody>
+                </table>
+                <table class="data-table" data-rate-table="import" hidden>
+                  <thead>
+                    <tr>
+                      <th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>배기량</th><th>대표차종</th>
+                      <th>1~3일</th><th>4일</th><th>5~6일</th><th>7일이상</th><th>6시간</th><th>10시간</th><th>12시간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>수입(롯데)</td><td>-</td><td>-</td><td>-</td><td>MINI COOPER, BENZ A220, JEEP RENEGADE</td><td>395,000</td><td>355,500</td><td>335,800</td><td>316,000</td><td>221,200</td><td>284,400</td><td>316,000</td></tr>
+                    <tr><td>수입(롯데)</td><td>-</td><td>-</td><td>-</td><td>MINI COOPER S, VOLKSWAGEN TIGUAN</td><td>422,000</td><td>379,800</td><td>358,700</td><td>337,600</td><td>236,300</td><td>303,800</td><td>337,600</td></tr>
+                  </tbody>
+                </table>
+                <div class="alert-box" data-rate-table="rentcar" hidden>
+                  "렌카"는 기존 구간(1~2일/3~4일/5~6일/7일이상) 그대로이며 이번 프로젝트의 변경 대상이 아닙니다.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="only-asis-block">
+        <div class="mock-frame">
+          <div class="mock-admin">
+            <div class="mock-a-side">
+              <div class="mock-a-brand">렌카</div>
+              <div class="mock-a-item">Dashboard</div>
+              <div class="mock-a-item">회원 관리</div>
+              <div class="mock-a-item">요청관리 - 보험사대차</div>
+              <div class="mock-a-item">요청관리 - 일반콜단기</div>
+              <div class="mock-a-item">일반콜 배/회차 관리</div>
+              <div class="mock-a-item">렌터카 관리</div>
+              <div class="mock-a-item">캐시 관리</div>
+              <div class="mock-a-item">광고 수익 관리</div>
+              <div class="mock-a-item">계약서 관리</div>
+              <div class="mock-a-item">면허증 관리</div>
+              <div class="mock-a-item active">운영 관리</div>
+              <div class="mock-a-item">수익 관리</div>
+              <div class="mock-a-item">로그 관리</div>
+              <div class="mock-a-item">쿠폰 관리</div>
+            </div>
+            <div class="mock-a-main">
+              <div class="mock-a-top"><span>운영 관리 ▸ 요금표 등록</span><span>내정보 로그아웃</span></div>
+              <div class="mock-a-content">
+                <div class="admin-tabbar"><span class="active">요금표 등록</span></div>
+                <div class="form-field" style="max-width:320px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                  <label style="margin-bottom:0;white-space:nowrap;">요금표 종류</label>
+                  <select class="form-input" style="flex:1;"><option selected>기본(롯데)</option><option>렌카</option></select>
+                </div>
+                <div class="btn-row" style="justify-content:flex-end;margin-bottom:8px;">
+                  <button class="btn primary">등록/수정</button>
+                </div>
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>배기량</th><th>대표차종</th>
+                      <th>1~2일</th><th>3~4일</th><th>5~6일</th><th>7일이상</th><th>6시간</th><th>10시간</th><th>12시간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>경차</td><td>-</td><td>스파크 / 모닝</td><td>105,000</td><td>95,000</td><td>89,000</td><td>84,000</td><td>59,000</td><td>76,000</td><td>84,000</td></tr>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>경차</td><td>-</td><td>레이 / 액센트</td><td>110,000</td><td>99,000</td><td>94,000</td><td>88,000</td><td>62,000</td><td>79,000</td><td>88,000</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01</b>, PRD <b>LD-01·LD-02·LD-04</b> · 경로: 어드민 &gt; 운영 관리 &gt; 요금표 등록<br>
+      • <b>비활성화</b>: 기존 단일 "기본(롯데)"(구간 1~2일/3~4일/5~6일/7일이상)는 비활성화되어 목록에서 제외됩니다.<br>
+      • <b>신규 등록</b>: 새 구간이 적용된 "기본(롯데)"/"수입(롯데)" 2종이 신규 등록됩니다. "수입(롯데)"은 차량구분·차량등급 선택이 막히고(사유는 SCR-02 참조), 여러 모델을 대표차종 한 줄에 함께 묶습니다.<br>
+      • <b>변경 없음</b>: "렌카"(롯데 구요금표)를 비롯해 각 보험사·공제조합 전용 요금표는 이번 구간 변경과 무관한 별도 체계라 그대로 유지됩니다(PRD Out of Scope 참고).<br>
+      • <b>확인 방법</b>: 위 "요금표 종류" 셀렉트박스에서 "수입(롯데)"를 선택하면 바로 확인할 수 있습니다(직접 눌러보세요).<br>
+      • <b>연관 화면</b>: "수입(롯데)" 선택 시 폼(SCR-03)의 차량구분·등급 탭이 통째로 사라지는 동작은 SCR-03 참조, [등록/수정] 클릭 후 행의 [변경] 클릭 시 열리는 등록 모달은 SCR-02 참조.
+    </span></div>
+  </section>
+
+  <!-- ============ [SCR-02] 어드민 요금표 변경 모달 ============ -->
+  <section class="section" id="scr-02" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-02] 어드민 요금표 변경 모달 <small>SCR-01 리스트에서 [등록/수정] 클릭 후 행의 [변경] 클릭 시 열리는 등록 모달</small></div>
+      <div class="head-chips">
+        <span class="platform-chip admin">어드민 Web</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block">
+        <div class="mock-frame">
+          <div class="mock-admin">
+            <div class="mock-a-side">
+              <div class="mock-a-brand">렌카</div>
+              <div class="mock-a-item">Dashboard</div>
+              <div class="mock-a-item">회원 관리</div>
+              <div class="mock-a-item">렌터카 관리</div>
+              <div class="mock-a-item">캐시 관리</div>
+              <div class="mock-a-item active">운영 관리</div>
+              <div class="mock-a-item">수익 관리</div>
+            </div>
+            <div class="mock-a-main">
+              <div class="mock-a-top"><span>운영 관리 ▸ 요금표 등록</span><span>내정보 로그아웃</span></div>
+              <div class="mock-a-content">
+                <div class="admin-tabbar"><span class="active">요금표 등록</span></div>
+                <div class="form-field" style="max-width:320px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                  <label style="margin-bottom:0;white-space:nowrap;">요금표 종류</label>
+                  <select class="form-input" style="flex:1;"><option>기본(롯데)</option><option selected>수입(롯데)</option><option>렌카</option></select>
+                </div>
+                <div class="btn-row" style="margin-bottom:8px;">
+                  <button class="btn">취소</button>
+                  <button class="btn">차종추가</button>
+                  <button class="btn primary" style="background:var(--warn);">저장하기</button>
+                </div>
+                <div style="font-size:11.5px;color:var(--text-faint);margin-bottom:12px;">* 작업을 완료하신 후 꼭 저장을 눌러주세요. · 차종은 35개까지만 등록 가능합니다.</div>
+                <table class="data-table">
+                  <thead><tr><th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>대표차종</th><th>1~3일</th></tr></thead>
+                  <tbody>
+                    <tr><td>수입(롯데)</td><td>-</td><td>-</td><td>MINI COOPER, BENZ A220, JEEP RENEGADE</td><td>395,000</td></tr>
+                    <tr><td>수입(롯데)</td><td>-</td><td>-</td><td>MINI COOPER S, VOLKSWAGEN TIGUAN</td><td>422,000</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="mock-overlay">
+            <div class="modal-mock" style="width:420px;max-width:100%;">
+              <div class="modal-mock-head">
+                <div class="modal-mock-title">요금표 변경</div>
+                <div class="modal-mock-close">&times;</div>
+              </div>
+              <div class="form-field">
+                <label>요금표 기준</label>
+                <div class="fixed-field">수입(롯데)</div>
+              </div>
+              <div class="form-field">
+                <label><span class="req">*</span> 차량 구분</label>
+                <div class="fixed-field">해당 없음</div>
+              </div>
+              <div class="form-field">
+                <label><span class="req">*</span> 차량 등급</label>
+                <div class="fixed-field">해당 없음</div>
+              </div>
+              <div class="form-field">
+                <label>배기량/출력</label>
+                <input class="form-input">
+              </div>
+              <div class="form-field">
+                <label><span class="req">*</span> 대표 차종</label>
+                <input class="form-input" value="MINI COOPER, BENZ A220, JEEP RENEGADE">
+              </div>
+              <div class="form-field"><label><span class="req">*</span> 1~3일</label><input class="form-input" value="395,000"></div>
+              <div class="form-field"><label><span class="req">*</span> 4일</label><input class="form-input" value="355,500"></div>
+              <div class="form-field"><label><span class="req">*</span> 5~6일</label><input class="form-input" value="335,800"></div>
+              <div class="form-field"><label><span class="req">*</span> 7일이상</label><input class="form-input" value="316,000"></div>
+              <div class="form-field"><label><span class="req">*</span> 6시간</label><input class="form-input" value="221,200"></div>
+              <div class="form-field"><label><span class="req">*</span> 10시간</label><input class="form-input" value="284,400"></div>
+              <div class="form-field"><label><span class="req">*</span> 12시간</label><input class="form-input" value="316,000"></div>
+              <div class="btn-row" style="justify-content:center;margin-top:12px;">
+                <button class="btn primary">변경</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="only-asis-block">
+        <div class="mock-frame">
+          <div class="mock-admin">
+            <div class="mock-a-side">
+              <div class="mock-a-brand">렌카</div>
+              <div class="mock-a-item">Dashboard</div>
+              <div class="mock-a-item">회원 관리</div>
+              <div class="mock-a-item">렌터카 관리</div>
+              <div class="mock-a-item">캐시 관리</div>
+              <div class="mock-a-item active">운영 관리</div>
+              <div class="mock-a-item">수익 관리</div>
+            </div>
+            <div class="mock-a-main">
+              <div class="mock-a-top"><span>운영 관리 ▸ 요금표 등록</span><span>내정보 로그아웃</span></div>
+              <div class="mock-a-content">
+                <div class="admin-tabbar"><span class="active">요금표 등록</span></div>
+                <div class="form-field" style="max-width:320px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                  <label style="margin-bottom:0;white-space:nowrap;">요금표 종류</label>
+                  <select class="form-input" style="flex:1;"><option selected>기본(롯데)</option><option>렌카</option></select>
+                </div>
+                <div class="btn-row" style="margin-bottom:8px;">
+                  <button class="btn">취소</button>
+                  <button class="btn">차종추가</button>
+                  <button class="btn primary" style="background:var(--warn);">저장하기</button>
+                </div>
+                <div style="font-size:11.5px;color:var(--text-faint);margin-bottom:12px;">* 작업을 완료하신 후 꼭 저장을 눌러주세요. · 차종은 35개까지만 등록 가능합니다.</div>
+                <table class="data-table">
+                  <thead><tr><th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>대표차종</th><th>1~2일</th></tr></thead>
+                  <tbody>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>경차</td><td>스파크 / 모닝</td><td>105,000</td></tr>
+                    <tr><td>기본(롯데)</td><td>승용</td><td>경차</td><td>레이 / 액센트</td><td>110,000</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="mock-overlay">
+            <div class="modal-mock" style="width:420px;max-width:100%;">
+              <div class="modal-mock-head">
+                <div class="modal-mock-title">요금표 변경</div>
+                <div class="modal-mock-close">&times;</div>
+              </div>
+              <div class="form-field">
+                <label>요금표 기준</label>
+                <div class="fixed-field">기본(롯데)</div>
+              </div>
+              <div class="form-field">
+                <label>차량 구분</label>
+                <select class="form-input"><option selected>승용</option><option>SUV·RV</option><option>전기</option></select>
+              </div>
+              <div class="form-field">
+                <label>차량 등급</label>
+                <select class="form-input"><option selected>경차</option><option>소형</option><option>중형</option></select>
+              </div>
+              <div class="form-field">
+                <label>배기량/출력</label>
+                <input class="form-input" value="2.신요금표">
+              </div>
+              <div class="form-field">
+                <label>대표 차종</label>
+                <input class="form-input" value="스파크 / 모닝">
+              </div>
+              <div class="form-field"><label>1~2일</label><input class="form-input" value="105,000"></div>
+              <div class="form-field"><label>3~4일</label><input class="form-input" value="95,000"></div>
+              <div class="form-field"><label>5~6일</label><input class="form-input" value="89,000"></div>
+              <div class="form-field"><label>7일이상</label><input class="form-input" value="84,000"></div>
+              <div class="form-field"><label>6시간</label><input class="form-input" value="59,000"></div>
+              <div class="form-field"><label>10시간</label><input class="form-input" value="76,000"></div>
+              <div class="form-field"><label>12시간</label><input class="form-input" value="84,000"></div>
+              <div class="btn-row" style="justify-content:center;margin-top:12px;">
+                <button class="btn primary">변경</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01</b>, PRD <b>LD-04·LD-11</b> · 경로: SCR-01 &gt; [등록/수정] 클릭 &gt; 변경 &gt; 모달<br>
+      • <b>고정 표시</b>: "요금표 기준"은 SCR-01에서 선택한 요금표종류(예: "수입(롯데)")에 따라 결정됩니다.<br>
+      • <b>선택 불가</b>: 차량 구분·등급은 국산차 분류 체계라 수입차에는 적용할 수 없어 "해당 없음"으로 고정 표시되고 선택 자체가 막힙니다(운영팀 의견 반영). 구간별 요금 필드는 새 구간(1~3일/4일/5~6일/7일이상)으로 바뀝니다.<br>
+      • "수입(롯데)"는 기존 데이터를 이어받는 게 아니라 처음부터 새로 만드는 요금표입니다. 6/10/12시간 필드도 공란으로 두지 않고 실제 요금값을 입력합니다.
+    </span></div>
+  </section>
+
+  <!-- ============ [SCR-03] IMS.form 청구기준 설정 ============ -->
+  <section class="section" id="scr-03" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-03] IMS.form 청구기준 설정 모달 <small>대상별 요금표 선택 방식</small></div>
+      <div class="head-chips">
+        <span class="platform-chip web">IMS.form</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block">
+        <div class="only-web-block">
+          <div class="mock-frame" style="margin-bottom:8px;min-height:640px;">
+            <div class="mock-web">
+              <div class="mock-w-body">
+                <div class="mock-w-top"><span>IMS.form</span><span>이용안내 · 김렌카 님</span></div>
+                <div class="mock-w-card-fake" style="margin-top:18px;">
+                  <h4 style="display:flex;align-items:center;gap:8px;">계약 정보 (#10032) <span style="font-size:10.5px;font-weight:700;color:#d94b4b;border:1px solid #f1c9c9;background:#fbeaea;border-radius:5px;padding:1px 6px;">미검증</span></h4>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:12px;color:#444;">
+                    <div class="mock-w-row-fake"><span>대여차종</span><span>그랜저</span></div>
+                    <div class="mock-w-row-fake"><span>배차일시</span><span>2026-07-29 13:11</span></div>
+                    <div class="mock-w-row-fake"><span>대여 차량번호</span><span>88호7890</span></div>
+                    <div class="mock-w-row-fake"><span>반납일시</span><span>2026-08-01 10:38</span></div>
+                  </div>
+                  <div class="mock-w-row-fake" style="margin-top:6px;align-items:center;">
+                    <span>청구수식</span>
+                    <span style="display:flex;align-items:center;gap:10px;"><span>[청구기준 설정] 클릭 시 계산</span><button class="btn" style="padding:4px 10px;font-size:11px;">청구 기준 설정</button></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-overlay" style="align-items:center;">
+              <div class="modal-mock" style="width:460px;max-width:100%;height:480px;box-sizing:border-box;display:flex;flex-direction:column;">
+                <div class="modal-mock-head">
+                  <div class="modal-mock-title">청구기준 설정</div>
+                  <div class="modal-mock-close">&times;</div>
+                </div>
+                <div class="modal-subtabs">
+                  <span class="active">청구기준</span>
+                  <span>기준가 설정</span>
+                </div>
+                <div class="form-field">
+                  <label>요금표 선택 <span style="font-weight:400;color:var(--text-faint);">(직접 바꿔보세요)</span></label>
+                  <select class="form-input" id="scr03-plan-select">
+                    <option value="domestic">롯데 신요금표</option>
+                    <option value="import" selected>롯데 신요금표(수입)</option>
+                    <option value="old">롯데 구요금표</option>
+                  </select>
+                </div>
+                <div class="pill-tabs" id="scr03-tabs">
+                  <button type="button" data-tab="passenger" aria-pressed="false">승용</button>
+                  <button type="button" data-tab="suv" aria-pressed="false">SUV·RV</button>
+                  <button type="button" data-tab="ev" aria-pressed="false">전기</button>
+                </div>
+                <table class="data-table" data-scr03-table="import" hidden>
+                  <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~3일 비용</th></tr></thead>
+                  <tbody>
+                    <tr><td><input type="checkbox" disabled></td><td>-</td><td>-</td><td>MINI COOPER, BENZ A220, JEEP RENEGADE</td><td>395,000원</td></tr>
+                    <tr><td><input type="checkbox" disabled></td><td>-</td><td>-</td><td>MINI COOPER S, VOLKSWAGEN TIGUAN</td><td>422,000원</td></tr>
+                  </tbody>
+                </table>
+                <table class="data-table" data-scr03-table="default" hidden>
+                  <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~3일 비용</th></tr></thead>
+                  <tbody>
+                    <tr><td><input type="checkbox" disabled></td><td>경차</td><td>-</td><td>모닝 / 스파크 (G) 26년식</td><td>121,000원</td></tr>
+                    <tr><td><input type="checkbox" disabled></td><td>경차</td><td>-</td><td>레이 / 액센트 (G) 26년식</td><td>126,000원</td></tr>
+                  </tbody>
+                </table>
+                <div class="alert-box" data-scr03-table="empty" hidden style="background:var(--surface-2);border-color:var(--border-strong);text-align:center;color:var(--text-muted);line-height:1.8;">
+                  등록된 요금표가 없습니다.<br>[사업자 관리 &gt; 사업자 설정 &gt; 청구요금표 &gt; 차종 추가]에서 요금표를 등록해주세요.
+                </div>
+                <div class="btn-row" style="justify-content:flex-end;margin-top:auto;padding-top:14px;">
+                  <button class="btn">취소</button>
+                  <button class="btn primary">선택 완료</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="only-mobile-block">
+          <div class="mock-frame" style="max-width:320px;margin:0 auto;">
+            <div class="mock-m-status"><span>5:46</span><span>●●● 🔋</span></div>
+            <div class="mock-m-header"><span class="mock-back">←</span><span class="mock-title">청구 기준 설정</span></div>
+            <select class="mock-m-select" id="scr03-m-plan-select" style="width:calc(100% - 28px);background:#fff;">
+              <option value="domestic">롯데 신요금표</option>
+              <option value="import" selected>롯데 신요금표(수입)</option>
+              <option value="old">롯데 구요금표</option>
+            </select>
+            <div class="mock-m-tabs" id="scr03-m-tabs">
+              <span data-tab="passenger">승용</span><span data-tab="suv">SUV·RV</span><span data-tab="ev">전기</span>
+            </div>
+            <table class="mock-m-table" data-scr03-m-table="import" hidden>
+              <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~3일 비용</th></tr></thead>
+              <tbody>
+                <tr><td><input type="radio" name="scr03-m-radio" disabled></td><td>-</td><td>-</td><td>MINI COOPER, BENZ A220, JEEP RENEGADE</td><td>395,000원</td></tr>
+                <tr><td><input type="radio" name="scr03-m-radio" checked disabled></td><td>-</td><td>-</td><td>MINI COOPER S, VOLKSWAGEN TIGUAN</td><td>422,000원</td></tr>
+              </tbody>
+            </table>
+            <table class="mock-m-table" data-scr03-m-table="default" hidden>
+              <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~3일 비용</th></tr></thead>
+              <tbody>
+                <tr><td><input type="radio" name="scr03-m-radio2" disabled></td><td>경차</td><td>-</td><td>모닝 / 스파크 (G) 26년식</td><td>121,000원</td></tr>
+                <tr><td><input type="radio" name="scr03-m-radio2" checked disabled></td><td>경차</td><td>-</td><td>레이 / 액센트 (G) 26년식</td><td>126,000원</td></tr>
+              </tbody>
+            </table>
+            <div class="alert-box" data-scr03-m-table="empty" hidden style="margin:14px;background:var(--surface-2);border-color:var(--border-strong);text-align:center;color:var(--text-muted);line-height:1.8;">
+              등록된 요금표가 없습니다.<br><br>등록은 PC버전에서만 가능합니다.<br>(사업자 관리 &gt; 사업자 설정 &gt; 청구요금표 &gt; 차종 추가)
+            </div>
+            <div class="mock-m-cta">확인</div>
+            <div class="mock-m-nav">
+              <span>IMS</span><span>파트너</span><span class="active">계약서</span><span>알림</span><span>더보기</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="only-asis-block">
+        <div class="only-web-block">
+        <div class="mock-frame" style="min-height:640px;">
+          <div class="mock-web">
+            <div class="mock-w-body">
+              <div class="mock-w-top"><span>IMS.form</span><span>이용안내 · 김렌카 님</span></div>
+              <div class="mock-w-card-fake" style="margin-top:18px;">
+                <h4 style="display:flex;align-items:center;gap:8px;">계약 정보 (#10032) <span style="font-size:10.5px;font-weight:700;color:#d94b4b;border:1px solid #f1c9c9;background:#fbeaea;border-radius:5px;padding:1px 6px;">미검증</span></h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:12px;color:#444;">
+                  <div class="mock-w-row-fake"><span>대여차종</span><span>그랜저</span></div>
+                  <div class="mock-w-row-fake"><span>배차일시</span><span>2026-07-29 13:11</span></div>
+                  <div class="mock-w-row-fake"><span>대여 차량번호</span><span>88호7890</span></div>
+                  <div class="mock-w-row-fake"><span>반납일시</span><span>2026-08-01 10:38</span></div>
+                </div>
+                <div class="mock-w-row-fake" style="margin-top:6px;align-items:center;">
+                  <span>청구수식</span>
+                  <span style="display:flex;align-items:center;gap:10px;"><span>[청구기준 설정] 클릭 시 계산</span><button class="btn" style="padding:4px 10px;font-size:11px;">청구 기준 설정</button></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-overlay" style="align-items:center;">
+            <div class="modal-mock" style="width:460px;max-width:100%;">
+              <div class="modal-mock-head">
+                <div class="modal-mock-title">청구기준 설정</div>
+                <div class="modal-mock-close">&times;</div>
+              </div>
+              <div class="modal-subtabs">
+                <span class="active">청구기준</span>
+                <span>기준가 설정</span>
+              </div>
+              <div class="form-field">
+                <label>요금표 선택</label>
+                <select class="form-input"><option selected>롯데 신요금표</option><option>롯데 구요금표</option></select>
+              </div>
+              <div class="pill-tabs" id="scr03-asis-tabs">
+                <button type="button" aria-pressed="true">승용</button>
+                <button type="button" aria-pressed="false">SUV·RV</button>
+                <button type="button" aria-pressed="false">전기</button>
+              </div>
+              <table class="data-table">
+                <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~2일 비용</th></tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox" disabled></td><td>경차</td><td>-</td><td>스파크 / 모닝</td><td>105,000원</td></tr>
+                  <tr><td><input type="checkbox" disabled></td><td>경차</td><td>-</td><td>레이 / 액센트</td><td>110,000원</td></tr>
+                </tbody>
+              </table>
+              <div class="btn-row" style="justify-content:flex-end;margin-top:14px;">
+                <button class="btn">취소</button>
+                <button class="btn primary">선택 완료</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="only-mobile-block">
+          <div class="mock-frame" style="max-width:320px;margin:0 auto;">
+            <div class="mock-m-status"><span>5:46</span><span>●●● 🔋</span></div>
+            <div class="mock-m-header"><span class="mock-back">←</span><span class="mock-title">청구 기준 설정</span></div>
+            <select class="mock-m-select" id="scr03-m-asis-select" style="width:calc(100% - 28px);background:#fff;">
+              <option selected>롯데 신요금표</option>
+              <option>롯데 구요금표</option>
+            </select>
+            <div class="mock-m-tabs" id="scr03-m-asis-tabs">
+              <span class="active">승용</span><span>SUV·RV</span><span>전기</span>
+            </div>
+            <table class="mock-m-table">
+              <thead><tr><th></th><th>차량구분</th><th>배기량</th><th>대표차종</th><th>1~2일 비용</th></tr></thead>
+              <tbody>
+                <tr><td><input type="radio" name="scr03-m-asis-radio" disabled></td><td>경차</td><td>2.신요금표</td><td>스파크 / 모닝</td><td>105,000원</td></tr>
+                <tr><td><input type="radio" name="scr03-m-asis-radio" checked disabled></td><td>경차</td><td>2.신요금표</td><td>레이 / 엑센트</td><td>110,000원</td></tr>
+                <tr><td><input type="radio" name="scr03-m-asis-radio" disabled></td><td>경차</td><td>1.구요금표</td><td>레이</td><td>110,000원</td></tr>
+                <tr><td><input type="radio" name="scr03-m-asis-radio" disabled></td><td>소형</td><td>1.구요금표</td><td>아반떼 / K3 / SM3 / 벨로스터 / 클리오</td><td>110,000원</td></tr>
+              </tbody>
+            </table>
+            <div class="mock-m-cta">확인</div>
+            <div class="mock-m-nav">
+              <span>IMS</span><span>파트너</span><span class="active">계약서</span><span>알림</span><span>더보기</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-02·FT-03·FT-04</b>, PRD <b>LD-03·LD-05·LD-06·LD-10·LD-11</b> · 경로: 계약서 상세 &gt; 계약 정보 &gt; 청구 수식 &gt; [청구기준 설정] 클릭 &gt; 모달<br>
+      • 요금표를 선택하지 않고 청구를 진행할 수 없습니다.<br>
+      • "기본(롯데)"로 매핑된 청구주체(보험·보증 합산 8개)의 콜건은 국산·수입 어느 차량인지에 따라 "신(기본)"/"신(수입)" 2개 중 선택합니다(상세는 기능정의서 FT-04).<br>
+      • 이 모달은 자체건뿐 아니라 종사자요청 처리 화면에서도 동일하게 공유됩니다.<br>
+      • 그 외(전용·렌카 매핑) 청구주체는 편집 불가한 고정 값 1개만 표시됩니다(어드민 "청구 요금표 설정" 화면의 매핑에 따라 결정, 상세는 기능정의서 FT-04).<br>
+      • "롯데 신요금표(수입)" 선택 시 차량구분·등급 탭(승용/SUV·RV/전기) 자체가 사라지고 목록이 바로 표시됩니다(사유는 SCR-02 참조). 위 "요금표 선택"을 직접 바꿔서 확인해 보세요.<br>
+      • 선택된 탭에 등록된 차종이 없으면 "등록된 요금표가 없습니다. [사업자 관리 &gt; 사업자 설정 &gt; 청구요금표 &gt; 차종 추가]에서 요금표를 등록해주세요" 안내가 노출됩니다(기존 동작 그대로). Mobile은 등록 기능 자체가 없어 문구가 달라집니다 — "등록된 요금표가 없습니다. 등록은 PC버전에서만 가능합니다(사업자 관리 &gt; 사업자 설정 &gt; 청구요금표 &gt; 차종 추가)".<br>
+      • Mobile은 모달이 아니라 전체 화면 페이지입니다 — 선택은 라디오 버튼 1개, 하단에 고정 "확인" 버튼이 있습니다. 요금표 선택·탭은 Web과 동일하게 직접 눌러 확인할 수 있습니다. AS-IS도 동일하게 모달이 아닌 전체 화면 페이지이며, "수입" 탭 없이 승용/SUV·RV/전기만 있습니다.
+    </span></div>
+  </section>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch accent"></span>근거 표시 (PRD/기능정의서 인용)</div>
+    <div class="legend-item"><span class="legend-swatch always"></span>미결정 항목 (양쪽 모드 모두 표시)</div>
+    <div class="legend-item"><span class="legend-swatch warn"></span>자료 갭 / 확인 필요</div>
+    <div class="legend-item"><span class="legend-swatch new"></span>신규 요소</div>
+    <div class="legend-item">예시 데이터(E클래스, 5시리즈 등)는 임의 값입니다.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var modeButtons = document.querySelectorAll('[data-mode-btn]');
+    var chips = document.querySelectorAll('[data-chip-text]');
+    var mode = 'tobe';
+
+    function render() {
+      document.body.setAttribute('data-mode', mode);
+      modeButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-mode-btn') === mode ? 'true' : 'false');
+      });
+      chips.forEach(function (el) {
+        el.textContent = mode === 'tobe' ? 'TO-BE' : 'AS-IS';
+      });
+    }
+
+    modeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        mode = btn.getAttribute('data-mode-btn');
+        render();
+      });
+    });
+
+    render();
+
+    var deviceButtons = document.querySelectorAll('[data-device-btn]');
+    var device = 'web';
+
+    function renderDevice() {
+      document.body.setAttribute('data-device', device);
+      deviceButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-device-btn') === device ? 'true' : 'false');
+      });
+    }
+
+    deviceButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        device = btn.getAttribute('data-device-btn');
+        renderDevice();
+      });
+    });
+
+    if (deviceButtons.length) renderDevice();
+
+    // SCR-01 요금표 종류 선택에 따라 데이터 표(기본(롯데)/수입(롯데)/렌카)를 전환
+    var scr01Select = document.getElementById('scr01-rate-type');
+    var scr01Panels = document.querySelectorAll('[data-rate-table]');
+
+    function renderScr01() {
+      scr01Panels.forEach(function (el) {
+        el.hidden = el.getAttribute('data-rate-table') !== scr01Select.value;
+      });
+    }
+
+    if (scr01Select) {
+      scr01Select.addEventListener('change', renderScr01);
+      renderScr01();
+    }
+
+    // SCR-03 요금표 선택(신요금표/신요금표(수입)/구요금표)에 따라 화면 구성 자체가 달라짐
+    // Web·Mobile 둘 다 동일한 로직으로 동작(공용 함수) — 차량구분·등급은 국산차 분류 체계라 수입차에는
+    // 적용되지 않으므로(운영팀 의견, FT-01 참고), "롯데 신요금표(수입)" 선택 시 탭 자체를 숨기고 목록을 바로 보여줌.
+    // 그 외 요금표는 기존처럼 탭(승용/SUV·RV/전기)으로 구분하며, "승용" 외 탭은 빈 상태 안내(FT-02 EX-03).
+    function wireScr03Widget(planSelectId, tabsContainerSelector, tableAttrName, tabActiveMode) {
+      var planSelect = document.getElementById(planSelectId);
+      var tabsContainer = document.querySelector(tabsContainerSelector);
+      var tabs = tabsContainer ? tabsContainer.querySelectorAll('[data-tab]') : [];
+      var tables = document.querySelectorAll('[' + tableAttrName + ']');
+      if (!planSelect || !tabsContainer) return;
+
+      function setTab(tabName) {
+        tabs.forEach(function (el) {
+          var isActive = el.getAttribute('data-tab') === tabName;
+          if (tabActiveMode === 'aria') { el.setAttribute('aria-pressed', isActive ? 'true' : 'false'); }
+          else { el.classList.toggle('active', isActive); }
+        });
+        var showDefaultTable = tabName === 'passenger';
+        tables.forEach(function (el) {
+          var key = el.getAttribute(tableAttrName);
+          if (key === 'import') { el.hidden = true; }
+          else if (key === 'default') { el.hidden = !showDefaultTable; }
+          else { el.hidden = showDefaultTable; }
+        });
+      }
+
+      function render() {
+        var isImportPlan = planSelect.value === 'import';
+        tabsContainer.hidden = isImportPlan;
+        if (isImportPlan) {
+          tables.forEach(function (el) {
+            el.hidden = el.getAttribute(tableAttrName) !== 'import';
+          });
+        } else {
+          setTab('passenger');
+        }
+      }
+
+      tabs.forEach(function (el) {
+        el.addEventListener('click', function () { setTab(el.getAttribute('data-tab')); });
+      });
+
+      planSelect.addEventListener('change', render);
+      render();
+    }
+
+    wireScr03Widget('scr03-plan-select', '#scr03-tabs', 'data-scr03-table', 'aria');
+    wireScr03Widget('scr03-m-plan-select', '#scr03-m-tabs', 'data-scr03-m-table', 'class');
+
+    // SCR-03 AS-IS(웹·모바일): 실제 화면과 동일하게 요금표는 종류만 2개(신규/구), 탭별 예시 데이터는 없어
+    // 표 내용은 그대로 두되, 셀렉트박스·탭 클릭 자체는 Web·Mobile 둘 다 동일하게 동작(선택 가능)해야 함
+    function wireSimpleTabToggle(tabsSelector, activeAttr) {
+      var tabs = document.querySelectorAll(tabsSelector);
+      tabs.forEach(function (el) {
+        el.addEventListener('click', function () {
+          tabs.forEach(function (t) {
+            if (activeAttr === 'aria') { t.setAttribute('aria-pressed', t === el ? 'true' : 'false'); }
+            else { t.classList.toggle('active', t === el); }
+          });
+        });
+      });
+    }
+    wireSimpleTabToggle('#scr03-asis-tabs button', 'aria');
+    wireSimpleTabToggle('#scr03-m-asis-tabs span', 'class');
+
+    var screenButtons = document.querySelectorAll('[data-screen-btn]');
+    var sections = document.querySelectorAll('.section[id]');
+    var deviceGroup = document.getElementById('device-toolbar-group');
+    var webOnlyScreens = ['scr-01', 'scr-02'];
+
+    function showScreen(id) {
+      sections.forEach(function (sec) {
+        sec.hidden = sec.id !== id;
+      });
+      screenButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-screen-btn') === id ? 'true' : 'false');
+      });
+      if (deviceGroup) deviceGroup.hidden = webOnlyScreens.indexOf(id) !== -1;
+    }
+
+    screenButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        showScreen(btn.getAttribute('data-screen-btn'));
+      });
+    });
+
+    if (screenButtons.length) showScreen(screenButtons[0].getAttribute('data-screen-btn'));
+  })();
+</script>
+
+</body>
+</html>
