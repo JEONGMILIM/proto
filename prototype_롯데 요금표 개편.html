@@ -416,9 +416,18 @@
                     <tr><td>기본(롯데)</td><td>수입</td><td>-</td><td>-</td><td>MINI COOPER S, VOLKSWAGEN TIGUAN</td><td>422,000</td><td>379,800</td><td>358,700</td><td>337,600</td><td>236,300</td><td>303,800</td><td>337,600</td></tr>
                   </tbody>
                 </table>
-                <div class="alert-box" data-rate-table="rentcar" hidden>
-                  "렌카"는 기존 구간(1~2일/3~4일/5~6일/7일이상) 그대로이며 이번 프로젝트의 변경 대상이 아닙니다.
-                </div>
+                <table class="data-table" data-rate-table="rentcar" hidden>
+                  <thead>
+                    <tr>
+                      <th>요금표종류</th><th>차량구분</th><th>차량등급</th><th>배기량</th><th>대표차종</th>
+                      <th>1~2일</th><th>3~4일</th><th>5~6일</th><th>7일이상</th><th>6시간</th><th>10시간</th><th>12시간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>렌카</td><td>승용</td><td>경차</td><td>-</td><td>스파크 / 모닝</td><td>105,000</td><td>95,000</td><td>89,000</td><td>84,000</td><td>59,000</td><td>76,000</td><td>84,000</td></tr>
+                    <tr><td>렌카</td><td>수입</td><td>-</td><td>-</td><td>MINI COOPER, BENZ A220 (렌카 기존 구간 기준)</td><td>350,000</td><td>315,500</td><td>297,800</td><td>280,000</td><td>196,200</td><td>252,400</td><td>280,000</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -473,12 +482,15 @@
         </div>
       </div>
     </div>
-    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01</b>, PRD <b>LD-01·LD-02·LD-04</b> · 경로: 어드민 &gt; 운영 관리 &gt; 요금표 등록<br>
+    <div class="annotation" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01·FT-06</b>, PRD <b>LD-01·LD-02·LD-04·LD-14</b> · 경로: 어드민 &gt; 운영 관리 &gt; 요금표 등록</span></div>
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span><b>요약</b><br>
       • <b>비활성화</b>: 기존 단일 "기본(롯데)"(구간 1~2일/3~4일/5~6일/7일이상)는 비활성화되어 목록에서 제외됩니다.<br>
-      • <b>신규 등록</b>: 새 구간이 적용된 "기본(롯데)" <b>1종만</b> 신규 등록됩니다(v1.1 — "수입(롯데)" 별도 요금표는 더 이상 만들지 않습니다). 차량구분에 "수입"이 새로 추가되어(표의 마지막 두 행), 국산·수입차를 하나의 요금표 안에서 구분합니다. "수입" 차량구분 항목은 차량등급 선택이 막히고(사유는 SCR-02 참조), 여러 모델을 대표차종 한 줄에 함께 묶습니다.<br>
-      • <b>변경 없음</b>: "렌카"(롯데 구요금표)를 비롯해 각 보험사·공제조합 전용 요금표는 이번 구간 변경과 무관한 별도 체계라 그대로 유지됩니다(PRD Out of Scope 참고).<br>
-      • <b>연관 화면</b>: [등록/수정] 클릭 후 행의 [등록] 클릭 시 열리는 등록 모달(차량구분="수입" 선택 시 차량등급이 잠기는 동작 포함)은 SCR-02 참조, 폼 청구기준 설정 화면의 "수입" 탭은 SCR-03 참조, 업체 전용요금표 등록 화면의 동일 확장은 SCR-04 참조.
-    </span></div>
+      • <b>신규 등록("기본(롯데)")</b>: 새 구간이 적용된 "기본(롯데)" <b>1종만</b> 신규 등록됩니다(v1.1 — "수입(롯데)" 별도 요금표는 더 이상 만들지 않습니다). 차량구분에 "수입"이 새로 추가되어(표의 마지막 두 행), 국산·수입차를 하나의 요금표 안에서 구분합니다. "수입" 차량구분 항목도 차량등급을 선택하며, 해당하는 등급이 없으면 "미지정"을 고르면 됩니다(사유는 SCR-02 참조). 여러 모델을 대표차종 한 줄에 함께 묶습니다.<br>
+      • <b>"렌카"·전용 요금표(신규)</b>: 요금표 종류에서 "렌카"를 선택해 보세요 — 구간은 기존(1~2일/3~4일/5~6일/7일이상) 그대로지만, 차량구분에 "수입"이 추가되어 실제 등록이 가능합니다(FT-06). 각 보험사·공제조합 전용 요금표도 동일한 규칙이 적용되나 이 표에서 개별 나열하지 않습니다.<br>
+      • <b>연관 화면</b>: [등록/수정] 클릭 후 행의 [등록] 클릭 시 열리는 등록 모달(차량구분="수입" 선택 시 차량등급 옵션이 달라지는 동작 포함)은 SCR-02 참조, 폼 청구기준 설정 화면의 "수입" 탭은 SCR-03 참조, 업체 전용요금표 등록 화면의 동일 확장은 SCR-04 참조.
+      </span></div>
+    </div>
   </section>
 
   <!-- ============ [SCR-02] 어드민 요금표 등록 모달 ============ -->
@@ -538,7 +550,7 @@
                 <div class="fixed-field">기본(롯데)</div>
               </div>
               <div class="form-field">
-                <label>차량 구분 <span style="font-weight:400;color:var(--text-faint);">(직접 바꿔보세요)</span></label>
+                <label><span class="req">*</span> 차량 구분 <span style="font-weight:400;color:var(--text-faint);">(직접 바꿔보세요)</span></label>
                 <select class="form-input" id="scr02-vehicle-type">
                   <option value="passenger">승용</option>
                   <option value="suv">SUV·RV</option>
@@ -547,8 +559,8 @@
                 </select>
               </div>
               <div class="form-field">
-                <label><span class="req" id="scr02-grade-req">*</span> 차량 등급</label>
-                <select class="form-input" id="scr02-grade-select"><option>경차</option><option>소형</option><option>중형</option></select>
+                <label><span class="req">*</span> 차량 등급</label>
+                <select class="form-input" id="scr02-grade-select"><option>경차</option><option>소형</option><option>중형</option><option>준대형</option><option>대형</option><option>승합</option><option value="unspecified" selected>미지정</option></select>
               </div>
               <div class="form-field">
                 <label>배기량/출력</label>
@@ -649,12 +661,15 @@
         </div>
       </div>
     </div>
-    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01</b>, PRD <b>LD-04·LD-11</b> · 경로: SCR-01 &gt; [등록/수정] 클릭 &gt; 변경 &gt; 모달<br>
-      • <b>고정 표시</b>: "요금표 기준"은 SCR-01에서 선택한 요금표종류(예: "기본(롯데)")에 따라 결정됩니다.<br>
-      • <b>차량 구분 select(신규)</b>: "수입"이 4번째 값으로 추가됐습니다(v1.1). 선택하면 차량 등급이 비활성화되고(필수 검증 제외, LD-11), 대표 차종엔 여러 모델을 묶어 기재합니다. 직접 선택해 보세요.<br>
-      • <b>등록 개수 35개 제한 분리(신규)</b>: 승용·SUV·RV·전기 통합 35개 + 수입 별도 35개(합계 70, LD-13). [차종추가] 버튼은 70개 미만이면 활성이고, 실제 35개 검증은 저장 시 차량구분별로 수행해 초과 시 전용 알럿으로 막습니다. 청구 PDF도 동일하게 분기되며, SCR-04는 이 분리 대상이 아닙니다(통합 35 유지).<br>
+    <div class="annotation" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01·FT-06</b>, PRD <b>LD-04·LD-11·LD-14</b> · 경로: SCR-01 &gt; [등록/수정] 클릭 &gt; 변경 &gt; 모달</span></div>
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span><b>요약</b><br>
+      • <b>고정 표시</b>: "요금표 기준"은 SCR-01에서 선택한 요금표종류(예: "기본(롯데)")에 따라 결정됩니다. 이 모달의 동작은 "렌카"·전용 요금표를 골랐을 때도 동일합니다(FT-06).<br>
+      • <b>차량 구분·차량 등급 select(신규)</b>: 차량 구분엔 "수입"이 4번째 값으로 추가됐습니다("기본(롯데)"뿐 아니라 "렌카"·전용 요금표에도 동일 적용). 차량 등급도 준대형/대형/승합(업체 전용요금표 SCR-04와 동일 구성)과 "미지정"이 새로 추가됐습니다. "수입"을 선택해도 차량 등급 select는 잠기지 않습니다 — "미지정"은 필요하면 직접 고를 수 있는 선택지일 뿐, 기본값은 다른 차량구분과 동일하게 첫 옵션("경차")입니다(LD-11). 직접 선택해 보세요.<br>
+      • <b>등록 개수 35개 제한 분리(신규)</b>: 승용·SUV·RV·전기 통합 35개 + 수입 별도 35개(합계 70, LD-13). 요금표별로 독립 판정됩니다(LD-14). [차종추가] 버튼은 70개 미만이면 활성이고, 실제 35개 검증은 [등록] 클릭 시 차량구분별로 수행해 초과 시 전용 알럿으로 막습니다. 청구 PDF도 동일하게 분기되며, SCR-04는 이 분리 대상이 아닙니다(통합 35 유지).<br>
       • <b>안내 캡션 상시 노출(신규)</b>: 저장 버튼 옆 빨간 캡션 둘째 줄이 새 문구로 바뀌고, 35개 도달 여부와 무관하게 항상 노출됩니다. 모달을 닫으면(&times; 클릭) 뒤에서 확인할 수 있습니다.
-    </span></div>
+      </span></div>
+    </div>
   </section>
 
   <!-- ============ [SCR-03] IMS.form 청구기준 설정 ============ -->
@@ -855,13 +870,16 @@
         </div>
       </div>
     </div>
-    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-02·FT-03·FT-04</b>, PRD <b>LD-03·LD-05·LD-06·LD-10·LD-11</b> · 경로: 계약서 상세 &gt; 계약 정보 &gt; 청구 수식 &gt; [청구기준 설정] 클릭 &gt; 모달<br>
+    <div class="annotation" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-02·FT-03·FT-04</b>, PRD <b>LD-03·LD-05·LD-06·LD-10·LD-11·LD-13·LD-14</b> · 경로: 계약서 상세 &gt; 계약 정보 &gt; 청구 수식 &gt; [청구기준 설정] 클릭 &gt; 모달</span></div>
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span><b>요약</b><br>
       • 요금표는 다시 2개(신요금표/구요금표)입니다(v1.1). 미선택 시 청구를 진행할 수 없습니다.<br>
-      • <b>차량구분 탭 "수입"(신규)</b>: "신요금표" 선택 시 탭이 4개(승용/SUV·RV/전기/수입)로 늘고, "수입" 선택 시 하위 등급 없이 목록이 바로 표시됩니다(사유는 SCR-02 참조). 직접 눌러보세요.<br>
-      • <b>매핑 콜건은 평상시 고정 표시(변경)</b>: "기본(롯데)" 매핑 청구주체(8개)는 선택 없이 1개 값이 고정 표시됩니다(수입 분리로 2택 로직 제거). 비활성화 시엔 FT-03처럼 알럿 후 "청구기준 설정"에서 재확정해야 합니다(FT-04).<br>
+      • <b>차량구분 탭 "수입"(신규)</b>: "신요금표"·"구요금표" 모두 탭이 4개(승용/SUV·RV/전기/수입)입니다(LD-14). "수입" 선택 시 하위 등급 없이 목록이 바로 표시됩니다(사유는 SCR-02 참조). 요금표 선택을 바꿔가며 직접 눌러보세요. 청구 시 첨부되는 요금표 PDF도 이 탭 선택을 따라 분기됩니다(수입 35개만 / 국산 35개, LD-13).<br>
+      • <b>매핑 콜건은 평상시 고정 표시(변경 없음)</b>: "기본(롯데)" 매핑 청구주체(8개)는 선택 없이 1개 값이 고정 표시됩니다(수입 분리로 2택 로직 제거). "렌카"·전용 요금표 매핑 청구주체도 마찬가지로 1개 고정 표시이며, 매핑 대상 요금표에 수입 차량구분이 늘어도 이 표시 방식은 바뀌지 않습니다. 비활성화 시엔 FT-03처럼 알럿 후 "청구기준 설정"에서 재확정해야 합니다(FT-04).<br>
       • 이 모달은 자체건·종사자요청·일반요청이 공유하며, 그 외(전용·렌카 매핑) 청구주체는 고정값 1개만 표시됩니다.<br>
       • 등록 차종이 없으면 안내 문구가 뜹니다(Web/Mobile 문구 다름). Mobile은 모달이 아닌 전체 화면이며 라디오 선택+하단 "확인" 버튼입니다(AS-IS는 "수입" 탭 없음).
-    </span></div>
+      </span></div>
+    </div>
   </section>
 
   <!-- ============ [SCR-04] IMS.form 사업자 설정 > 청구요금표 (신규 문서화) ============ -->
@@ -923,7 +941,7 @@
                         </select>
                       </td>
                       <td>
-                        <select class="form-input" id="scr04-grade-select" style="min-width:90px;"><option>경차</option><option>소형</option><option>중형</option><option>준대형</option><option>대형</option><option>승합</option></select>
+                        <select class="form-input" id="scr04-grade-select" style="min-width:90px;"><option>경차</option><option>소형</option><option>중형</option><option>준대형</option><option>대형</option><option>승합</option><option value="unspecified">미지정</option></select>
                       </td>
                       <td><input class="form-input" placeholder="숫자만 입력" style="width:90px;"></td>
                       <td><input class="form-input" value="MINI COOPER, BENZ A220, JEEP RENEGADE" style="width:220px;"></td>
@@ -1001,12 +1019,15 @@
         </div>
       </div>
     </div>
-    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-05</b>, PRD <b>LD-12·LD-11</b> · 경로: 사업자 관리 &gt; 사업자 설정 &gt; 청구 요금표<br>
-      • 이 화면은 기존부터 존재했지만, 지금까지 다른 기능(FT-02 EX-03)의 안내 문구에서만 경로가 언급됐을 뿐 Screen ID·필드가 정의된 적이 없어 이번에 처음 문서화합니다.<br>
-      • <b>신규</b>: 자체건 업체가 전용 요금표를 등록할 때도 차량 구분에 "수입"을 선택할 수 있습니다(기존 승용/SUV·RV/전기 3개 → 4개). 위 "차량 구분" select에서 직접 "수입"을 선택해 보세요 — 차량 등급 select가 비활성화되어 선택할 수 없게 됩니다(어드민 SCR-02와 동일한 동작, LD-11).<br>
+    <div class="annotation" style="flex-direction:column;align-items:stretch;gap:10px;">
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-05</b>, PRD <b>LD-12·LD-11</b> · 경로: 사업자 관리 &gt; 사업자 설정 &gt; 청구 요금표</span></div>
+      <div style="display:flex;gap:10px;"><span class="annotation-dot"></span><span><b>요약</b><br>
+      • 이 화면은 기존부터 존재했지만, 지금까지 다른 기능(FT-02 EX-03)의 안내 문구에서만 경로가 언급됐을 뿐 Screen ID·필드가 정의된 적이 없어 "롯데 요금표 개편" 프로젝트(v1.1)에서 처음 문서화합니다.<br>
+      • <b>차량 구분·차량 등급 select(신규)</b>: 자체건 업체가 전용 요금표를 등록할 때도 차량 구분에 "수입"을 선택할 수 있습니다(기존 승용/SUV·RV/전기 3개 → 4개). 차량 등급 옵션에도 "미지정"이 새로 추가됐습니다(기존 경차/소형/중형/준대형/대형/승합에 추가). 위 "차량 구분" select에서 직접 "수입"을 선택해 보세요 — 차량 등급 select는 잠기지 않고, "미지정"은 필요하면 직접 고를 수 있는 선택지일 뿐 기본값은 다른 차량구분과 동일하게 첫 옵션("경차")입니다(어드민 SCR-02와 동일한 동작, LD-11).<br>
       • <b>변경 없음</b>: 요금표 종류 생성·[요금표 관리] 진입 흐름과 구간별 요금 컬럼(1~2일/3~4일/5~6일/7일이상 — 업체가 직접 구성하는 전용 요금표 구조)은 이번 롯데 구간 변경과 무관해 그대로입니다(Out of Scope).<br>
       • 이 화면은 PC버전에서만 제공됩니다(SCR-03 EX-03 안내 문구 참조).
-    </span></div>
+      </span></div>
+    </div>
   </section>
 
   <div class="legend">
@@ -1077,16 +1098,15 @@
       renderScr01();
     }
 
-    // SCR-03 요금표 선택(신요금표/구요금표)에 따라 "수입" 탭 노출 여부가 달라지고,
-    // 탭 선택(승용/SUV·RV/전기/수입)에 따라 아래 목록이 바뀜(v1.1 — "수입"은 더 이상 별도 요금표가 아니라
-    // "신요금표" 안의 차량구분 탭 중 하나). 차량구분·등급은 국산차 분류 체계라 수입차에는 적용되지 않으므로
-    // (운영팀 의견, FT-01 참고), "수입" 탭 선택 시 하위 등급 구분 없이 목록을 바로 보여줌.
+    // SCR-03 요금표 선택(신요금표/구요금표) 어느 쪽이든 차량구분 탭은 동일하게 4개(승용/SUV·RV/전기/수입)이며,
+    // 탭 선택에 따라 아래 목록이 바뀜 — "수입"은 별도 요금표가 아니라 요금표 안의 차량구분 탭 중 하나(LD-14).
+    // 차량구분·등급은 국산차 분류 체계라 수입차에는 적용되지 않으므로(운영팀 의견, FT-01 참고),
+    // "수입" 탭 선택 시 하위 등급 구분 없이 목록을 바로 보여줌.
     // "승용" 외 나머지(SUV·RV/전기) 탭은 빈 상태 안내(FT-02 EX-03).
     function wireScr03Widget(planSelectId, tabsContainerSelector, tableAttrName, tabActiveMode) {
       var planSelect = document.getElementById(planSelectId);
       var tabsContainer = document.querySelector(tabsContainerSelector);
       var tabs = tabsContainer ? tabsContainer.querySelectorAll('[data-tab]') : [];
-      var importTabBtn = tabsContainer ? tabsContainer.querySelector('[data-tab="import"]') : null;
       var tables = document.querySelectorAll('[' + tableAttrName + ']');
       if (!planSelect || !tabsContainer) return;
 
@@ -1112,16 +1132,11 @@
       }
 
       function render() {
-        var isOldPlan = planSelect.value === 'old';
-        if (importTabBtn) importTabBtn.hidden = isOldPlan;
-        var nextTab = activeTabName();
-        if (isOldPlan && nextTab === 'import') nextTab = 'passenger';
-        setTab(nextTab);
+        setTab(activeTabName());
       }
 
       tabs.forEach(function (el) {
         el.addEventListener('click', function () {
-          if (el.hidden) return;
           setTab(el.getAttribute('data-tab'));
         });
       });
@@ -1133,29 +1148,9 @@
     wireScr03Widget('scr03-plan-select', '#scr03-tabs', 'data-scr03-table', 'aria');
     wireScr03Widget('scr03-m-plan-select', '#scr03-m-tabs', 'data-scr03-m-table', 'class');
 
-    // SCR-02·SCR-04 차량 구분 select에서 "수입"을 고르면 차량 등급 select를 비활성화한다(LD-11).
-    // "해당 없음" 같은 값을 별도로 채워 넣는 것이 아니라 필드 자체를 비활성화하는 것이며,
-    // 이 경우 차량 등급은 필수(*) 검증 대상에서도 제외된다.
-    function wireVehicleTypeGradeToggle(vehicleTypeSelectId, gradeSelectId, gradeReqId) {
-      var vehicleTypeSelect = document.getElementById(vehicleTypeSelectId);
-      var gradeSelect = document.getElementById(gradeSelectId);
-      var gradeReq = gradeReqId ? document.getElementById(gradeReqId) : null;
-      if (!vehicleTypeSelect || !gradeSelect) return;
-
-      function render() {
-        var isImport = vehicleTypeSelect.value === 'import';
-        gradeSelect.disabled = isImport;
-        if (isImport) { gradeSelect.selectedIndex = -1; }
-        else if (gradeSelect.selectedIndex === -1) { gradeSelect.selectedIndex = 0; }
-        if (gradeReq) gradeReq.hidden = isImport;
-      }
-
-      vehicleTypeSelect.addEventListener('change', render);
-      render();
-    }
-
-    wireVehicleTypeGradeToggle('scr02-vehicle-type', 'scr02-grade-select', 'scr02-grade-req');
-    wireVehicleTypeGradeToggle('scr04-vehicle-type', 'scr04-grade-select', null);
+    // SCR-02·SCR-04 차량 구분 select에서 "수입"을 골라도 차량 등급 select는 잠그지 않는다(LD-11) —
+    // 등급 옵션 목록에 "미지정"이 있어 필요하면 직접 고를 수 있을 뿐, 다른 차량구분과 동일하게
+    // 첫 옵션("경차")이 기본값이며 별도 reactive 처리는 없다.
 
     // SCR-02 모달 닫기 — 배경(리스트 편집 화면)의 35개 제한 안내 캡션을 직접 확인할 수 있도록 함
     var scr02Close = document.getElementById('scr02-modal-close');
