@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Prototype — ims.form·어드민 · KB 인증 사업자 구분</title>
+<style>
+  :root {
+    --bg: #f4f5f8;
+    --canvas: #eaecf1;
+    --surface: #ffffff;
+    --surface-2: #fbfbfd;
+    --border: #e3e6ec;
+    --border-strong: #d3d7e0;
+    --text: #23262b;
+    --text-muted: #888e99;
+    --text-faint: #aeb3bd;
+    --accent: #3b4fd9;
+    --accent-strong: #2c3db3;
+    --accent-soft: #eef0ff;
+    --accent-soft-border: #ccd3fb;
+    --warn: #d94b4b;
+    --warn-soft: #fbeaea;
+    --warn-soft-border: #f1c9c9;
+    --web: #2f6fed;
+    --web-soft: #eaf1ff;
+    --admin: #a56a00;
+    --admin-soft: #fff6e5;
+    --tag-bg: #f1f2f5;
+    --tag-text: #5c616c;
+    --shadow: 0 1px 2px rgba(23, 26, 33, 0.04), 0 8px 20px -12px rgba(23, 26, 33, 0.12);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16181d;
+    --canvas: #1b1e24;
+    --surface: #22252c;
+    --surface-2: #1d2026;
+    --border: #33363e;
+    --border-strong: #43474f;
+    --text: #e9eaee;
+    --text-muted: #9297a1;
+    --text-faint: #6b6f78;
+    --accent: #8296ff;
+    --accent-strong: #a7b6ff;
+    --accent-soft: rgba(130, 150, 255, 0.14);
+    --accent-soft-border: rgba(130, 150, 255, 0.35);
+    --warn: #e57676;
+    --warn-soft: rgba(229, 118, 118, 0.14);
+    --warn-soft-border: rgba(229, 118, 118, 0.35);
+    --web: #8296ff;
+    --web-soft: rgba(130, 150, 255, 0.14);
+    --admin: #f0a34f;
+    --admin-soft: rgba(240, 163, 79, 0.14);
+    --tag-bg: #2b2e36;
+    --tag-text: #b7bbc4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181d;
+      --canvas: #1b1e24;
+      --surface: #22252c;
+      --surface-2: #1d2026;
+      --border: #33363e;
+      --border-strong: #43474f;
+      --text: #e9eaee;
+      --text-muted: #9297a1;
+      --text-faint: #6b6f78;
+      --accent: #8296ff;
+      --accent-strong: #a7b6ff;
+      --accent-soft: rgba(130, 150, 255, 0.14);
+      --accent-soft-border: rgba(130, 150, 255, 0.35);
+      --warn: #e57676;
+      --warn-soft: rgba(229, 118, 118, 0.14);
+      --warn-soft-border: rgba(229, 118, 118, 0.35);
+      --web: #8296ff;
+      --web-soft: rgba(130, 150, 255, 0.14);
+      --admin: #f0a34f;
+      --admin-soft: rgba(240, 163, 79, 0.14);
+      --tag-bg: #2b2e36;
+      --tag-text: #b7bbc4;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-feature-settings: "tnum" 1;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 40px 28px 96px; }
+
+  .doc-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+  .doc-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; }
+  .doc-title { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+  .doc-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+  .doc-desc code { background: var(--tag-bg); color: var(--tag-text); padding: 1px 6px; border-radius: 5px; font-size: 12.5px; }
+
+  .toolbar {
+    position: sticky; top: 16px; z-index: 10;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 32px; box-shadow: var(--shadow);
+  }
+  .toolbar-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .toolbar-group[hidden] { display: none; }
+  .toolbar-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+  .segmented { display: inline-flex; flex-wrap: wrap; background: var(--tag-bg); border-radius: 9px; padding: 3px; gap: 2px; }
+  .segmented button {
+    appearance: none; border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .segmented-screens button { font-size: 12px; padding: 7px 12px; }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(23, 26, 33, 0.16); }
+  body[data-mode="tobe"] .segmented button[data-mode-btn="tobe"] { color: var(--accent-strong); }
+  .segmented-screens button[aria-pressed="true"] { color: var(--accent-strong); }
+  .toolbar-hint { font-size: 12px; color: var(--text-faint); margin-left: auto; }
+
+  .section { margin-bottom: 40px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .section-title { font-size: 15px; font-weight: 700; }
+  .section-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .head-chips { display: flex; align-items: center; gap: 6px; }
+  .platform-chip { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; padding: 3px 9px; border-radius: 999px; }
+  .platform-chip.web { color: var(--web); background: var(--web-soft); }
+  .platform-chip.admin { color: var(--admin); background: var(--admin-soft); }
+  .mode-chip {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-muted);
+  }
+  body[data-mode="tobe"] .mode-chip { color: var(--accent-strong); background: var(--accent-soft); border-color: var(--accent-soft-border); }
+
+  .canvas { background: var(--canvas); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+
+  .annotation {
+    display: flex; margin-top: 14px; background: var(--accent-soft); border: 1px solid var(--accent-soft-border);
+    border-radius: 12px; padding: 12px 16px; font-size: 12.5px; color: var(--text); gap: 10px; line-height: 1.6;
+  }
+  .annotation-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; }
+  .annotation b { color: var(--accent-strong); }
+  .annotation.always { background: var(--surface-2); border-color: var(--border-strong); }
+  .annotation.always .annotation-dot { background: var(--text-faint); }
+  .annotation.always b { color: var(--text); }
+  .annotation.gap { background: var(--warn-soft); border-color: var(--warn-soft-border); }
+  .annotation.gap .annotation-dot { background: var(--warn); }
+  .annotation.gap b { color: var(--warn); }
+
+  .legend {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 24px; font-size: 12.5px; color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend-swatch.accent { background: var(--accent-soft); border: 1px solid var(--accent-soft-border); }
+  .legend-swatch.always { background: var(--surface-2); border: 1px solid var(--border-strong); }
+  .legend-swatch.warn { background: var(--warn-soft); border: 1px solid var(--warn-soft-border); }
+  .legend-swatch.new { background: rgba(255, 46, 147, 0.12); border: 1px solid rgba(255, 46, 147, 0.5); }
+
+  @media (max-width: 560px) { .toolbar { flex-direction: column; align-items: stretch; } }
+
+  /* AS-IS / TO-BE 토글: 기본은 TO-BE 노출, body[data-mode="asis"]일 때만 AS-IS 노출 */
+  .only-tobe { display: none; }
+  body[data-mode="tobe"] .only-tobe { display: inline; }
+  .only-tobe-block { display: none; }
+  body[data-mode="tobe"] .only-tobe-block { display: block; }
+  .only-asis { display: none; }
+  body[data-mode="asis"] .only-asis { display: inline; }
+  .only-asis-block { display: none; }
+  body[data-mode="asis"] .only-asis-block { display: block; }
+
+  /* Web / Mobile 전환: 플랫폼이 Web·Mobile을 모두 갖는 화면에서만 사용(어드민 등 단일 플랫폼 프로젝트는 생략) */
+  .only-web { display: none; }
+  body[data-device="web"] .only-web { display: inline; }
+  .only-web-block { display: none; }
+  body[data-device="web"] .only-web-block { display: block; }
+  .only-mobile { display: none; }
+  body[data-device="mobile"] .only-mobile { display: inline; }
+  .only-mobile-block { display: none; }
+  body[data-device="mobile"] .only-mobile-block { display: block; }
+
+  /* 화면별 전환: toolbar 안의 .segmented-screens 버튼(위 .segmented 참조)으로 .section을 전환. 화면이 1개뿐이면 그 toolbar-group 자체를 생략 */
+  .section[hidden] { display: none; }
+
+  /* ============================================================
+     공통 컴포넌트 — 화면 목업에 자유롭게 조합해 사용
+     ============================================================ */
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+  .panel:last-child { margin-bottom: 0; }
+  .panel.new { border: 2px solid var(--accent); background: var(--accent-soft); }
+  .panel-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .panel-label { font-size: 12px; color: var(--text-faint); margin-bottom: 3px; }
+  .panel-value { font-size: 18px; font-weight: 700; }
+  .panel-desc { font-size: 13px; color: var(--text); }
+
+  .badge-new {
+    display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--accent-strong); background: var(--accent-soft); border: 1px solid var(--accent-soft-border);
+    border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle;
+  }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12.5px; font-weight: 600;
+    color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px;
+    padding: 8px 14px; cursor: default;
+  }
+  .btn.new { border: 2px solid var(--accent); color: var(--accent-strong); background: var(--accent-soft); font-weight: 700; }
+  .btn.primary { border: none; color: #fff; background: var(--accent); font-weight: 700; }
+  .btn.tab { border-radius: 8px; }
+  .btn.tab[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-strong); background: var(--accent-soft); font-weight: 700; }
+
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; background: var(--surface); border-radius: 10px; overflow: hidden; margin-top: 10px; }
+  .data-table th, .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+  .data-table th { background: var(--surface-2); font-weight: 700; color: var(--text-muted); font-size: 12px; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table td.new-col, .data-table th.new-col { background: var(--accent-soft); }
+
+  .form-box { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; padding: 18px 20px; max-width: 420px; box-shadow: var(--shadow); }
+  .form-box-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { display: block; font-size: 12px; color: var(--text-faint); margin-bottom: 4px; }
+  .form-field .form-input {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 7px;
+    font-size: 13px; color: var(--text); background: var(--surface-2);
+  }
+  .form-field textarea.form-input { min-height: 56px; resize: vertical; font-family: inherit; }
+
+  .alert-box {
+    background: var(--warn-soft); border: 1px solid var(--warn-soft-border); border-radius: 10px;
+    padding: 12px 14px; font-size: 12.5px; color: var(--text); line-height: 1.6;
+  }
+
+  .asis-shot-wrap { display: inline-block; }
+  .asis-shot { max-width: 100%; border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); }
+  .asis-empty { font-size: 13px; color: var(--text-faint); padding: 8px 0; }
+
+  /* ============================================================
+     실제 화면 재현 컴포넌트(sim-*) — 실제 IMS.form·어드민 화면을 HTML로 그대로 옮길 때 사용(2026-10-02 개정)
+     원본 캡처를 보고 레이아웃·색·문구를 맞추되, 문서 테마(라이트/다크)와 무관하게 실제 화면 색을 유지한다.
+     ============================================================ */
+  .sim { font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif; color: #23262b; font-size: 11px; line-height: 1.45; letter-spacing: -0.01em; word-break: keep-all; }
+  .sim, .sim * { box-sizing: border-box; }
+  .sim-case { margin-bottom: 26px; }
+  .sim-case:last-child { margin-bottom: 0; }
+  .sim-case-title { font-size: 12.5px; font-weight: 700; color: var(--text); margin: 0 0 8px; }
+  .sim-case-title small { font-weight: 500; color: var(--text-faint); margin-left: 6px; }
+  .sim-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sim-phones { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .sim-frame { position: relative; overflow: hidden; border: 1px solid #1d1d1f; border-radius: 8px; background: #fff; display: flex; flex-direction: column; }
+  .sim-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 5; }
+  .sim-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .sim-new { outline: 2px solid #ff2e93; outline-offset: 1px; }
+  .sim-newtag { display: inline-block; background: #ff2e93; color: #fff; font-size: 8.5px; font-weight: 700; border-radius: 8px; padding: 0 6px; margin-left: 4px; vertical-align: middle; }
+
+  /* 폼(ims.form) 웹 셸 */
+  .sim-ftop { flex: none; height: 28px; background: #1c1c1e; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 10.5px; }
+  .sim-logo { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+  .sim-logo span { font-weight: 300; }
+  .sim-fbody { flex: 1; display: flex; min-height: 0; }
+  .sim-fside { flex: none; width: 118px; background: #1c1c1e; color: #fff; font-size: 10px; padding: 10px 0; overflow: hidden; }
+  .sim-fside .co { padding: 0 10px 4px; font-size: 11.5px; font-weight: 700; }
+  .sim-fside .co small { display: block; font-size: 9px; font-weight: 500; color: #ddd; }
+  .sim-fside .cash { padding: 3px 10px; display: flex; justify-content: space-between; color: #ddd; }
+  .sim-fside .sbtn { margin: 5px 10px; padding: 5px 0; text-align: center; border-radius: 5px; border: 1px solid #fff; font-weight: 700; }
+  .sim-fside .sbtn.light { background: #e8e8ea; color: #222; border-color: #e8e8ea; }
+  .sim-fside .mh { background: #000; color: #ff9f1a; padding: 7px 10px; font-weight: 700; margin-top: 8px; }
+  .sim-fside .mi { background: #000; padding: 5px 10px 5px 16px; font-weight: 700; }
+  .sim-fside .mi.on { color: #ff9f1a; }
+  .sim-fside .m { padding: 6px 10px; font-weight: 700; }
+  .sim-fside .cs { padding: 10px; color: #bbb; font-size: 11px; }
+  .sim-fmain { flex: 1; min-width: 0; background: #f3f3f5; padding: 10px 14px; overflow: hidden; }
+  .sim-title { font-size: 13px; font-weight: 700; margin: 0 0 8px; }
+  .sim-cols { display: flex; gap: 8px; align-items: flex-start; }
+  .sim-card { background: #fff; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+  .sim-card h4 { margin: 0 0 6px; font-size: 12px; }
+  .sim-pill { background: #6d6d72; color: #fff; text-align: center; font-weight: 700; border-radius: 12px; padding: 5px 0; margin-bottom: 8px; }
+  .sim-kv { display: flex; gap: 8px; padding: 2px 0; }
+  .sim-kv > span:first-child { flex: none; width: 64px; color: #777; }
+  .sim-notice { background: #fff; border-radius: 6px; padding: 7px 10px; margin-bottom: 8px; font-size: 10.5px; }
+  .sim-row { display: flex; gap: 6px; }
+  .sim-input { flex: 1; border: 1px solid #d9d9de; border-radius: 4px; background: #fff; padding: 5px 7px; color: #aaa; }
+  .sim-coin { background: #f1f1f3; border-radius: 6px; padding: 8px 10px; margin: 8px 0; font-size: 10px; }
+  .sim-tbox { border: 1px solid #d9d9de; border-radius: 4px; padding: 6px 8px; color: #333; font-size: 10px; line-height: 1.5; }
+  .sim-darkbtn { background: #2d3445; color: #fff; text-align: center; padding: 8px; border-radius: 4px; font-weight: 700; margin-top: 8px; }
+  .sim-guide { background: #f1f1f3; border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 9.5px; color: #555; }
+  .sim-red { color: #e53935; }
+  .sim-blue { color: #2a5bd7; }
+  .sim-orange { color: #ff9f1a; }
+  .sim-muted { color: #8a8a90; }
+  .sim-sechead { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 12px; padding: 6px 0 4px; border-bottom: 1.5px solid #333; }
+  .sim-t { width: 100%; border-collapse: collapse; background: #fff; font-size: 10.5px; }
+  .sim-t th, .sim-t td { border-bottom: 1px solid #e3e3e7; padding: 5px 8px; text-align: left; }
+  .sim-t th { width: 17%; background: #f6f6f8; font-weight: 500; text-align: center; color: #444; }
+  .sim-sbtn { display: inline-block; background: #3a3a3c; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 9.5px; }
+  .sim-sbtn.line { background: #fff; color: #333; border: 1px solid #555; }
+  .sim-badge-s { display: inline-block; border: 1px solid #e53935; color: #e53935; border-radius: 8px; font-size: 9px; padding: 0 6px; margin-left: 4px; }
+  .sim-rate { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin: 10px 0; font-size: 9.5px; color: #555; }
+  .sim-rate .lab { background: #ffa51f; color: #fff; font-weight: 700; padding: 7px 14px; }
+  .sim-rate .val { border: 1px solid #ffa51f; background: #fff; padding: 6px 30px 6px 10px; font-size: 13px; color: #222; min-width: 96px; }
+  .sim-total { background: #ececef; border-radius: 4px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .sim-total b { font-size: 20px; }
+  .sim-btnrow { display: flex; justify-content: space-between; margin-top: 10px; }
+  .sim-obtn { border: 1px solid #333; background: #fff; color: #222; padding: 6px 12px; border-radius: 3px; font-weight: 700; }
+  .sim-obtn.red { border-color: #e53935; color: #e53935; margin-left: 4px; }
+  .sim-obtn.dark { background: #4a4a4e; border-color: #4a4a4e; color: #fff; padding: 6px 22px; }
+
+  /* 모달·얼럿 */
+  .sim-modal { position: absolute; z-index: 6; background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); width: 300px; }
+  .sim-mtitle { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .sim-select { border: 1px solid #cfd2da; border-radius: 4px; padding: 6px 8px; display: flex; justify-content: space-between; color: #333; background: #fff; margin-bottom: 6px; }
+  .sim-select.empty { color: #aaa; }
+  .sim-note { font-size: 9.5px; color: #555; margin: 8px 0 12px; }
+  .sim-savebtn { display: inline-block; background: #2a5bd7; color: #fff; padding: 6px 18px; border-radius: 4px; font-weight: 700; }
+  .sim-list { border: 1px solid #cfd2da; border-radius: 4px; background: #fff; font-size: 10px; margin-bottom: 6px; }
+  .sim-list div { padding: 5px 10px; }
+  .sim-list .on { color: #2a5bd7; font-weight: 700; background: #f4f4f6; }
+  .sim-alert { position: absolute; z-index: 7; top: 12px; left: 50%; transform: translateX(-50%); width: 340px; max-width: 92%; background: #2a2a2c; color: #fff; border-radius: 12px; padding: 14px 16px 12px; font-size: 10.5px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+  .sim-alert b { display: block; font-size: 12px; margin-bottom: 8px; }
+  .sim-alert .ok { display: block; width: 52px; margin: 12px 0 0 auto; text-align: center; background: #a8c7fa; color: #062e6f; border-radius: 14px; padding: 5px 0; font-weight: 700; }
+  .sim-alert .ok + .ok { display: inline-block; }
+  .sim-alert .two { display: flex; justify-content: flex-end; gap: 6px; margin-top: 12px; }
+  .sim-alert .two .ok { margin: 0; }
+  .sim-alert .two .no { text-align: center; background: #444; color: #fff; border-radius: 14px; padding: 5px 12px; font-weight: 700; }
+  .sim-ios { position: absolute; z-index: 7; width: 218px; background: #f1f0ef; border-radius: 14px; text-align: center; overflow: hidden; }
+  .sim-ios .t { padding: 14px 14px 12px; }
+  .sim-ios .t b { display: block; font-size: 13px; margin-bottom: 4px; }
+  .sim-ios .t span { font-size: 11px; }
+  .sim-ios .ok { border-top: 1px solid #cfcfd1; color: #0a7aff; padding: 9px 0; font-size: 13px; }
+
+  /* 모바일 셸 */
+  .sim-phone { width: 300px; height: 570px; border: 5px solid #111; border-radius: 30px; background: #f5f5f6; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .sim-pstat { flex: none; height: 26px; background: #1c1c1e; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 10px; font-weight: 700; }
+  .sim-phead { flex: none; height: 38px; background: #fff; display: flex; align-items: center; gap: 14px; padding: 0 14px; font-size: 13px; font-weight: 600; }
+  .sim-pbody { flex: 1; min-height: 0; overflow: hidden; padding: 8px; }
+  .sim-pbody.dark { background: #262628; color: #fff; }
+  .sim-ptab { flex: none; height: 44px; background: #fafafa; border-top: 1px solid #e5e5e8; display: flex; justify-content: space-around; align-items: center; font-size: 8.5px; color: #999; }
+  .sim-ptab .on { color: #111; font-weight: 700; }
+  .sim-pcard { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 8px; font-size: 11px; }
+  .sim-pcard h4 { margin: 0 0 8px; font-size: 13px; }
+  .sim-pkv { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid #f0f0f2; }
+  .sim-pkv > span:first-child { flex: none; width: 84px; color: #555; }
+  .sim-obtn2 { display: inline-block; border: 1px solid #ff9f1a; color: #ff9f1a; border-radius: 4px; padding: 2px 8px; font-size: 10px; margin-left: auto; align-self: center; }
+  .sim-obox { background: #ffa51f; color: #fff; text-align: center; border-radius: 8px; padding: 11px; font-weight: 700; font-size: 13px; }
+  .sim-gbox { background: #ddd; border-radius: 6px; padding: 6px 8px; font-size: 10px; }
+
+  /* 어드민 셸 */
+  .sim-atop { flex: none; height: 28px; background: #3a3a3c; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 10px; }
+  .sim-atop b { color: #ff9f1a; font-size: 12px; }
+  .sim-aside { flex: none; width: 96px; background: #8c8c90; color: #fff; font-size: 9.5px; overflow: hidden; }
+  .sim-aside div { padding: 9px 0; text-align: center; }
+  .sim-amain { flex: 1; min-width: 0; background: #fff; padding: 8px 10px; overflow: hidden; }
+  .sim-ahead { background: #dfe2e8; padding: 7px 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .sim-ahead h3 { margin: 0 6px 0 0; font-size: 13px; }
+  .sim-ahead .sp { margin-left: auto; display: flex; gap: 4px; }
+  .sim-tag { border-radius: 10px; padding: 1px 7px; font-size: 9px; color: #fff; background: #2a7de1; }
+  .sim-tag.r { background: #e53935; } .sim-tag.o { background: #ffb300; color: #222; } .sim-tag.t { background: #20a9b0; }
+  .sim-abtn { display: inline-block; padding: 4px 9px; border-radius: 3px; color: #fff; background: #6b7280; font-size: 9.5px; font-weight: 700; }
+  .sim-abtn.red { background: #e53935; } .sim-abtn.green { background: #2e9e4f; } .sim-abtn.blue { background: #1976d2; } .sim-abtn.dark { background: #3a3a3c; } .sim-abtn.orange { background: #ffb300; color: #222; } .sim-abtn.gray { background: #8c8c90; }
+  .sim-asec { background: #f6f6f8; padding: 8px 10px; margin-bottom: 6px; }
+  .sim-asec h5 { margin: 0 0 6px; font-size: 11.5px; }
+  .sim-agrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 14px; font-size: 10px; }
+  .sim-agrid div { display: flex; gap: 8px; }
+  .sim-agrid span { color: #666; flex: none; width: 66px; }
+  .sim-agrid b { font-weight: 700; }
+  .sim-tbl { width: 100%; border-collapse: collapse; font-size: 9.5px; }
+  .sim-tbl th, .sim-tbl td { border: 1px solid #e1e1e5; padding: 6px 3px; text-align: center; background: #fff; }
+  .sim-tbl th { font-weight: 700; }
+  .sim-tbl .bar th { background: #8c8c90; color: #fff; }
+  .sim-tbl td.newc, .sim-tbl th.newc { background: rgba(255, 46, 147, 0.12); }
+  .sim-tbl .stat { display: inline-block; background: #6b7280; color: #fff; border-radius: 3px; padding: 3px 7px; font-size: 9.5px; font-weight: 700; }
+  .sim-tbl .stat.on { background: #1976d2; }
+  .sim-aleg { font-size: 9.5px; margin: 6px 0 4px; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body data-mode="tobe" data-device="web">
+
+<div class="page">
+  <div class="doc-head">
+    <div class="doc-eyebrow">Prototype · ims.form·어드민</div>
+    <h1 class="doc-title">KB 인증 사업자 구분</h1>
+    <p class="doc-desc">
+      근거: <code>PRD_KB_인증_사업자_구분.md</code> / <code>기능정의서_KB_인증_사업자_구분.md</code><br>
+      아래 "화면" 토글로 화면을 고르고, "화면 상태"(TO-BE/AS-IS)·"기기"(Web/Mobile) 토글로 전환해 비교해 보세요. 어드민 화면은 기기 토글의 영향을 받지 않습니다.
+    </p>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">화면</span>
+      <div class="segmented segmented-screens" role="group" aria-label="화면 전환">
+        <button type="button" data-screen-btn="scr-01" aria-pressed="true">[SCR-01] 폼 · 콜건 제안 하기</button>
+        <button type="button" data-screen-btn="scr-02" aria-pressed="false">[SCR-02] 폼 · 자체건 청구율</button>
+        <button type="button" data-screen-btn="scr-03" aria-pressed="false">[SCR-03] 어드민 · 요청 상세</button>
+        <button type="button" data-screen-btn="scr-04" aria-pressed="false">[SCR-04] 어드민 · 사업자 목록</button>
+        <button type="button" data-screen-btn="scr-05" aria-pressed="false">[SCR-05] 어드민 · 업체 리스트</button>
+      </div>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">화면 상태</span>
+      <div class="segmented" role="group" aria-label="AS-IS TO-BE 전환">
+        <button type="button" data-mode-btn="tobe" aria-pressed="true">TO-BE · 개선안</button>
+        <button type="button" data-mode-btn="asis" aria-pressed="false">AS-IS · 현행</button>
+      </div>
+    </div>
+    <div class="toolbar-group" id="device-group">
+      <span class="toolbar-label">기기</span>
+      <div class="segmented" role="group" aria-label="Web Mobile 전환">
+        <button type="button" data-device-btn="web" aria-pressed="true">Web</button>
+        <button type="button" data-device-btn="mobile" aria-pressed="false">Mobile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ [SCR-01] 콜건 제안 하기 ============ -->
+  <section class="section" id="scr-01">
+    <div class="section-head">
+      <div class="section-title">[SCR-01] 콜건 제안 하기 <small>KB 인증 사업자가 없는 업체가 KB 콜건에 제안하면 얼럿</small></div>
+      <div class="head-chips">
+        <span class="platform-chip web">ims.form · Web/Mobile</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block"><div class="only-web-block"><div class="sim-case"><div class="sim-case-title">KB 인증 사업자가 없는 업체가 KB 요청 건에서 제안 하기를 누르면<small>시행 이후 생성된 요청 건 · 제안은 접수되지 않음</small></div><div class="sim sim-frame" style="height:500px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">파트너메뉴</div><div class="mi on">렌트요청 콜</div><div class="mi">일반렌트 콜 예약관리</div><div class="mi">파트너 설정</div><div class="mi">리뷰/평점</div><div class="mi">페어플레이 제도</div><div class="m">차량 현황</div><div class="m">스케줄 관리</div><div class="m">비대면 계약서</div><div class="m">보험 계약서</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-title">요청 상세보기</div><div class="sim-cols"><div style="width:27%"><div class="sim-card"><div class="sim-pill">#76974 / 보험사요청</div><div class="sim-kv"><span>고객 차량</span><span>아반떼</span></div><div class="sim-kv"><span>희망 차종</span><span>-</span></div><div class="sim-kv"><span>본인 예상과실</span><span>무과실</span></div><hr style="border:0;border-top:1px solid #eee;margin:6px 0"><div class="sim-kv"><span>요청일</span><span>2026.10.05 11:29</span></div><div class="sim-kv"><span>이용지역</span><span>서울특별시 강남구</span></div><div class="sim-kv"><span>배기량</span><span class="sim-red">배기량/연식 확인이 필요합니다.</span></div><div class="sim-kv"><span>연식</span><span>-</span></div><div class="sim-kv"><span>예상 수리기간</span><span>-</span></div><div class="sim-kv"><span>청구율</span><span>보험사 지급기준의 42%</span></div><div class="sim-kv"><span>입고 공업사</span><span>-</span></div><div class="sim-kv"><span>기타 요청사항</span><span>-</span></div></div></div><div style="flex:1;min-width:0"><div class="sim-notice">보험사 요청으로 <b>청구율 준수</b> 및 <b>IMSform 청구</b>를 권장드립니다.</div><div class="sim-card"><h4>제안 내용</h4><div style="font-weight:700;margin-bottom:4px">제안 차량</div><div class="sim-row"><div class="sim-input">제안 차량 1 (필수)</div><div class="sim-input">제안 차량 2 (선택)</div></div><div class="sim-coin">소형차 요청으로 배차 시 보상 광고 포인트 <b class="sim-blue">3,000</b> 지급됩니다.</div><div style="font-weight:700;margin-bottom:4px">서비스 추가 제안</div><div class="sim-tbox">대한민국 대표렌터카 홍홍렌터카<br>- 전차량 자차/종합보험 가입<br>- 흡연/비흡연 구분 차량 관리 및 손세차 관리</div><div style="font-weight:700;margin:8px 0 4px">자차보험 최대 면책금 (필수)</div><div>◉ 30만원 &nbsp; ○ 50만원</div></div></div><div style="width:31%"><div class="sim-card"><h4>상단 노출 광고</h4><div style="font-size:9.5px;color:#666">상단 노출 광고란, 제안이 상단 노출되어 배정 우선순위를 높일 수 있는 제도입니다.</div><div style="font-weight:700;margin:8px 0 4px">광고 입찰가 설정</div><div class="sim-gbox">남은 시간 <b class="sim-red">2분 24초</b> &nbsp;|&nbsp; 제안 업체 - &nbsp;|&nbsp; 1순위 광고 입찰가 -</div><div class="sim-input" style="margin:8px 0;text-align:right;color:#222">0원</div><div style="display:flex;justify-content:space-between"><span>보유 광고 포인트</span><span>0</span></div><div style="display:flex;justify-content:space-between"><span>보유 캐시</span><span>58,851</span></div><div class="sim-darkbtn">제안 하기</div></div><div class="sim-guide"><b>이용안내</b><br>· 광고 입찰가는 5,000원 단위로 설정 가능합니다.<br>· 광고 입찰가 설정 없이 제안 가능합니다.</div></div></div></div></div><div class="sim-dim"></div><div class="sim-alert"><b>imsform.com 내용:</b>해당 건은 KB손해보험 요청으로, 인증 사업자에 한해 제안이 가능합니다.<br>인증 사업자 등록은 렌카운영팀(1600-8348, 내선 1번)으로 문의해 주시기 바랍니다.<span class="ok">확인</span></div></div></div></div><div class="only-mobile-block"><div class="sim-case"><div class="sim-case-title">KB 인증 사업자가 없는 업체가 제안하기를 누르면<small>모바일 · 시행 이후 생성된 요청 건</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>요청 상세</span></div><div class="sim-pbody"><div class="sim-pcard" style="font-size:10.5px">보험사 요청으로 <b>청구율 준수</b> 및 <b>IMSform 청구</b>를 권장드립니다.</div><div class="sim-pcard"><h4>요청 내용</h4><b>● #76974 / 보험사요청</b><div class="sim-pkv"><span>고객 차량</span><span>아반떼</span></div><div class="sim-pkv"><span>희망 차종</span><span>-</span></div><div class="sim-pkv"><span>본인 예상과실</span><span>무과실</span></div><div class="sim-pkv"><span>요청일</span><span>2026.10.05 11:29</span></div><div class="sim-pkv"><span>이용지역</span><span>서울특별시 강남구</span></div><div class="sim-pkv"><span>배기량</span><span class="sim-red">배기량/연식 확인이 필요합니다.</span></div><div class="sim-pkv"><span>청구율</span><span>보험사 지급기준의 42%</span></div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="on">파트너</span><span class="">계약서</span><span class="">알림</span><span class="">더보기</span></div></div><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>요청 상세</span></div><div class="sim-pbody"><div class="sim-pcard"><h4>상단 노출 광고</h4><div style="font-size:10px;color:#555">상단 노출 광고란, 제안이 상단 노출되어 배정 우선순위를 높일 수 있는 제도입니다.</div><div style="font-weight:700;margin:10px 0 4px">광고 입찰가 설정</div><div class="sim-gbox">남은 시간 <b class="sim-red">2분 41초</b> | 제안 업체 - | 1순위 -</div><div class="sim-input" style="margin:8px 0;text-align:right;color:#222">0원</div><div style="display:flex;justify-content:space-between"><span>보유 포인트</span><span>0</span></div><div style="display:flex;justify-content:space-between"><span>보유 캐시</span><span>52,866</span></div><div class="sim-darkbtn" style="padding:11px">제안하기</div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="on">파트너</span><span class="">계약서</span><span class="">알림</span><span class="">더보기</span></div><div class="sim-dim" style="top:26px;bottom:44px;background:rgba(0,0,0,.5)"></div><div class="sim-ios" style="top:42%;left:50%;transform:translateX(-50%)"><div class="t"><b>알림</b><span>해당 건은 KB손해보험 요청으로, 인증 사업자에 한해 제안이 가능합니다.<br>인증 사업자 등록은 렌카운영팀(1600-8348, 내선 1번)으로 문의해 주시기 바랍니다.</span></div><div class="ok">확인</div></div></div></div></div></div></div>
+      <div class="only-asis-block"><div class="only-web-block"><div class="sim-case"><div class="sim-case-title">KB 요청 건 — 제안 하기를 누르면 (현행)<small>인증 확인 없이 제안이 접수됨</small></div><div class="sim sim-frame" style="height:500px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">파트너메뉴</div><div class="mi on">렌트요청 콜</div><div class="mi">일반렌트 콜 예약관리</div><div class="mi">파트너 설정</div><div class="mi">리뷰/평점</div><div class="mi">페어플레이 제도</div><div class="m">차량 현황</div><div class="m">스케줄 관리</div><div class="m">비대면 계약서</div><div class="m">보험 계약서</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-title">요청 상세보기</div><div class="sim-cols"><div style="width:27%"><div class="sim-card"><div class="sim-pill">#76974 / 보험사요청</div><div class="sim-kv"><span>고객 차량</span><span>아반떼</span></div><div class="sim-kv"><span>희망 차종</span><span>-</span></div><div class="sim-kv"><span>본인 예상과실</span><span>무과실</span></div><hr style="border:0;border-top:1px solid #eee;margin:6px 0"><div class="sim-kv"><span>요청일</span><span>2026.10.05 11:29</span></div><div class="sim-kv"><span>이용지역</span><span>서울특별시 강남구</span></div><div class="sim-kv"><span>배기량</span><span class="sim-red">배기량/연식 확인이 필요합니다.</span></div><div class="sim-kv"><span>연식</span><span>-</span></div><div class="sim-kv"><span>예상 수리기간</span><span>-</span></div><div class="sim-kv"><span>청구율</span><span>보험사 지급기준의 42%</span></div><div class="sim-kv"><span>입고 공업사</span><span>-</span></div><div class="sim-kv"><span>기타 요청사항</span><span>-</span></div></div></div><div style="flex:1;min-width:0"><div class="sim-notice">보험사 요청으로 <b>청구율 준수</b> 및 <b>IMSform 청구</b>를 권장드립니다.</div><div class="sim-card"><h4>제안 내용</h4><div style="font-weight:700;margin-bottom:4px">제안 차량</div><div class="sim-row"><div class="sim-input">제안 차량 1 (필수)</div><div class="sim-input">제안 차량 2 (선택)</div></div><div class="sim-coin">소형차 요청으로 배차 시 보상 광고 포인트 <b class="sim-blue">3,000</b> 지급됩니다.</div><div style="font-weight:700;margin-bottom:4px">서비스 추가 제안</div><div class="sim-tbox">대한민국 대표렌터카 홍홍렌터카<br>- 전차량 자차/종합보험 가입<br>- 흡연/비흡연 구분 차량 관리 및 손세차 관리</div><div style="font-weight:700;margin:8px 0 4px">자차보험 최대 면책금 (필수)</div><div>◉ 30만원 &nbsp; ○ 50만원</div></div></div><div style="width:31%"><div class="sim-card"><h4>상단 노출 광고</h4><div style="font-size:9.5px;color:#666">상단 노출 광고란, 제안이 상단 노출되어 배정 우선순위를 높일 수 있는 제도입니다.</div><div style="font-weight:700;margin:8px 0 4px">광고 입찰가 설정</div><div class="sim-gbox">남은 시간 <b class="sim-red">2분 24초</b> &nbsp;|&nbsp; 제안 업체 - &nbsp;|&nbsp; 1순위 광고 입찰가 -</div><div class="sim-input" style="margin:8px 0;text-align:right;color:#222">0원</div><div style="display:flex;justify-content:space-between"><span>보유 광고 포인트</span><span>0</span></div><div style="display:flex;justify-content:space-between"><span>보유 캐시</span><span>58,851</span></div><div class="sim-darkbtn">제안 하기</div></div><div class="sim-guide"><b>이용안내</b><br>· 광고 입찰가는 5,000원 단위로 설정 가능합니다.<br>· 광고 입찰가 설정 없이 제안 가능합니다.</div></div></div></div></div></div></div></div><div class="only-mobile-block"><div class="sim-case"><div class="sim-case-title">KB 요청 건 — 제안하기 (현행)<small>모바일 · 인증 확인 없이 제안이 접수됨</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>요청 상세</span></div><div class="sim-pbody"><div class="sim-pcard" style="font-size:10.5px">보험사 요청으로 <b>청구율 준수</b> 및 <b>IMSform 청구</b>를 권장드립니다.</div><div class="sim-pcard"><h4>요청 내용</h4><b>● #76974 / 보험사요청</b><div class="sim-pkv"><span>고객 차량</span><span>아반떼</span></div><div class="sim-pkv"><span>희망 차종</span><span>-</span></div><div class="sim-pkv"><span>본인 예상과실</span><span>무과실</span></div><div class="sim-pkv"><span>요청일</span><span>2026.10.05 11:29</span></div><div class="sim-pkv"><span>이용지역</span><span>서울특별시 강남구</span></div><div class="sim-pkv"><span>배기량</span><span class="sim-red">배기량/연식 확인이 필요합니다.</span></div><div class="sim-pkv"><span>청구율</span><span>보험사 지급기준의 42%</span></div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="on">파트너</span><span class="">계약서</span><span class="">알림</span><span class="">더보기</span></div></div><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>요청 상세</span></div><div class="sim-pbody"><div class="sim-pcard"><h4>상단 노출 광고</h4><div style="font-size:10px;color:#555">상단 노출 광고란, 제안이 상단 노출되어 배정 우선순위를 높일 수 있는 제도입니다.</div><div style="font-weight:700;margin:10px 0 4px">광고 입찰가 설정</div><div class="sim-gbox">남은 시간 <b class="sim-red">2분 41초</b> | 제안 업체 - | 1순위 -</div><div class="sim-input" style="margin:8px 0;text-align:right;color:#222">0원</div><div style="display:flex;justify-content:space-between"><span>보유 포인트</span><span>0</span></div><div style="display:flex;justify-content:space-between"><span>보유 캐시</span><span>52,866</span></div><div class="sim-darkbtn" style="padding:11px">제안하기</div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="on">파트너</span><span class="">계약서</span><span class="">알림</span><span class="">더보기</span></div></div></div></div></div></div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-01</b>, PRD <b>LD-01, LD-07, LD-08</b><br>· 콜건은 제안할 때만 인증을 확인합니다. 업체 확정 이후 계약서 작성(차량·청구 사업자 선택)과 자체건의 콜건 연결에서는 확인하지 않습니다(긴급선택 배정 업체 포함) — PRD <b>LD-01, LD-02</b><br>· 인증 확인은 화면뿐 아니라 서버에서도 수행합니다 — PRD <b>LD-01</b><br>· 현대해상 요청 건의 제안 불가 얼럿도 이 문구를 씁니다(보험사명만 현대해상, 검증 로직은 기존 그대로) — PRD <b>LD-07</b></span></div>
+  </section>
+
+  <!-- ============ [SCR-02] 자체건 청구율 ============ -->
+  <section class="section" id="scr-02" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-02] 자체건 청구율 <small>청구 사업자의 인증 여부에 따른 분기</small></div>
+      <div class="head-chips">
+        <span class="platform-chip web">ims.form · Web/Mobile</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block"><div class="only-web-block"><div class="sim-case"><div class="sim-case-title">① 청구 사업자가 KB 인증 사업자 — 청구율 설정 모달<small>기본값 60% · 항목 직접입력, 5%～60% (5% 단위) · 최대 60% 안내 · 요금표는 KB 요금표 고정 · 셀렉트박스를 눌러 항목 확인</small></div><div class="sim sim-frame" style="height:400px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">보험 계약서</div><div class="mi">보험 계약서 작성</div><div class="mi on">보험 계약서 목록</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="m">내차팔기 서비스</div><div class="m">회계 관리</div><div class="m">일반 렌트 요금 관리</div><div class="m">캐시 쿠폰 관리</div><div class="m">사업자 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-sechead"><span>청구 사업자 정보</span><span class="sim-sbtn">수정</span></div><table class="sim-t"><tr><th>사업자 명</th><td colspan="3">홍흰비</td></tr><tr><th>사업자 번호</th><td>2808600274</td><th>사업자 주소</th><td>서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</td></tr></table><div class="sim-sechead"><span>계약 정보 (#9052) <span class="sim-badge-s">미검증</span></span><span><span class="sim-sbtn line">계약서 상세보기</span> <span class="sim-sbtn">수정</span></span></div><table class="sim-t"><tr><th>대여차종</th><td>이보크</td><th>배차일시</th><td>2025-12-14 08:00</td></tr><tr><th>대여 차량 번호</th><td>12가3444</td><th>반납일시</th><td>-</td></tr><tr><th>청구수식</th><td colspan="3">-</td></tr></table><div class="sim-muted" style="font-size:9.5px;margin:5px 0">* RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div class="sim-sechead"><span>기타 정보</span><span class="sim-sbtn">수정</span></div><div class="sim-rate"><span class="lab">청구율</span><span class="val">-</span><span class="sim-obtn" style="padding:6px 12px">설정</span></div></div></div><div class="sim-dim"></div><div class="sim-modal" style="top:40px;left:50%;transform:translateX(-50%)"><div class="sim-mtitle"><span>청구율 설정</span><span>✕</span></div><div style="position:relative"><div class="sim-select" data-select-toggle style="cursor:pointer"><span>60%</span><span>⌄</span></div><div class="sim-list" hidden style="position:absolute;left:0;right:0;top:30px;z-index:7;box-shadow:0 4px 10px rgba(0,0,0,.25)"><div class="">직접입력</div><div class="">5%</div><div class="">…</div><div class="">55%</div><div class="on">60%</div></div></div><div class="sim-note">KB손해보험 파트너사의 자체건 청구율은 최대 60%까지 적용 가능합니다.</div><div style="text-align:right"><span class="sim-savebtn">저장</span></div></div></div></div><div class="sim-case"><div class="sim-case-title">② 직접입력에서 60을 넘겨 입력하면<small>1～60 사이의 숫자만 입력할 수 있음</small></div><div class="sim sim-frame" style="height:400px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">보험 계약서</div><div class="mi">보험 계약서 작성</div><div class="mi on">보험 계약서 목록</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="m">내차팔기 서비스</div><div class="m">회계 관리</div><div class="m">일반 렌트 요금 관리</div><div class="m">캐시 쿠폰 관리</div><div class="m">사업자 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-sechead"><span>청구 사업자 정보</span><span class="sim-sbtn">수정</span></div><table class="sim-t"><tr><th>사업자 명</th><td colspan="3">홍흰비</td></tr><tr><th>사업자 번호</th><td>2808600274</td><th>사업자 주소</th><td>서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</td></tr></table><div class="sim-sechead"><span>계약 정보 (#9052) <span class="sim-badge-s">미검증</span></span><span><span class="sim-sbtn line">계약서 상세보기</span> <span class="sim-sbtn">수정</span></span></div><table class="sim-t"><tr><th>대여차종</th><td>이보크</td><th>배차일시</th><td>2025-12-14 08:00</td></tr><tr><th>대여 차량 번호</th><td>12가3444</td><th>반납일시</th><td>-</td></tr><tr><th>청구수식</th><td colspan="3">-</td></tr></table><div class="sim-muted" style="font-size:9.5px;margin:5px 0">* RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div class="sim-sechead"><span>기타 정보</span><span class="sim-sbtn">수정</span></div><div class="sim-rate"><span class="lab">청구율</span><span class="val">-</span><span class="sim-obtn" style="padding:6px 12px">설정</span></div></div></div><div class="sim-dim"></div><div class="sim-modal" style="top:50%;left:50%;transform:translate(-50%,-50%)"><div class="sim-mtitle"><span>청구율 설정</span><span>✕</span></div><div class="sim-select"><span>직접입력</span><span>⌄</span></div><div class="sim-select" style="border-color:#2a5bd7;color:#222">61</div><div class="sim-note">KB손해보험 파트너사의 자체건 청구율은 최대 60%까지 적용 가능합니다.</div><div style="text-align:right"><span class="sim-savebtn">저장</span></div></div><div class="sim-alert"><b>imsform.com 내용:</b>1～60 사이의 숫자만 입력해 주세요.<span class="ok">확인</span></div></div></div><div class="sim-case"><div class="sim-case-title">③ 청구 사업자를 인증↔미인증으로 바꿔 저장했을 때<small>확인 후 청구 기준 초기화, 청구율은 이전 값 유지 (인증: KB 요금표·최대 60%, 미인증: 요금표 선택·100%까지)</small></div><div class="sim sim-frame" style="height:400px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">보험 계약서</div><div class="mi">보험 계약서 작성</div><div class="mi on">보험 계약서 목록</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="m">내차팔기 서비스</div><div class="m">회계 관리</div><div class="m">일반 렌트 요금 관리</div><div class="m">캐시 쿠폰 관리</div><div class="m">사업자 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-sechead"><span>청구 사업자 정보</span><span class="sim-sbtn">수정</span></div><table class="sim-t"><tr><th>사업자 명</th><td colspan="3">홍흰비</td></tr><tr><th>사업자 번호</th><td>2808600274</td><th>사업자 주소</th><td>서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</td></tr></table><div class="sim-sechead"><span>계약 정보 (#9052) <span class="sim-badge-s">미검증</span></span><span><span class="sim-sbtn line">계약서 상세보기</span> <span class="sim-sbtn">수정</span></span></div><table class="sim-t"><tr><th>대여차종</th><td>이보크</td><th>배차일시</th><td>2025-12-14 08:00</td></tr><tr><th>대여 차량 번호</th><td>12가3444</td><th>반납일시</th><td>-</td></tr><tr><th>청구수식</th><td colspan="3">-</td></tr></table><div class="sim-muted" style="font-size:9.5px;margin:5px 0">* RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div class="sim-sechead"><span>기타 정보</span><span class="sim-sbtn">수정</span></div><div class="sim-rate"><span class="lab">청구율</span><span class="val">-</span><span class="sim-obtn" style="padding:6px 12px">설정</span></div></div></div><div class="sim-dim"></div><div class="sim-modal" style="top:70px;left:50%;transform:translateX(-50%);width:380px"><div class="sim-mtitle"><span>청구 사업자 선택</span><span>✕</span></div><table class="sim-t"><tr><th style="width:12%">선택</th><th>사업자명</th><th>사업자 번호</th><th>주소</th></tr><tr><td style="text-align:center">☐</td><td style="text-align:center">사업자테스트8</td><td style="text-align:center">280-86-00274</td><td style="text-align:center">아차산로355</td></tr><tr><td style="text-align:center">☐</td><td style="text-align:center">사업자테스트7</td><td style="text-align:center">280-86-00274</td><td style="text-align:center">아차산로355</td></tr><tr><td style="text-align:center">☑</td><td style="text-align:center">사업자테스트6</td><td style="text-align:center">280-86-00274</td><td style="text-align:center">아차산로 355</td></tr><tr><td style="text-align:center">☐</td><td style="text-align:center">홍흰비</td><td style="text-align:center">280-86-00274</td><td style="text-align:center">서울 광진구 아차산로 355...</td></tr></table><div style="height:10px"></div><div style="text-align:right"><span style="display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 16px;margin-right:6px">취소</span><span class="sim-savebtn">저장</span></div></div><div class="sim-alert"><b>imsform.com 내용:</b>청구 사업자가 변경되어 청구 기준 재설정이 필요합니다.<span class="ok">확인</span></div></div></div><div class="sim-case"><div class="sim-case-title">④ 재설정 없이 청구하기를 눌렀을 때<small>청구 사업자가 인증으로 바뀐 뒤 청구율·청구 수식을 고치지 않은 경우</small></div><div class="sim sim-frame" style="height:400px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">보험 계약서</div><div class="mi">보험 계약서 작성</div><div class="mi on">보험 계약서 목록</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="m">내차팔기 서비스</div><div class="m">회계 관리</div><div class="m">일반 렌트 요금 관리</div><div class="m">캐시 쿠폰 관리</div><div class="m">사업자 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-sechead"><span>청구 사업자 정보</span><span class="sim-sbtn">수정</span></div><table class="sim-t"><tr><th>사업자 명</th><td colspan="3">홍흰비</td></tr><tr><th>사업자 번호</th><td>2808600274</td><th>사업자 주소</th><td>서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</td></tr></table><div class="sim-sechead"><span>계약 정보 (#9052) <span class="sim-badge-s">미검증</span></span><span><span class="sim-sbtn line">계약서 상세보기</span> <span class="sim-sbtn">수정</span></span></div><table class="sim-t"><tr><th>대여차종</th><td>이보크</td><th>배차일시</th><td>2025-12-14 08:00</td></tr><tr><th>대여 차량 번호</th><td>12가3444</td><th>반납일시</th><td>-</td></tr><tr><th>청구수식</th><td colspan="3">((85000 * 1) + (85000 * (5 / 24))) * 0.75 = 77030</td></tr></table><div class="sim-muted" style="font-size:9.5px;margin:5px 0">* RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div class="sim-sechead"><span>기타 정보</span><span class="sim-sbtn">수정</span></div><div class="sim-rate"><span class="lab">청구율</span><span class="val">75%</span><span class="sim-obtn" style="padding:6px 12px">설정</span></div></div></div><div class="sim-dim"></div><div class="sim-modal" style="top:70px;left:50%;transform:translateX(-50%);width:380px"><div class="sim-mtitle"><span>청구서 선택 발송</span><span>✕</span></div><div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #888;margin:8px 0 10px"><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 통장 사본</div><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 임대차 계약서</div><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 사업자 등록증</div><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 명세서</div><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 차량 등록증</div><div style="padding:4px 6px;border-bottom:1px solid #e3e3e7">☑ 요금표</div></div><div style="background:#f4f4f6;padding:8px 10px;font-size:9.5px;color:#444;margin-bottom:10px">본건은 보험개발원 산하 AOS 전산을 통해 청구되며, 380 (캐시/포인트)가 차감됩니다.<div style="margin:6px 0">☐ 팩스 청구</div>· 청구 실패 시 차감한 캐시/포인트는 환급됩니다.<br>· 재청구 무료, 3회 이상 청구 시 수수료 차감됩니다.</div><div style="text-align:right"><span style="display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 16px;margin-right:6px">취소</span><span class="sim-savebtn" style="background:#2d3445">청구하기</span></div></div><div class="sim-alert"><b>imsform.com 내용:</b>청구 사업자가 'KB손해보험 인증 사업자'로 변경되어, 청구율 및 청구 수식을 수정한 후 다시 시도해 주세요.<span class="ok">확인</span></div></div></div></div><div class="only-mobile-block"><div class="sim-case"><div class="sim-case-title">① 청구 사업자가 KB 인증 사업자 — 청구율 설정<small>모바일 · 설정을 누르면 최대 60% 안내 후 60%까지의 항목 선택</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody" style="padding:0"><div class="sim-pcard" style="border-radius:0;margin:0"><div class="sim-pkv"><span>반납일</span><span>-</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px;margin:8px;font-size:9px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div style="background:#262628;color:#fff;padding:10px;height:100%"><div style="background:#3a3a3d;border-radius:6px;padding:9px 10px;display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:11px"><span>청구율</span><span style="border:1px solid #ff9f1a;color:#ff9f1a;border-radius:4px;padding:2px 9px;font-size:10px">설정</span></div><div style="display:flex;justify-content:space-between;padding:12px 2px;font-size:11px"><span>청구요금</span><b style="font-size:14px">0원</b></div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="">계약서</span><span class="">알림</span><span class="on">더보기</span></div><div class="sim-dim" style="top:26px;bottom:0;background:rgba(0,0,0,.5)"></div><div class="sim-ios" style="top:36%;left:50%;transform:translateX(-50%)"><div class="t"><b>알림</b><span>KB손해보험 파트너사의 자체건 청구율은 최대 60%까지 적용 가능합니다.</span></div><div class="ok">확인</div></div></div><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody" style="padding:0"><div class="sim-pcard" style="border-radius:0;margin:0"><div class="sim-pkv"><span>반납일</span><span>-</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px;margin:8px;font-size:9px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div style="background:#262628;color:#fff;padding:10px;height:100%"><div style="background:#3a3a3d;border-radius:6px;padding:9px 10px;display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:11px"><span>청구율</span><span style="border:1px solid #ff9f1a;color:#ff9f1a;border-radius:4px;padding:2px 9px;font-size:10px">설정</span></div><div style="display:flex;justify-content:space-between;padding:12px 2px;font-size:11px"><span>청구요금</span><b style="font-size:14px">0원</b></div></div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="">계약서</span><span class="">알림</span><span class="on">더보기</span></div><div class="sim-dim" style="top:26px;bottom:0;background:rgba(0,0,0,.5)"></div><div style="position:absolute;z-index:6;left:0;right:0;bottom:0"><div style="background:#c9cfd9;text-align:center;padding:10px 0 22px;font-size:12px;color:#7b8190"><div style="padding:5px 0">50%</div><div style="padding:5px 0">55%</div><div style="background:#bcc3cf;color:#111;padding:8px 0;font-size:14px">60%</div></div><div style="background:#ff9f1a;color:#fff;text-align:center;padding:14px 0;font-size:12px;font-weight:700">확인</div></div></div></div></div><div class="sim-case"><div class="sim-case-title">② 직접입력에서 60을 넘겨 입력하면<small>모바일 · 60 초과 입력 시 알림</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody"><div class="sim-pcard"><div class="sim-pkv"><span>반납일</span><span>-</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="on">계약서</span><span class="">알림</span><span class="">더보기</span></div><div class="sim-dim" style="top:26px;bottom:44px;background:rgba(0,0,0,.5)"></div><div style="position:absolute;z-index:6;left:12px;right:12px;top:150px;background:#fff;border-radius:16px;padding:16px"><div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:12px">청구율 설정</div><div class="sim-select" style="padding:9px"><span>직접입력</span><span>⌄</span></div><div class="sim-select" style="padding:9px;color:#aaa">1～60 사이의 숫자 입력</div><div style="font-size:10px;color:#444;margin:8px 0 14px">KB손해보험 파트너사의 자체건 청구율은 최대 60%까지 적용 가능합니다.</div><div style="display:flex;gap:8px"><span style="flex:1;text-align:center;border:1px solid #ccc;border-radius:6px;padding:9px">취소</span><span style="flex:2;text-align:center;background:#2d3445;color:#fff;border-radius:6px;padding:9px;font-weight:700">저장</span></div></div></div><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody"><div class="sim-pcard"><div class="sim-pkv"><span>반납일</span><span>-</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="on">계약서</span><span class="">알림</span><span class="">더보기</span></div><div class="sim-dim" style="top:26px;bottom:44px;background:rgba(0,0,0,.5)"></div><div style="position:absolute;z-index:6;left:12px;right:12px;top:150px;background:#fff;border-radius:16px;padding:16px"><div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:12px">청구율 설정</div><div class="sim-select" style="padding:9px"><span>직접입력</span><span>⌄</span></div><div class="sim-select" style="padding:9px;color:#aaa">1～60 사이의 숫자 입력</div><div style="font-size:10px;color:#444;margin:8px 0 14px">KB손해보험 파트너사의 자체건 청구율은 최대 60%까지 적용 가능합니다.</div><div style="display:flex;gap:8px"><span style="flex:1;text-align:center;border:1px solid #ccc;border-radius:6px;padding:9px">취소</span><span style="flex:2;text-align:center;background:#2d3445;color:#fff;border-radius:6px;padding:9px;font-weight:700">저장</span></div></div><div class="sim-ios" style="top:34%;left:50%;transform:translateX(-50%)"><div class="t"><b>알림</b><span>1～60 사이의 숫자만 입력해 주세요.</span></div><div class="ok">확인</div></div></div></div></div><div class="sim-case"><div class="sim-case-title">③ 청구 사업자를 인증↔미인증으로 바꿔 저장했을 때<small>모바일 · 확인 후 청구 기준 초기화, 청구율은 이전 값 유지</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>청구 사업자 선택</span></div><div class="sim-pbody" style="background:#fff;padding:0 8px"><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid #e5e5e8"><div><div style="font-size:12px;font-weight:700">사업자테스트</div><div style="font-size:10px;color:#555">280-86-00274</div><div style="font-size:10px;color:#555">서울광진구아차산로355</div></div><span style="border:1px solid #aaa;border-radius:12px;padding:3px 12px;font-size:10px;color:#888">선택</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid #e5e5e8"><div><div style="font-size:12px;font-weight:700">사업자테스트2</div><div style="font-size:10px;color:#555">280-86-00274</div><div style="font-size:10px;color:#555">아차산로 355</div></div><span style="border:1px solid #aaa;border-radius:12px;padding:3px 12px;font-size:10px;color:#888">선택</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid #e5e5e8"><div><div style="font-size:12px;font-weight:700">사업자테스트3</div><div style="font-size:10px;color:#555">280-86-00274</div><div style="font-size:10px;color:#555">아차산로 355555555</div></div><span style="border:1px solid #aaa;border-radius:12px;padding:3px 12px;font-size:10px;color:#888">선택</span></div><div style="display:flex;justify-content:space-between;align-items:center;padding:9px 6px;border-bottom:1px solid #e5e5e8"><div><div style="font-size:12px;font-weight:700">사업자텡스트6</div><div style="font-size:10px;color:#555">280-86-00274</div><div style="font-size:10px;color:#555">아차산로 355</div></div><span style="border:1px solid #aaa;border-radius:12px;padding:3px 12px;font-size:10px;color:#888">선택</span></div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="">계약서</span><span class="">알림</span><span class="on">더보기</span></div><div class="sim-dim" style="top:26px;bottom:0;background:rgba(0,0,0,.5)"></div><div class="sim-ios" style="top:34%;left:50%;transform:translateX(-50%)"><div class="t"><b>알림</b><span>청구 사업자가 변경되어 청구 기준 재설정이 필요합니다.</span></div><div class="ok">확인</div></div></div></div></div><div class="sim-case"><div class="sim-case-title">④ 재설정 없이 청구하기를 눌렀을 때<small>모바일 · 청구 사업자가 인증으로 바뀐 뒤 청구율·청구 수식을 고치지 않은 경우</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody"><div class="sim-pcard"><div class="sim-pkv"><span>반납일</span><span style="flex:1">2025.10.13 13:45</span><span style="border:1px solid #d9822b;color:#d9822b;border-radius:4px;padding:1px 8px;font-size:10px">수정</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div></div><div class="sim-dim" style="top:26px;bottom:0;background:rgba(0,0,0,.5)"></div><div style="position:absolute;z-index:6;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;padding:14px 12px 16px"><div style="text-align:center;font-size:13px;font-weight:700">청구서 선택 발송</div><div style="display:grid;grid-template-columns:1fr 1fr;margin:8px 0 10px"><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>통장 사본</div><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>임대차 계약서</div><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>사업자 등록증</div><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>명세서</div><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>차량 등록증</div><div style="padding:7px 4px;font-size:11px"><span style="display:inline-block;width:14px;height:14px;background:#ff9f1a;color:#fff;border-radius:3px;text-align:center;line-height:14px;font-size:10px;margin-right:6px">✓</span>요금표</div></div><div style="background:#f6f6f6;border-radius:6px;padding:8px 10px;font-size:9.5px;color:#444">본건은 보험개발원 산하 AOS 전산을 통해 청구되며, 380 (캐시/포인트)가 차감 됩니다.<div style="margin:6px 0"><span style="display:inline-block;width:12px;height:12px;border:1px solid #bbb;border-radius:3px;margin-right:5px;vertical-align:middle"></span>팩스 청구</div>* 청구 실패 시 차감한 캐시/포인트는 환급됩니다.<br>* 재청구 무료, 3회 이상 청구 시 수수료 차감됩니다.</div><div style="margin-top:10px;background:#2d3445;color:#fff;text-align:center;border-radius:8px;padding:10px;font-weight:700;font-size:12px">청구하기</div></div><div class="sim-ios" style="top:30%;left:50%;transform:translateX(-50%)"><div class="t"><b>알림</b><span>청구 사업자가 'KB손해보험 인증 사업자'로 변경되어, 청구율 및 청구 수식을 수정한 후 다시 시도해 주세요.</span></div><div class="ok">확인</div></div></div></div></div></div></div>
+      <div class="only-asis-block"><div class="only-web-block"><div class="sim-case"><div class="sim-case-title">KB 자체건 청구율 설정 (현행)<small>청구 사업자 인증 여부와 상관없이 5% 단위 5～100%, 최대 60% 안내 없음</small></div><div class="sim sim-frame" style="height:400px"><div class="sim-ftop"><span class="sim-logo">IMS. <span>form</span></span><span>이용안내 &nbsp; 🔔 &nbsp; 본사_홍.. 님</span></div><div class="sim-fbody"><div class="sim-fside"><div class="co">업체명수저엉<small>[ 업체번호 5806 ]</small></div><div class="cash"><span>캐시 <span style="background:#ff9f1a;color:#fff;border-radius:3px;padding:0 4px;font-size:8px">충전</span></span><span>58,851</span></div><div class="cash"><span>포인트</span><span>0</span></div><div class="sbtn">업무일지</div><div class="sbtn light">차량 예약</div><div class="mh">보험 계약서</div><div class="mi">보험 계약서 작성</div><div class="mi on">보험 계약서 목록</div><div class="m">일반 계약서</div><div class="m">탁송 관리</div><div class="m">내차팔기 서비스</div><div class="m">회계 관리</div><div class="m">일반 렌트 요금 관리</div><div class="m">캐시 쿠폰 관리</div><div class="m">사업자 관리</div><div class="cs">CS.1600 - 8348</div></div><div class="sim-fmain"><div class="sim-sechead"><span>청구 사업자 정보</span><span class="sim-sbtn">수정</span></div><table class="sim-t"><tr><th>사업자 명</th><td colspan="3">홍흰비</td></tr><tr><th>사업자 번호</th><td>2808600274</td><th>사업자 주소</th><td>서울 광진구 아차산로 355 (타워더모스트광진아크로텔) 3층</td></tr></table><div class="sim-sechead"><span>계약 정보 (#9052) <span class="sim-badge-s">미검증</span></span><span><span class="sim-sbtn line">계약서 상세보기</span> <span class="sim-sbtn">수정</span></span></div><table class="sim-t"><tr><th>대여차종</th><td>이보크</td><th>배차일시</th><td>2025-12-14 08:00</td></tr><tr><th>대여 차량 번호</th><td>12가3444</td><th>반납일시</th><td>-</td></tr><tr><th>청구수식</th><td colspan="3">-</td></tr></table><div class="sim-muted" style="font-size:9.5px;margin:5px 0">* RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div><div class="sim-sechead"><span>기타 정보</span><span class="sim-sbtn">수정</span></div><div class="sim-rate"><span class="lab">청구율</span><span class="val">-</span><span class="sim-obtn" style="padding:6px 12px">설정</span></div></div></div><div class="sim-dim"></div><div class="sim-modal" style="top:40px;left:50%;transform:translateX(-50%)"><div class="sim-mtitle"><span>청구율 설정</span><span>✕</span></div><div class="sim-select"><span>75%</span><span>⌄</span></div><div class="sim-list"><div class="">5%</div><div class="">…</div><div class="">95%</div><div class="on">100%</div></div><div style="height:10px"></div><div style="text-align:right"><span class="sim-savebtn">저장</span></div></div></div></div></div><div class="only-mobile-block"><div class="sim-case"><div class="sim-case-title">KB 자체건 청구율 설정 (현행)<small>모바일 · 최대 60% 안내 없음</small></div><div class="sim-phones"><div class="sim sim-phone"><div class="sim-pstat"><span>11:30</span><span>📶 80</span></div><div class="sim-phead"><span>←</span><span>상세 정보</span></div><div class="sim-pbody"><div class="sim-pcard"><div class="sim-pkv"><span>반납일</span><span>-</span></div></div><div class="sim-gbox" style="text-align:center;padding:10px">RIMS 운전자격검증: 검증완료 및 미검증으로 표시됩니다.</div></div><div class="sim-ptab"><span class="">IMS</span><span class="">파트너</span><span class="on">계약서</span><span class="">알림</span><span class="">더보기</span></div><div class="sim-dim" style="top:26px;bottom:44px;background:rgba(0,0,0,.5)"></div><div style="position:absolute;z-index:6;left:12px;right:12px;top:150px;background:#fff;border-radius:16px;padding:16px"><div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:12px">청구율 설정</div><div class="sim-select" style="padding:9px"><span>75%</span><span>⌄</span></div><div style="height:16px"></div><div style="display:flex;gap:8px"><span style="flex:1;text-align:center;border:1px solid #ccc;border-radius:6px;padding:9px">취소</span><span style="flex:2;text-align:center;background:#2d3445;color:#fff;border-radius:6px;padding:9px;font-weight:700">저장</span></div></div></div></div></div></div></div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-02</b>, PRD <b>LD-05, LD-06, LD-07</b><br>· 어드민에서 인증이 해제되면 청구율 설정에 들어갈 때 최대 60% 안내 없이 100%까지 보입니다(기존 로직) — PRD <b>LD-05</b><br>· 자체계약서를 콜건에 연결하면 청구율이 42%로 바뀌고, 연결을 해제하면 이전 청구율은 복원하지 않고 청구율이 '-'로 비워져 이 화면 기준(인증 5～60%, 미인증 5～100%)으로 다시 정해야 합니다 — PRD <b>LD-06</b><br>· 청구 사업자를 바꿔 저장하면 청구 기준(요금표·수식)만 초기화하고 청구율은 이전 값을 유지합니다. 청구하기를 누를 때 청구 기준이 인증 여부와 맞지 않으면 청구 기준과 청구율을 모두 초기화하고 다시 선택하게 합니다(현대해상과 같은 정책) — PRD <b>LD-05</b><br>· 시행 일시 이후에 청구하는 건부터 적용하며, 이전에 작성·저장한 계약서도 시행 일시 이후에 청구하면 같은 검증을 받습니다 — PRD <b>LD-08</b></span></div>
+  </section>
+
+  <!-- ============ [SCR-03] 요청 상세 ============ -->
+  <section class="section" id="scr-03" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-03] 요청 상세 <small>제안 목록 선택 버튼 차단</small></div>
+      <div class="head-chips">
+        <span class="platform-chip admin">폼 어드민</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block"><div class="sim-case"><div class="sim-case-title">제안 목록에서 KB 인증 사업자가 없는 업체의 [선택]을 누르면<small>시행 이후 생성된 KB 요청 건 · 선택되지 않음 (안전장치)</small></div><div class="sim sim-frame" style="height:520px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div class="sim-ahead"><h3>요청번호 633371</h3><span class="sim-tag">보험사요청</span><span class="sim-tag r">관리자 선택</span><span class="sim-tag o">렌카운영</span><span class="sim-tag t">렌카요청</span><span class="sim-tag">유료</span><span class="sp"><span class="sim-abtn gray">감춤</span><span class="sim-abtn red">긴급선택</span><span class="sim-abtn red">무료전환</span><span class="sim-abtn green">새로고침</span></span></div><div class="sim-asec"><h5>상태</h5><div style="text-align:center;font-weight:700;font-size:13px">요청중</div></div><div class="sim-asec"><h5>요청 정보</h5><div class="sim-agrid"><div><span>아이디</span><b>ghdrlfehd77</b></div><div><span>요청자정보</span><b>KB[홍길동사원]</b></div><div><span>이름</span><b>홍길동</b></div><div><span>휴대폰번호</span><b>010-1234-5678</b></div><div><span>고객연락처</span><b>01012345555</b></div><div><span>나이</span><b>-</b></div><div><span>이용지역</span><b>서울특별시 서초구</b></div><div><span>사고차량</span><b>에쿠스</b></div><div><span>희망차량</span><b></b></div><div><span>차량번호</span><b>67어2777</b></div><div><span>배기량</span><b>3778</b></div><div><span>연식</span><b>201910</b></div><div><span>청구율 형식</span><b>비례적으로 청구</b></div><div><span>가격/청구율</span><b>42</b></div><div><span>가해자 보험사 접수번호</span><b>KB 2500378787</b></div></div></div><div class="sim-aleg"><span>■ 보험사 신규 | <span style="color:#ffb300">■ 보험사 주의</span> | <span style="color:#20a9b0">■ 딜러사 지정 업체</span> | <span style="color:#e53935">■ 제안 취소</span></span><span class="sim-red"><b>[제안 잔여 시간: 2분 28초]</b></span></div><table class="sim-tbl"><tr class="bar"><th colspan="18">제안</th></tr><tr><th>업체번호</th><th>등급</th><th>업체명</th><th>대표자</th><th>제안1</th><th>제안2</th><th>계약서</th><th>예약확정</th><th>배차중</th><th>캐시</th><th>포인트</th><th>추가제안</th><th>포기사유</th><th>거리</th><th>광고 입찰가</th><th>패스</th><th>선택</th><th>삭제</th></tr><tr><td>5751</td><td>F</td><td>교보렌트카</td><td>김민주</td><td>G80 신형</td><td>-</td><td>16,212</td><td>1</td><td>8(3)</td><td>554,719</td><td>16,692</td><td>-</td><td>-</td><td>-</td><td>30,000</td><td>P</td><td><span class="sim-abtn blue">선택</span></td><td><span class="sim-abtn red">삭제</span></td></tr><tr><td>31681</td><td>F</td><td>주식회사 천조렌트카</td><td>최현준</td><td>G90</td><td>-</td><td>23,800</td><td>15</td><td>9</td><td>766,844</td><td>25,615</td><td>보기</td><td>-</td><td>-</td><td>30,000</td><td>P</td><td><span class="sim-abtn blue">선택</span></td><td><span class="sim-abtn red">삭제</span></td></tr></table></div></div><div class="sim-dim"></div><div class="sim-alert"><b>admin.imsform.com 내용:</b>해당 요청은 'KB손해보험 인증' 업체만 선택 가능합니다.<span class="ok">확인</span></div></div></div></div>
+      <div class="only-asis-block"><div class="sim-case"><div class="sim-case-title">KB 요청 건 — 제안 목록 [선택] (현행)<small>인증 확인 없이 선택됨 · 긴급선택 버튼은 이미 있음</small></div><div class="sim sim-frame" style="height:520px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div class="sim-ahead"><h3>요청번호 633371</h3><span class="sim-tag">보험사요청</span><span class="sim-tag r">관리자 선택</span><span class="sim-tag o">렌카운영</span><span class="sim-tag t">렌카요청</span><span class="sim-tag">유료</span><span class="sp"><span class="sim-abtn gray">감춤</span><span class="sim-abtn red">긴급선택</span><span class="sim-abtn red">무료전환</span><span class="sim-abtn green">새로고침</span></span></div><div class="sim-asec"><h5>상태</h5><div style="text-align:center;font-weight:700;font-size:13px">요청중</div></div><div class="sim-asec"><h5>요청 정보</h5><div class="sim-agrid"><div><span>아이디</span><b>ghdrlfehd77</b></div><div><span>요청자정보</span><b>KB[홍길동사원]</b></div><div><span>이름</span><b>홍길동</b></div><div><span>휴대폰번호</span><b>010-1234-5678</b></div><div><span>고객연락처</span><b>01012345555</b></div><div><span>나이</span><b>-</b></div><div><span>이용지역</span><b>서울특별시 서초구</b></div><div><span>사고차량</span><b>에쿠스</b></div><div><span>희망차량</span><b></b></div><div><span>차량번호</span><b>67어2777</b></div><div><span>배기량</span><b>3778</b></div><div><span>연식</span><b>201910</b></div><div><span>청구율 형식</span><b>비례적으로 청구</b></div><div><span>가격/청구율</span><b>42</b></div><div><span>가해자 보험사 접수번호</span><b>KB 2500378787</b></div></div></div><div class="sim-aleg"><span>■ 보험사 신규 | <span style="color:#ffb300">■ 보험사 주의</span> | <span style="color:#20a9b0">■ 딜러사 지정 업체</span> | <span style="color:#e53935">■ 제안 취소</span></span><span class="sim-red"><b>[제안 잔여 시간: 2분 28초]</b></span></div><table class="sim-tbl"><tr class="bar"><th colspan="18">제안</th></tr><tr><th>업체번호</th><th>등급</th><th>업체명</th><th>대표자</th><th>제안1</th><th>제안2</th><th>계약서</th><th>예약확정</th><th>배차중</th><th>캐시</th><th>포인트</th><th>추가제안</th><th>포기사유</th><th>거리</th><th>광고 입찰가</th><th>패스</th><th>선택</th><th>삭제</th></tr><tr><td>5751</td><td>F</td><td>교보렌트카</td><td>김민주</td><td>G80 신형</td><td>-</td><td>16,212</td><td>1</td><td>8(3)</td><td>554,719</td><td>16,692</td><td>-</td><td>-</td><td>-</td><td>30,000</td><td>P</td><td><span class="sim-abtn blue">선택</span></td><td><span class="sim-abtn red">삭제</span></td></tr><tr><td>31681</td><td>F</td><td>주식회사 천조렌트카</td><td>최현준</td><td>G90</td><td>-</td><td>23,800</td><td>15</td><td>9</td><td>766,844</td><td>25,615</td><td>보기</td><td>-</td><td>-</td><td>30,000</td><td>P</td><td><span class="sim-abtn blue">선택</span></td><td><span class="sim-abtn red">삭제</span></td></tr></table></div></div></div></div></div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-03</b>, PRD <b>LD-02, LD-07</b><br>· 긴급선택으로 배정된 업체도 계약서 단계에서 인증을 확인하지 않아 별도 예외 처리가 없습니다 — PRD <b>LD-01, LD-02</b></span></div>
+  </section>
+
+  <!-- ============ [SCR-04] 폼 어드민 — 사업자 목록의 KB 인증 열 ============ -->
+  <section class="section" id="scr-04" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-04] 사업자 목록 <small>사업자별 보험사 인증/미인증 등록·해제</small></div>
+      <div class="head-chips">
+        <span class="platform-chip admin">폼 어드민</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block"><div class="sim-case"><div class="sim-case-title">렌터카 관리 > 업체 상세 > 사업자 목록<small>보험사 인증 열 신규 · 현대해상 인증 열을 흡수 · [설정] 버튼과 인증 중인 보험사 표시</small></div><div class="sim sim-frame" style="height:410px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div class="sim-ahead"><h3>업체번호 5806</h3><span class="sim-tag">렌카</span><span class="sim-tag" style="background:#fff;color:#333;border:1px solid #bbb">폼+파트너</span><span class="sp"><span class="sim-abtn gray">파트너 신청</span><span class="sim-abtn red">제안금지</span><span class="sim-abtn gray">유형 설정</span><span class="sim-abtn red">차단</span><span class="sim-abtn blue">새로고침</span></span></div><div style="font-size:9.5px;color:#2a5bd7;margin-bottom:6px">기본정보 &nbsp; 보유 차량 &nbsp; 기타정보 &nbsp; 보험사 제외 &nbsp; 계약딜러사 담당 &nbsp; 홈페이지/픽업 &nbsp; 요금표 &nbsp; 제안 리스트 &nbsp; 배차 포기율 &nbsp; 딜리버리 관리 &nbsp; 탁송 관리</div><div class="sim-asec"><h5>업체 정보</h5><div class="sim-agrid"><div><span>업체명</span><b>천조렌트카</b></div><div><span>업체 전화번호</span><b>010-1234-5678</b></div><div><span>제안율</span><b>168.01%</b></div></div></div><table class="sim-tbl" style="table-layout:fixed;font-size:7.5px"><tr class="bar"><th colspan="19">사업자 (12)</th></tr><tr><th>사업자명</th><th>대표자명</th><th>사업자 구분</th><th>법인등록번호</th><th>사업자 등록번호</th><th>업태</th><th>종목</th><th>사업장 형태</th><th>개업연월일</th><th>사업장 주소</th><th>사업자 등록증</th><th>통장 사본</th><th>사업자 요금표</th><th>사업자 직인</th><th>세금계산서 가입</th><th>청구 수</th><th>일반단기 인증</th><th class="newc">보험사 인증</th><th>등록일</th></tr><tr><td>(주)에스케이렌터카</td><td>홍길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>운수 및 창고업</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>없음</td><td>없음</td><td>-</td><td>4</td><td><span class="stat">미인증</span></td><td class="newc"><span class="stat">설정</span></td><td>2023-08-12</td></tr><tr><td>(주)에스케이렌터카</td><td>김길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>렌터카</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>없음</td><td>없음</td><td>-</td><td>41</td><td><span class="stat">미인증</span></td><td class="newc"><span class="stat on">설정</span><div style="font-size:7px;color:#2a5bd7;margin-top:2px">현대<br>KB</div></td><td>2023-08-12</td></tr><tr><td>(주)에스케이렌터카</td><td>김길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>렌터카</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>tprma1</td><td>33</td><td><span class="stat">미인증</span></td><td class="newc"><span class="stat">설정</span></td><td>2023-08-12</td></tr></table></div></div></div></div><div style="margin-top:14px"><div class="sim-case"><div class="sim-case-title">① [설정] 클릭 → 보험사 인증 모달<small>자동차보험사 12개를 2열로 나열 · 보험사별 [미인증]/[인증] 버튼 · 현대해상 포함</small></div><div class="sim sim-frame" style="height:320px;background:#8c8c90"><div class="sim-dim"></div><div class="sim-modal" style="top:50%;left:50%;transform:translate(-50%,-50%);width:460px"><div class="sim-mtitle"><span>보험사 인증</span><span>✕</span></div><div style="font-size:9.5px;color:#444;margin-bottom:8px">(주)에스케이렌터카 314-81-84444</div><div style="display:grid;grid-template-columns:1fr 1fr;column-gap:14px;border-top:1px solid #888"><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>삼성</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>현대</span><span class="sim-abtn blue" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>DB</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>KB</span><span class="sim-abtn blue" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>메리츠</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>한화</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>롯데</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>흥국</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>하나</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>AXA</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>캐롯</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:5px 6px;border-bottom:1px solid #e3e3e7"><span>MG</span><span class="sim-abtn gray" style="width:52px;padding:3px 0;text-align:center;box-sizing:border-box">미인증</span></div></div><div style="height:8px"></div><div style="text-align:right"><span style="display:inline-block;border:1px solid #ccc;border-radius:4px;padding:5px 14px">닫기</span></div></div></div></div></div><div class="sim-grid2" style="margin-top:14px"><div class="sim-case"><div class="sim-case-title">② 모달에서 [미인증] 클릭 → 업체 유형이 파트너일 때</div><div class="sim sim-frame" style="height:176px;background:#8c8c90"><div class="sim-dim"></div><div class="sim-alert"><b>admin.imsform.com 내용:</b>해당 사업자를 KB손해보험 인증 상태로 변경하시겠습니까?<br>(주)에스케이렌터카 314-81-84444<div class="two"><span class="no">취소</span><span class="ok" style="margin:0;width:auto;padding:5px 12px">확인</span></div></div></div></div><div class="sim-case"><div class="sim-case-title">③ 모달에서 [미인증] 클릭 → 업체 유형이 파트너가 아닐 때</div><div class="sim sim-frame" style="height:176px;background:#8c8c90"><div class="sim-dim"></div><div class="sim-alert"><b>admin.imsform.com 내용:</b>KB손해보험 인증은 업체 유형이 '파트너'인 경우에만 가능합니다.<span class="ok">확인</span></div></div></div><div class="sim-case"><div class="sim-case-title">④ 모달에서 [인증] 클릭 → 미인증 변경 확인</div><div class="sim sim-frame" style="height:176px;background:#8c8c90"><div class="sim-dim"></div><div class="sim-alert"><b>admin.imsform.com 내용:</b>해당 사업자를 KB손해보험 미인증 상태로 변경하시겠습니까?<br>(주)에스케이렌터카 314-81-85555<div class="two"><span class="no">취소</span><span class="ok" style="margin:0;width:auto;padding:5px 12px">확인</span></div></div></div></div></div></div>
+      <div class="only-asis-block"><div class="sim-case"><div class="sim-case-title">렌터카 관리 > 업체 상세 > 사업자 목록 (현행)<small>보험사 인증 열 없음 · 일반단기·현대해상 인증 열만 있음</small></div><div class="sim sim-frame" style="height:410px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div class="sim-ahead"><h3>업체번호 5806</h3><span class="sim-tag">렌카</span><span class="sim-tag" style="background:#fff;color:#333;border:1px solid #bbb">폼+파트너</span><span class="sp"><span class="sim-abtn gray">파트너 신청</span><span class="sim-abtn red">제안금지</span><span class="sim-abtn gray">유형 설정</span><span class="sim-abtn red">차단</span><span class="sim-abtn blue">새로고침</span></span></div><div style="font-size:9.5px;color:#2a5bd7;margin-bottom:6px">기본정보 &nbsp; 보유 차량 &nbsp; 기타정보 &nbsp; 보험사 제외 &nbsp; 계약딜러사 담당 &nbsp; 홈페이지/픽업 &nbsp; 요금표 &nbsp; 제안 리스트 &nbsp; 배차 포기율 &nbsp; 딜리버리 관리 &nbsp; 탁송 관리</div><div class="sim-asec"><h5>업체 정보</h5><div class="sim-agrid"><div><span>업체명</span><b>천조렌트카</b></div><div><span>업체 전화번호</span><b>010-1234-5678</b></div><div><span>제안율</span><b>168.01%</b></div></div></div><table class="sim-tbl" style="table-layout:fixed;font-size:7.5px"><tr class="bar"><th colspan="19">사업자 (12)</th></tr><tr><th>사업자명</th><th>대표자명</th><th>사업자 구분</th><th>법인등록번호</th><th>사업자 등록번호</th><th>업태</th><th>종목</th><th>사업장 형태</th><th>개업연월일</th><th>사업장 주소</th><th>사업자 등록증</th><th>통장 사본</th><th>사업자 요금표</th><th>사업자 직인</th><th>세금계산서 가입</th><th>청구 수</th><th>일반단기 인증</th><th>현대해상 인증</th><th>등록일</th></tr><tr><td>(주)에스케이렌터카</td><td>홍길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>운수 및 창고업</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>없음</td><td>없음</td><td>-</td><td>4</td><td><span class="stat">미인증</span></td><td><span class="stat">미인증</span></td><td>2023-08-12</td></tr><tr><td>(주)에스케이렌터카</td><td>김길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>렌터카</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>없음</td><td>없음</td><td>-</td><td>41</td><td><span class="stat">미인증</span></td><td><span class="stat">미인증</span></td><td>2023-08-12</td></tr><tr><td>(주)에스케이렌터카</td><td>김길동</td><td>법인</td><td>1601110213444</td><td>314818444</td><td>서비스</td><td>렌터카</td><td>지점</td><td>1998-07-10</td><td>성루 구로구 서부샛길 82</td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td><span class="stat">보기</span></td><td>tprma1</td><td>33</td><td><span class="stat">미인증</span></td><td><span class="stat">미인증</span></td><td>2023-08-12</td></tr></table></div></div></div></div></div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-04</b>, PRD <b>LD-03, LD-04</b><br>· 해제할 때 진행 중 콜건은 확인하지 않고 바로 미인증 처리합니다 — PRD <b>LD-04</b><br>· 현대해상 항목은 기존 현대해상 규칙 그대로 동작하고 설정 화면만 이 모달로 통합됩니다(자동 해제는 모든 보험사 공통) — PRD <b>LD-03</b>, <b>LD-04</b><br>· 시행 일시가 설정되지 않은 보험사 항목도 등록할 수 있지만 시행 일시가 설정되기 전에는 효과가 없습니다 — PRD <b>LD-03</b><br>· 확인 얼럿의 보험사명은 선택한 보험사로 바뀝니다(화면은 KB 예시) — 기능정의서 <b>FT-04</b></span></div>
+  </section>
+
+  <!-- ============ [SCR-05] 폼 어드민 — 업체 리스트 보험사 인증 필터 ============ -->
+  <section class="section" id="scr-05" hidden>
+    <div class="section-head">
+      <div class="section-title">[SCR-05] 업체 리스트 <small>보험사 인증 필터</small></div>
+      <div class="head-chips">
+        <span class="platform-chip admin">폼 어드민</span>
+        <span class="mode-chip" data-chip-text></span>
+      </div>
+    </div>
+    <div class="canvas">
+      <div class="only-tobe-block"><div class="sim-case"><div class="sim-case-title">① 업체 리스트 필터에 "보험사 인증" 추가<small>보험사 목록에서 선택(전체 + 보험사 12개) · 선택하지 않으면 기존과 같음</small></div><div class="sim sim-frame" style="height:440px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div style="font-size:9.5px;color:#2a5bd7;margin-bottom:6px">업체 &nbsp; 차량 &nbsp; 직원 &nbsp; 업체 리뷰 &nbsp; 사업자 통장등록 &nbsp; 보험사 제외 &nbsp; 계약딜러사 담당 &nbsp; 업체 등급 설정</div><div style="border:1px solid #ddd;padding:4px 8px;font-size:9px;margin-bottom:6px">대표자명 ⌄ &nbsp;|&nbsp; <span style="color:#aaa">검색어 입력</span></div><div style="display:flex;gap:14px;border:1px solid #e1e1e5;padding:6px 8px;font-size:9px;margin-bottom:6px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">구분</b>◉ 전체 ○ 렌카 ○ 공차</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">활성여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">파트너W/L 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">모빌러그 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체등급</b>☑ 전체 ☐ A ☐ B ☐ C ☐ E(현출) ☐ F(신규)</div></div><div style="flex:1;position:relative"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체유형</b>전체 ⌄ 전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">지점여부</b>전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">기간상세</b>가입일 ⌄ ~</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">배차지역</b>전체 ⌄ 전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;background:rgba(255,46,147,.12)"><b style="width:62px;font-size:9px">보험사 인증</b><div style="position:relative;width:120px"><div class="sim-select" data-select-toggle style="cursor:pointer;width:120px;margin:0"><span>전체</span><span>⌄</span></div><div class="sim-list" hidden style="position:absolute;left:0;right:0;top:100%;z-index:7;box-shadow:0 4px 10px rgba(0,0,0,.25);max-height:110px;overflow:auto"><div class="on">전체</div><div>삼성</div><div>현대</div><div>DB</div><div>KB</div><div>메리츠</div><div>한화</div><div>롯데</div><div>흥국</div><div>하나</div><div>AXA</div><div>캐롯</div><div>MG</div></div></div></div></div></div><div style="text-align:center;margin-bottom:6px"><span class="sim-abtn gray">필터 적용</span> <span class="sim-abtn gray">필터 초기화</span></div><table class="sim-tbl" style="table-layout:fixed;font-size:7.5px"><tr><th>업체번호</th><th>구분</th><th>유형</th><th>지점여부</th><th>아이디</th><th>이름</th><th>업체명</th><th>직함</th><th>업체등급</th><th>제안 수</th><th>선택 수</th><th>가입일</th></tr><tr><td>9229</td><td>렌카</td><td>폼</td><td>X</td><td>id9229</td><td>홍길동</td><td>테스트렌터카</td><td>사원</td><td>-</td><td>3</td><td>1</td><td>2026.08.25</td></tr><tr><td>5806</td><td>렌카</td><td>폼</td><td>X</td><td>id5806</td><td>홍길동</td><td>천조렌트카</td><td>사원</td><td>A</td><td>3</td><td>1</td><td>2025.03.02</td></tr><tr><td>4412</td><td>렌카</td><td>폼</td><td>X</td><td>id4412</td><td>홍길동</td><td>한솔렌트카</td><td>사원</td><td>B</td><td>3</td><td>1</td><td>2024.11.18</td></tr></table></div></div></div></div><div class="sim-case"><div class="sim-case-title">② 보험사를 고르고 [필터 적용] → 해당 보험사 인증 사업자가 1곳 이상인 업체만 표시<small>업체 목록 기준 · 사업자 단위 인증을 업체로 모아서 판정</small></div><div class="sim sim-frame" style="height:440px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div style="font-size:9.5px;color:#2a5bd7;margin-bottom:6px">업체 &nbsp; 차량 &nbsp; 직원 &nbsp; 업체 리뷰 &nbsp; 사업자 통장등록 &nbsp; 보험사 제외 &nbsp; 계약딜러사 담당 &nbsp; 업체 등급 설정</div><div style="border:1px solid #ddd;padding:4px 8px;font-size:9px;margin-bottom:6px">대표자명 ⌄ &nbsp;|&nbsp; <span style="color:#aaa">검색어 입력</span></div><div style="display:flex;gap:14px;border:1px solid #e1e1e5;padding:6px 8px;font-size:9px;margin-bottom:6px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">구분</b>◉ 전체 ○ 렌카 ○ 공차</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">활성여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">파트너W/L 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">모빌러그 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체등급</b>☑ 전체 ☐ A ☐ B ☐ C ☐ E(현출) ☐ F(신규)</div></div><div style="flex:1;position:relative"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체유형</b>전체 ⌄ 전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">지점여부</b>전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">기간상세</b>가입일 ⌄ ~</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">배차지역</b>전체 ⌄ 전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;background:rgba(255,46,147,.12)"><b style="width:62px;font-size:9px">보험사 인증</b><div style="position:relative;width:120px"><div class="sim-select" data-select-toggle style="cursor:pointer;width:120px;margin:0"><span>현대</span><span>⌄</span></div><div class="sim-list" hidden style="position:absolute;left:0;right:0;top:100%;z-index:7;box-shadow:0 4px 10px rgba(0,0,0,.25);max-height:110px;overflow:auto"><div class="on">전체</div><div>삼성</div><div>현대</div><div>DB</div><div>KB</div><div>메리츠</div><div>한화</div><div>롯데</div><div>흥국</div><div>하나</div><div>AXA</div><div>캐롯</div><div>MG</div></div></div></div></div></div><div style="text-align:center;margin-bottom:6px"><span class="sim-abtn gray">필터 적용</span> <span class="sim-abtn gray">필터 초기화</span></div><table class="sim-tbl" style="table-layout:fixed;font-size:7.5px"><tr><th>업체번호</th><th>구분</th><th>유형</th><th>지점여부</th><th>아이디</th><th>이름</th><th>업체명</th><th>직함</th><th>업체등급</th><th>제안 수</th><th>선택 수</th><th>가입일</th></tr><tr><td>5806</td><td>렌카</td><td>폼</td><td>X</td><td>id5806</td><td>홍길동</td><td>천조렌트카</td><td>사원</td><td>A</td><td>3</td><td>1</td><td>2025.03.02</td></tr><tr><td>4412</td><td>렌카</td><td>폼</td><td>X</td><td>id4412</td><td>홍길동</td><td>한솔렌트카</td><td>사원</td><td>B</td><td>3</td><td>1</td><td>2024.11.18</td></tr></table></div></div></div></div></div>
+      <div class="only-asis-block"><div class="sim-case"><div class="sim-case-title">렌터카 관리 > 업체 리스트 (현행)<small>보험사 인증 필터 없음</small></div><div class="sim sim-frame" style="height:440px"><div class="sim-atop"><b>렌카</b><span>요청번호 입력 &nbsp; 내정보 &nbsp; 로그아웃</span></div><div class="sim-fbody"><div class="sim-aside"><div>Dashboard</div><div>회원 관리</div><div>요청관리 - 보험대차</div><div>요청관리 - 일반단기</div><div>일반콜 배/회차 관리</div><div>렌터카 관리</div><div>캐시 관리</div><div>입찰 수익 관리</div><div>계약서 관리</div><div>면허증 관리</div><div>운영 관리</div></div><div class="sim-amain"><div style="font-size:9.5px;color:#2a5bd7;margin-bottom:6px">업체 &nbsp; 차량 &nbsp; 직원 &nbsp; 업체 리뷰 &nbsp; 사업자 통장등록 &nbsp; 보험사 제외 &nbsp; 계약딜러사 담당 &nbsp; 업체 등급 설정</div><div style="border:1px solid #ddd;padding:4px 8px;font-size:9px;margin-bottom:6px">대표자명 ⌄ &nbsp;|&nbsp; <span style="color:#aaa">검색어 입력</span></div><div style="display:flex;gap:14px;border:1px solid #e1e1e5;padding:6px 8px;font-size:9px;margin-bottom:6px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">구분</b>◉ 전체 ○ 렌카 ○ 공차</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">활성여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">파트너W/L 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">모빌러그 여부</b>◉ 전체 ○ 활성 ○ 비활성</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체등급</b>☑ 전체 ☐ A ☐ B ☐ C ☐ E(현출) ☐ F(신규)</div></div><div style="flex:1;position:relative"><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">업체유형</b>전체 ⌄ 전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">지점여부</b>전체 ⌄</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">기간상세</b>가입일 ⌄ ~</div><div style="display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px solid #eee;"><b style="width:62px;font-size:9px">배차지역</b>전체 ⌄ 전체 ⌄</div></div></div><div style="text-align:center;margin-bottom:6px"><span class="sim-abtn gray">필터 적용</span> <span class="sim-abtn gray">필터 초기화</span></div><table class="sim-tbl" style="table-layout:fixed;font-size:7.5px"><tr><th>업체번호</th><th>구분</th><th>유형</th><th>지점여부</th><th>아이디</th><th>이름</th><th>업체명</th><th>직함</th><th>업체등급</th><th>제안 수</th><th>선택 수</th><th>가입일</th></tr><tr><td>9229</td><td>렌카</td><td>폼</td><td>X</td><td>id9229</td><td>홍길동</td><td>테스트렌터카</td><td>사원</td><td>-</td><td>3</td><td>1</td><td>2026.08.25</td></tr><tr><td>5806</td><td>렌카</td><td>폼</td><td>X</td><td>id5806</td><td>홍길동</td><td>천조렌트카</td><td>사원</td><td>A</td><td>3</td><td>1</td><td>2025.03.02</td></tr><tr><td>4412</td><td>렌카</td><td>폼</td><td>X</td><td>id4412</td><td>홍길동</td><td>한솔렌트카</td><td>사원</td><td>B</td><td>3</td><td>1</td><td>2024.11.18</td></tr></table></div></div></div></div></div>
+    </div>
+    <div class="annotation"><span class="annotation-dot"></span><span>근거: 기능정의서 <b>FT-05</b>, PRD <b>LD-03</b><br>· 업체 리스트에는 인증 내역 열을 추가하지 않고 필터로만 찾습니다 — PRD <b>LD-03</b><br>· 보험사를 고르면 그 보험사 인증 사업자가 1곳 이상인 업체만 표시합니다 — PRD <b>LD-03</b></span></div>
+  </section>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch accent"></span>근거 표시 (PRD/기능정의서 인용)</div>
+    <div class="legend-item"><span class="legend-swatch always"></span>미결정 항목 (양쪽 모드 모두 표시)</div>
+    <div class="legend-item"><span class="legend-swatch warn"></span>자료 갭 / 확인 필요</div>
+    <div class="legend-item"><span class="legend-swatch new"></span>신규 요소</div>
+    <div class="legend-item">예시 데이터(업체명, 번호 등)는 임의 값입니다.</div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var modeButtons = document.querySelectorAll('[data-mode-btn]');
+    var chips = document.querySelectorAll('[data-chip-text]');
+    var mode = 'tobe';
+
+    function render() {
+      document.body.setAttribute('data-mode', mode);
+      modeButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-mode-btn') === mode ? 'true' : 'false');
+      });
+      chips.forEach(function (el) {
+        el.textContent = mode === 'tobe' ? 'TO-BE' : 'AS-IS';
+      });
+    }
+
+    modeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        mode = btn.getAttribute('data-mode-btn');
+        render();
+      });
+    });
+
+    render();
+
+    // Web/Mobile 전환 (기기 토글을 쓰는 프로젝트만 해당 — 없으면 아래는 조용히 아무 일도 하지 않음)
+    var deviceButtons = document.querySelectorAll('[data-device-btn]');
+    var device = 'web';
+
+    function renderDevice() {
+      document.body.setAttribute('data-device', device);
+      deviceButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-device-btn') === device ? 'true' : 'false');
+      });
+    }
+
+    deviceButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        device = btn.getAttribute('data-device-btn');
+        renderDevice();
+      });
+    });
+
+    if (deviceButtons.length) renderDevice();
+
+    // 화면별 전환 (화면 toolbar-group을 쓰는 프로젝트만 해당 — 화면이 1개뿐이면 조용히 아무 일도 하지 않음)
+    var screenButtons = document.querySelectorAll('[data-screen-btn]');
+    var sections = document.querySelectorAll('.section[id]');
+
+    function showScreen(id) {
+      sections.forEach(function (sec) {
+        sec.hidden = sec.id !== id;
+      });
+      // 어드민 화면(scr-03, scr-04, scr-05)은 웹 전용이라 기기 토글을 숨기고 Web으로 고정
+      var deviceGroup = document.getElementById('device-group');
+      var adminOnly = id === 'scr-03' || id === 'scr-04' || id === 'scr-05';
+      if (deviceGroup) deviceGroup.hidden = adminOnly;
+      if (adminOnly && device !== 'web') { device = 'web'; renderDevice(); }
+      screenButtons.forEach(function (btn) {
+        btn.setAttribute('aria-pressed', btn.getAttribute('data-screen-btn') === id ? 'true' : 'false');
+      });
+    }
+
+    screenButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        showScreen(btn.getAttribute('data-screen-btn'));
+      });
+    });
+
+    if (screenButtons.length) showScreen(screenButtons[0].getAttribute('data-screen-btn'));
+
+    // 셀렉트박스 클릭 시 항목 목록 열기/닫기, 항목 클릭 시 선택
+    document.querySelectorAll('[data-select-toggle]').forEach(function (sel) {
+      var list = sel.nextElementSibling;
+      if (!list) return;
+      sel.addEventListener('click', function () { list.hidden = !list.hidden; });
+      list.querySelectorAll('div').forEach(function (item) {
+        item.addEventListener('click', function () {
+          if (item.textContent === '…') return;
+          list.querySelectorAll('div').forEach(function (d) { d.classList.remove('on'); });
+          item.classList.add('on');
+          sel.firstElementChild.textContent = item.textContent;
+          list.hidden = true;
+        });
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
